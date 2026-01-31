@@ -4,14 +4,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+// 1. Import ไอคอน
+import { Package, Heart, User, MapPin, HeartCrack, Save } from 'lucide-react'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ProfileView({ user, orders, favorites }: { user: any, orders: any[], favorites: any[] }) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('INFO') // INFO, ORDERS, FAVORITES, ADDRESS
+  const [activeTab, setActiveTab] = useState('INFO') 
   const [loading, setLoading] = useState(false)
 
-  // State สำหรับฟอร์มข้อมูลส่วนตัว
   const [formData, setFormData] = useState({
     name: user.name || '',
     phone: user.phone || '',
@@ -66,7 +67,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 ${activeTab === 'ORDERS' ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-50'}
               `}
             >
-              <span className="flex items-center gap-3">📦 คำสั่งซื้อ</span>
+              <span className="flex items-center gap-3">
+                <Package size={16} /> คำสั่งซื้อ
+              </span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'ORDERS' ? 'bg-neutral-700 text-white' : 'bg-neutral-100 text-neutral-500'}`}>{orders.length}</span>
             </button>
             
@@ -76,7 +79,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 ${activeTab === 'FAVORITES' ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-50'}
               `}
             >
-              <span className="flex items-center gap-3">❤️ สินค้าที่ชอบ</span>
+              <span className="flex items-center gap-3">
+                <Heart size={16} /> สินค้าที่ชอบ
+              </span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'FAVORITES' ? 'bg-neutral-700 text-white' : 'bg-neutral-100 text-neutral-500'}`}>{favorites.length}</span>
             </button>
           </div>
@@ -86,19 +91,19 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
             <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">บัญชี</h3>
             <button 
               onClick={() => setActiveTab('INFO')}
-              className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 block
+              className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3
                 ${activeTab === 'INFO' ? 'font-bold text-black' : 'text-neutral-600 hover:text-black'}
               `}
             >
-              👤 ข้อมูลส่วนตัว
+              <User size={16} /> ข้อมูลส่วนตัว
             </button>
             <button 
               onClick={() => setActiveTab('ADDRESS')}
-              className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 block
+              className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3
                 ${activeTab === 'ADDRESS' ? 'font-bold text-black' : 'text-neutral-600 hover:text-black'}
               `}
             >
-              📍 ที่อยู่จัดส่ง
+              <MapPin size={16} /> ที่อยู่จัดส่ง
             </button>
           </div>
         </div>
@@ -110,7 +115,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         {/* --- TAB: INFO (ข้อมูลส่วนตัว) --- */}
         {activeTab === 'INFO' && (
           <form onSubmit={handleUpdate} className="space-y-6 animate-in fade-in duration-300">
-            <h2 className="text-2xl font-bold mb-6">ข้อมูลส่วนตัว</h2>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <User className="text-neutral-400" /> ข้อมูลส่วนตัว
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">ชื่อ - นามสกุล</label>
@@ -151,8 +158,8 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
               </div>
             </div>
             <div className="pt-6 flex justify-end">
-              <button disabled={loading} className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition disabled:opacity-50">
-                {loading ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+              <button disabled={loading} className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition disabled:opacity-50 flex items-center gap-2">
+                {loading ? 'กำลังบันทึก...' : <><Save size={18} /> บันทึกการเปลี่ยนแปลง</>}
               </button>
             </div>
           </form>
@@ -161,7 +168,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         {/* --- TAB: ADDRESS (ที่อยู่) --- */}
         {activeTab === 'ADDRESS' && (
           <form onSubmit={handleUpdate} className="space-y-6 animate-in fade-in duration-300">
-            <h2 className="text-2xl font-bold mb-2">ที่อยู่จัดส่งสินค้า</h2>
+            <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+              <MapPin className="text-neutral-400" /> ที่อยู่จัดส่งสินค้า
+            </h2>
             <p className="text-sm text-neutral-500 mb-6">ที่อยู่นี้จะถูกนำไปใช้เป็นค่าเริ่มต้นเมื่อคุณสั่งซื้อสินค้า</p>
             
             <div>
@@ -176,8 +185,8 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
             </div>
 
             <div className="pt-4 flex justify-end">
-              <button disabled={loading} className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition disabled:opacity-50">
-                {loading ? 'กำลังบันทึก...' : 'บันทึกที่อยู่'}
+              <button disabled={loading} className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition disabled:opacity-50 flex items-center gap-2">
+                {loading ? 'กำลังบันทึก...' : <><Save size={18} /> บันทึกที่อยู่</>}
               </button>
             </div>
           </form>
@@ -186,10 +195,12 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         {/* --- TAB: ORDERS (คำสั่งซื้อ) --- */}
         {activeTab === 'ORDERS' && (
           <div className="animate-in fade-in duration-300">
-            <h2 className="text-2xl font-bold mb-6">คำสั่งซื้อของฉัน ({orders.length})</h2>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Package className="text-neutral-400" /> คำสั่งซื้อของฉัน ({orders.length})
+            </h2>
             {orders.length === 0 ? (
-              <div className="text-center py-20 bg-neutral-50 rounded-xl">
-                <span className="text-4xl block mb-2">📦</span>
+              <div className="text-center py-20 bg-neutral-50 rounded-xl flex flex-col items-center">
+                <Package size={48} className="text-neutral-300 mb-2" />
                 <p className="text-neutral-400">ยังไม่มีคำสั่งซื้อ</p>
                 <Link href="/" className="text-sm font-bold border-b border-black mt-2 inline-block">ไปช้อปเลย</Link>
               </div>
@@ -222,10 +233,12 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         {/* --- TAB: FAVORITES (สินค้าที่ชอบ) --- */}
         {activeTab === 'FAVORITES' && (
           <div className="animate-in fade-in duration-300">
-            <h2 className="text-2xl font-bold mb-6">สินค้าที่ถูกใจ ({favorites.length})</h2>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Heart className="text-neutral-400" /> สินค้าที่ถูกใจ ({favorites.length})
+            </h2>
             {favorites.length === 0 ? (
-              <div className="text-center py-20 bg-neutral-50 rounded-xl">
-                <span className="text-4xl block mb-2">💔</span>
+              <div className="text-center py-20 bg-neutral-50 rounded-xl flex flex-col items-center">
+                <HeartCrack size={48} className="text-neutral-300 mb-2" />
                 <p className="text-neutral-400">ยังไม่มีรายการโปรด</p>
               </div>
             ) : (

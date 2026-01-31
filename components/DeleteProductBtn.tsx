@@ -2,6 +2,7 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { Trash2, Loader2 } from 'lucide-react' // 👈 Import
 
 export default function DeleteProductBtn({ id }: { id: string }) {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function DeleteProductBtn({ id }: { id: string }) {
     })
 
     if (res.ok) {
-      router.refresh() // รีโหลดหน้าเพื่อเอาสินค้าที่ลบออกไป
+      router.refresh() 
     } else {
       alert('❌ ลบไม่สำเร็จ (อาจมีออเดอร์ค้างอยู่)')
     }
@@ -30,7 +31,7 @@ export default function DeleteProductBtn({ id }: { id: string }) {
       className="bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white p-2 rounded transition"
       title="Delete Product"
     >
-      {loading ? '...' : '🗑️'}
+      {loading ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
     </button>
   )
 }

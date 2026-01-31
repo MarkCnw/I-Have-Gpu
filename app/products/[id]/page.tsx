@@ -4,7 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import FavoriteButton from '@/components/FavoriteButton'
 import AddToCartSection from '@/components/AddToCartSection'
-
+// 1. Import ไอคอน
+import { ChevronRight, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -15,7 +16,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     where: { id }
   })
 
-  if (!product) return <div className="p-20 text-center">❌ สินค้าไม่พบ</div>
+  if (!product) return (
+    <div className="p-20 text-center flex flex-col items-center gap-4">
+      <AlertCircle size={48} className="text-red-500" />
+      <span className="text-lg text-slate-600">สินค้าไม่พบ</span>
+    </div>
+  )
 
   // 2. เช็ค Favorite
   let isFavorite = false
@@ -32,9 +38,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="max-w-6xl mx-auto">
         
         {/* Breadcrumb */}
-        <div className="text-sm text-slate-500 mb-4">
+        <div className="text-sm text-slate-500 mb-4 flex items-center gap-2">
           <Link href="/" className="hover:text-red-600">หน้าแรก</Link>
-          <span className="mx-2">/</span>
+          <ChevronRight size={14} />
           <span className="text-slate-800">{product.name}</span>
         </div>
 
@@ -65,7 +71,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
               <div className="text-sm text-slate-500 mb-6 space-y-2">
                 <p>รหัสสินค้า: {product.id.split('-')[0]}</p>
-                <p>สถานะ: {product.stock > 0 ? '✅ มีสินค้า' : '❌ สินค้าหมด'}</p>
+                <div className="flex items-center gap-2">
+                  <span>สถานะ:</span>
+                  {product.stock > 0 ? (
+                    <span className="text-green-600 flex items-center gap-1 font-bold">
+                      <CheckCircle size={14} /> มีสินค้า
+                    </span>
+                  ) : (
+                    <span className="text-red-600 flex items-center gap-1 font-bold">
+                      <XCircle size={14} /> สินค้าหมด
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="text-4xl font-bold text-red-600 mb-8">
