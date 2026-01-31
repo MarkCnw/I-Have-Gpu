@@ -4,9 +4,11 @@ import { prisma } from '@/lib/prisma'
 import ProductCard from '@/components/ProductCard'
 import SearchBar from '@/components/SearchBar'
 import ProfileDropdown from '@/components/ProfileDropdown'
-import { auth, signOut } from '@/auth'
+import HeroCarousel from '@/components/HeroCarousel'
+import StoreFeatures from '@/components/StoreFeatures' // 👈 Import จุดเด่นร้าน
+import BrandMarquee from '@/components/BrandMarquee'   // 👈 Import แบรนด์
+import { auth } from '@/auth'
 import { Prisma } from '@prisma/client'
-// 1. Import ไอคอนจาก Lucide
 import { 
   Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, Box, 
   Fan, Monitor, Laptop, Mouse, Keyboard, Headphones, Armchair, 
@@ -15,7 +17,6 @@ import {
 
 export const dynamic = 'force-dynamic'
 
-// 2. เปลี่ยน Emoji เป็น Component
 const CATEGORIES = [
   { id: 'ALL', name: 'All Products', icon: <Sparkles size={18} /> },
   { id: 'CPU', name: 'Processors', icon: <Cpu size={18} /> },
@@ -71,7 +72,6 @@ export default async function Home({
       {/* ================= HEADER ================= */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
         <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
-            
             <Link href="/" className="flex-shrink-0 group flex items-center gap-2">
               <div className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg font-bold italic text-lg group-hover:bg-neutral-800 transition">i</div>
               <h1 className="text-xl font-bold tracking-tight text-neutral-900 group-hover:opacity-70 transition">
@@ -91,8 +91,6 @@ export default async function Home({
                </div>
 
                <div className="flex items-center gap-4 pl-4 border-l border-neutral-200">
-                 
-                 {/* ปุ่มตะกร้าสินค้า (ใช้ Icon) */}
                  <Link href="/cart" className="relative group p-2 hover:bg-neutral-100 rounded-full transition text-neutral-600 hover:text-black">
                     <ShoppingBag size={20} />
                  </Link>
@@ -114,38 +112,22 @@ export default async function Home({
         </div>
       </header>
 
-      {/* ================= HERO ================= */}
+      {/* ================= HERO & FEATURES SECTION ================= */}
+      {/* แสดงเฉพาะหน้าแรก (ไม่ค้นหา และเลือกหมวด All) */}
       {!q && currentCategory === 'ALL' && (
-        <div className="w-full px-6 mt-6 mb-12">
-           <div className="max-w-[1400px] mx-auto bg-[#F5F5F7] rounded-3xl overflow-hidden relative min-h-[400px] flex flex-col md:flex-row items-center">
-              
-              <div className="w-full md:w-1/2 p-12 z-10 flex flex-col justify-center items-start">
-                 <span className="text-xs font-bold tracking-widest text-neutral-400 mb-4 uppercase">New Arrivals</span>
-                 <h2 className="text-5xl font-bold mb-6 leading-tight text-neutral-900">
-                   Pro Performance.<br/>
-                   <span className="text-neutral-400">Minimal Design.</span>
-                 </h2>
-                 <p className="text-neutral-500 mb-8 max-w-md text-lg">
-                   Upgrade your setup with the latest high-performance hardware, curated for creators and gamers.
-                 </p>
-                 <Link href="/?category=GPU" className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-medium hover:scale-105 transition-transform shadow-xl shadow-black/10 flex items-center gap-2">
-                   Shop Now <ShoppingBag size={16} />
-                 </Link>
-              </div>
+        <>
+          {/* 1. Banner Slider */}
+          <HeroCarousel />
 
-              <div className="w-full md:w-1/2 h-64 md:h-full relative">
-                 <img 
-                   src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=2642" 
-                   className="w-full h-full object-cover mix-blend-overlay opacity-80" 
-                   alt="Hero Banner" 
-                 />
-                 <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-transparent to-[#F5F5F7]"></div>
-              </div>
-           </div>
-        </div>
+          {/* 2. Store Features (จุดเด่นร้าน) */}
+          <StoreFeatures />
+
+          {/* 3. Trusted Brands (แบรนด์พาร์ทเนอร์) */}
+          <BrandMarquee />
+        </>
       )}
 
-      {/* ================= CONTENT ================= */}
+      {/* ================= MAIN CONTENT ================= */}
       <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row gap-12 pt-4">
         
         {/* SIDEBAR */}
