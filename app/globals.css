@@ -2,16 +2,16 @@
 @import "tailwindcss";
 
 :root {
-  /* เปลี่ยนเป็นพื้นขาว-ตัวดำ ตามสไตล์ iHAVECPU */
-  --background: #ffffff; 
-  --foreground: #1a1a1a;
+  /* Minimalist Palette: White & Neutral Black */
+  --background: #ffffff;
+  --foreground: #171717; /* Neutral-900 */
   
-  /* สีแดงเอกลักษณ์ */
-  --color-primary: #e5002d; 
-  --color-primary-hover: #c40026;
+  /* Primary Color: Black instead of Red */
+  --color-primary: #171717; 
+  --color-primary-hover: #404040;
   
-  /* สีเทาอ่อนสำหรับพื้นหลังส่วนรอง */
-  --color-gray-bg: #f5f5f5;
+  /* Background Secondary: Very Light Gray */
+  --color-gray-bg: #FAFAFA; /* Neutral-50 */
 }
 
 @theme inline {
@@ -21,6 +21,6 @@
 }
 
 body {
-  background: var(--color-gray-bg); /* พื้นหลังรวมเป็นเทาอ่อนๆ เพื่อให้การ์ดสีขาวเด่น */
+  background: var(--color-gray-bg);
   color: var(--foreground);
 }

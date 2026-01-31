@@ -7,11 +7,11 @@ import FavoriteButton from './FavoriteButton'
 
 const formatSpecs = (specs: any) => {
   if (!specs) return ''
-  const importantKeys = ['socket', 'chipset', 'capacity', 'vram', 'watt', 'type', 'bus']
-  return Object.entries(specs)
-    .filter(([key]) => importantKeys.some(k => key.includes(k)))
-    .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
-    .join(' | ')
+  // เลือกโชว์เฉพาะค่าสำคัญ 1-2 ค่าพอสำหรับ Minimal Style
+  const importantKeys = ['chipset', 'capacity', 'vram', 'watt']
+  const found = Object.entries(specs).find(([key]) => importantKeys.some(k => key.includes(k)))
+  if (found) return `${found[0].toUpperCase()}: ${found[1]}`
+  return 'See Details'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,85 +20,79 @@ export default function ProductCard({ product, isFavorite = false }: { product: 
   const { checkCompatibility } = useCompatibility()
   const { compatible, reason } = checkCompatibility(product)
   
-  // เช็ค case-insensitive
   const isSelected = selectedParts[product.category?.toLowerCase()]?.id === product.id
-  const isDisabled = !compatible || isSelected
 
   return (
-    <div className={`
-      bg-white rounded-lg overflow-hidden transition-all duration-300 group relative
-      ${isSelected 
-        ? 'ring-2 ring-red-600 shadow-xl' 
-        : 'border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1'
-      }
-      ${!compatible ? 'opacity-60 grayscale' : ''}
-    `}>
+    <div className="group relative flex flex-col h-full">
       
-      {/* ปุ่ม Favorite (มุมขวาบน) */}
-      <div className="absolute top-2 right-2 z-20">
-         <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
+      {/* 1. Image Area: Clean Gray Background */}
+      <div className={`
+        relative aspect-square rounded-2xl bg-[#F5F5F7] overflow-hidden mb-4 transition-all duration-300
+        ${isSelected ? 'ring-1 ring-black shadow-lg' : 'hover:bg-[#EAEAEB]'}
+        ${!compatible ? 'opacity-50 grayscale' : ''}
+      `}>
+         {/* Badge: Incompatible */}
+         {!compatible && (
+            <div className="absolute top-3 left-3 z-10 bg-white/80 backdrop-blur text-black text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">
+               ⛔ {reason}
+            </div>
+         )}
+         
+         {/* Favorite Button (Visible on Hover) */}
+         <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
+         </div>
+
+         {/* Product Image */}
+         <div className="w-full h-full p-8 flex items-center justify-center">
+            {product.image ? (
+               <img 
+                 src={product.image} 
+                 alt={product.name} 
+                 className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105" 
+               />
+            ) : (
+               <div className="text-neutral-300 text-3xl">📷</div>
+            )}
+         </div>
+
+         {/* Add Button (Floats up on Hover) */}
+         {compatible && (
+            <button
+               onClick={() => selectPart(product.category, product)}
+               disabled={isSelected}
+               className={`absolute bottom-4 left-4 right-4 h-10 rounded-xl text-xs font-bold uppercase tracking-wider shadow-md translate-y-[150%] group-hover:translate-y-0 transition-transform duration-300 ease-out
+                  ${isSelected 
+                    ? 'bg-black text-white cursor-default translate-y-0' 
+                    : 'bg-white text-black hover:bg-black hover:text-white'
+                  }
+               `}
+            >
+               {isSelected ? 'Selected' : 'Add to Build'}
+            </button>
+         )}
       </div>
 
-      {/* ป้ายเตือน Incompatible */}
-      {!compatible && (
-        <div className="absolute top-2 left-2 z-20 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">
-          ⛔ {reason}
-        </div>
-      )}
-
-      {/* รูปสินค้า (พื้นขาว) */}
-      <div className="h-56 p-6 flex items-center justify-center bg-white relative">
-        {product.image ? (
-          <img 
-            src={product.image} 
-            alt={product.name} 
-            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
-          />
-        ) : (
-          <div className="text-slate-300 text-4xl">📷</div>
-        )}
+      {/* 2. Text Content */}
+      <div className="flex-1 flex flex-col">
+         <div className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-1">
+            {product.category}
+         </div>
+         
+         <h3 className="text-sm font-medium text-neutral-900 leading-snug line-clamp-2 mb-2 group-hover:text-neutral-600 transition-colors" title={product.name}>
+            {product.name}
+         </h3>
+         
+         <div className="mt-auto flex items-end justify-between border-t border-neutral-100 pt-3">
+            <span className="text-base font-semibold text-neutral-900">
+               ฿{Number(product.price).toLocaleString()}
+            </span>
+            <span className="text-[10px] text-neutral-500 bg-neutral-100 px-2 py-1 rounded-md">
+               {formatSpecs(product.specs)}
+            </span>
+         </div>
       </div>
 
-      {/* เนื้อหา */}
-      <div className="p-4 bg-white border-t border-slate-50">
-        {/* หมวดหมู่ */}
-        <div className="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wide">
-          {product.category}
-        </div>
-        
-        {/* ชื่อสินค้า (ตัดคำ) */}
-        <h2 className="text-sm font-bold text-slate-800 mb-2 line-clamp-2 h-10 leading-tight group-hover:text-red-600 transition-colors" title={product.name}>
-          {product.name}
-        </h2>
-        
-        {/* Specs ย่อ */}
-        <p className="text-[10px] text-slate-500 mb-3 line-clamp-1">
-          {formatSpecs(product.specs)}
-        </p>
-
-        <div className="flex flex-col gap-2 mt-auto">
-          {/* ราคา */}
-          <div className="text-xl font-bold text-slate-900">
-            ฿{Number(product.price).toLocaleString()}
-          </div>
-          
-          {/* ปุ่มเพิ่มลงสเปค */}
-          <button
-            onClick={() => compatible && selectPart(product.category, product)}
-            disabled={isDisabled}
-            className={`w-full py-2 rounded text-sm font-bold transition
-              ${isSelected 
-                ? 'bg-red-600 text-white cursor-default' 
-                : compatible
-                  ? 'bg-slate-900 text-white hover:bg-red-600'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              }
-            `}
-          >
-            {isSelected ? 'เลือกแล้ว ✓' : compatible ? 'ใส่สเปค +' : 'ใส่ไม่ได้'}
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 // app/admin/products/page.tsx
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import DeleteProductBtn from '@/components/DeleteProductBtn' // 👈 Import ปุ่มลบที่เราสร้างไว้
+import DeleteProductBtn from '@/components/DeleteProductBtn' 
 
 export const dynamic = 'force-dynamic'
 
@@ -12,57 +12,53 @@ export default async function AdminProductsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">📦 Manage Products</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-neutral-900">Manage Products</h1>
         <Link 
           href="/admin/products/new" 
-          className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold transition flex items-center gap-2"
+          className="bg-black hover:bg-neutral-800 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition shadow-lg shadow-black/10 flex items-center gap-2"
         >
-          + Add New Product
+          + Add Product
         </Link>
       </div>
 
-      <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-950 text-slate-400 text-sm uppercase">
+      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase font-semibold border-b border-neutral-200">
             <tr>
-              <th className="p-4 border-b border-slate-800">Image</th>
-              <th className="p-4 border-b border-slate-800">Name</th>
-              <th className="p-4 border-b border-slate-800">Category</th>
-              <th className="p-4 border-b border-slate-800 text-right">Price</th>
-              <th className="p-4 border-b border-slate-800 text-center">Stock</th>
-              {/* 🔥 เพิ่มหัวตาราง Actions */}
-              <th className="p-4 border-b border-slate-800 text-right">Actions</th>
+              <th className="p-4 pl-6">Image</th>
+              <th className="p-4">Name</th>
+              <th className="p-4">Category</th>
+              <th className="p-4 text-right">Price</th>
+              <th className="p-4 text-center">Stock</th>
+              <th className="p-4 pr-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-neutral-100">
             {products.map((p) => (
-              <tr key={p.id} className="hover:bg-slate-800/50 transition border-b border-slate-800 last:border-0">
-                <td className="p-4">
-                  <div className="w-12 h-12 bg-white rounded overflow-hidden">
-                    {p.image && <img src={p.image} alt={p.name} className="w-full h-full object-contain" />}
+              <tr key={p.id} className="hover:bg-neutral-50 transition group">
+                <td className="p-4 pl-6">
+                  <div className="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 p-1">
+                    {p.image && <img src={p.image} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />}
                   </div>
                 </td>
-                <td className="p-4 font-medium">{p.name}</td>
-                <td className="p-4"><span className="bg-slate-800 px-2 py-1 rounded text-xs">{p.category}</span></td>
-                <td className="p-4 text-right font-mono text-emerald-400">฿{Number(p.price).toLocaleString()}</td>
-                <td className="p-4 text-center">{p.stock}</td>
+                <td className="p-4 font-medium text-neutral-900">{p.name}</td>
+                <td className="p-4"><span className="bg-neutral-100 text-neutral-600 px-2 py-1 rounded text-xs border border-neutral-200">{p.category}</span></td>
+                <td className="p-4 text-right font-mono text-neutral-900">฿{Number(p.price).toLocaleString()}</td>
+                <td className="p-4 text-center text-neutral-500">{p.stock}</td>
                 
-                {/* 🔥 เพิ่มปุ่มลบสินค้าตรงนี้ */}
-                <td className="p-4 text-right">
+                <td className="p-4 pr-6 text-right opacity-50 group-hover:opacity-100 transition">
                   <DeleteProductBtn id={p.id} />
                 </td>
               </tr>
             ))}
+            {products.length === 0 && (
+               <tr>
+                  <td colSpan={6} className="p-12 text-center text-neutral-400">No products found.</td>
+               </tr>
+            )}
           </tbody>
         </table>
-
-        {/* กรณีไม่มีสินค้าเลย */}
-        {products.length === 0 && (
-          <div className="p-8 text-center text-slate-500">
-            ยังไม่มีสินค้าในระบบ
-          </div>
-        )}
       </div>
     </div>
   )

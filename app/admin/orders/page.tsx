@@ -5,75 +5,72 @@ import { prisma } from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminOrdersPage() {
-  // ดึง Order ทั้งหมดในระบบ (รวมข้อมูล User และ Items)
   const orders = await prisma.order.findMany({
-    orderBy: { createdAt: 'desc' }, // ล่าสุดขึ้นก่อน
+    orderBy: { createdAt: 'desc' },
     include: {
-      user: true, // ดึงชื่อคนสั่ง
+      user: true,
       items: {
-        include: { product: true } // ดึงรายละเอียดสินค้าที่สั่ง
+        include: { product: true }
       }
     }
   })
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">📑 Customer Orders</h1>
+      <h1 className="text-2xl font-bold text-neutral-900 mb-8">Customer Orders</h1>
 
-      <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-slate-950 text-slate-400 text-sm uppercase">
+          <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase font-semibold border-b border-neutral-200">
             <tr>
-              <th className="p-4 border-b border-slate-800">Order ID</th>
-              <th className="p-4 border-b border-slate-800">Customer</th>
-              <th className="p-4 border-b border-slate-800">Items</th>
-              <th className="p-4 border-b border-slate-800">Total</th>
-              <th className="p-4 border-b border-slate-800">Status</th>
+              <th className="p-4 pl-6">Order ID</th>
+              <th className="p-4">Customer</th>
+              <th className="p-4">Items</th>
+              <th className="p-4">Total</th>
+              <th className="p-4">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-neutral-100">
             {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-slate-800/50 transition">
-                <td className="p-4 font-mono text-sm text-slate-400">
-                  {order.id.split('-')[0]}...
-                  <div className="text-xs text-slate-600">
+              <tr key={order.id} className="hover:bg-neutral-50 transition">
+                <td className="p-4 pl-6">
+                  <span className="font-mono text-sm text-neutral-900 font-medium">#{order.id.split('-')[0]}</span>
+                  <div className="text-xs text-neutral-400 mt-1">
                     {new Date(order.createdAt).toLocaleDateString('th-TH')}
                   </div>
                 </td>
                 
                 <td className="p-4">
-                  <div className="font-bold text-white">{order.user?.name || 'Unknown'}</div>
-                  <div className="text-xs text-slate-500">{order.user?.email}</div>
+                  <div className="font-bold text-neutral-900 text-sm">{order.user?.name || 'Guest'}</div>
+                  <div className="text-xs text-neutral-500">{order.user?.email}</div>
                 </td>
 
                 <td className="p-4">
                   <div className="space-y-1">
                     {order.items.map((item) => (
-                      <div key={item.id} className="text-sm text-slate-300 flex items-center gap-2">
-                        <span className="text-emerald-500">1x</span>
+                      <div key={item.id} className="text-xs text-neutral-600 flex items-center gap-1">
+                        <span className="font-bold text-black">1x</span>
                         {item.product.name}
                       </div>
                     ))}
                   </div>
                 </td>
 
-                <td className="p-4 font-bold text-emerald-400">
+                <td className="p-4 font-bold text-neutral-900">
                   ฿{Number(order.total).toLocaleString()}
                 </td>
 
                 <td className="p-4">
-  <OrderStatusSelector orderId={order.id} currentStatus={order.status} />
-</td>
+                  <OrderStatusSelector orderId={order.id} currentStatus={order.status} />
+                </td>
               </tr>
             ))}
+            
+            {orders.length === 0 && (
+               <tr><td colSpan={5} className="p-12 text-center text-neutral-400">No orders found.</td></tr>
+            )}
           </tbody>
         </table>
-
-        {orders.length === 0 && (
-          <div className="p-12 text-center text-slate-500">
-            No orders found yet.
-          </div>
-        )}
       </div>
     </div>
   )
