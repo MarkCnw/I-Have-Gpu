@@ -4,6 +4,8 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
+// Import ไอคอน
+import { User, Heart, Package, LogOut, Settings } from 'lucide-react'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ProfileDropdown({ user }: { user: any }) {
@@ -36,36 +38,43 @@ export default function ProfileDropdown({ user }: { user: any }) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-neutral-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-neutral-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="px-4 py-3 border-b border-neutral-50 mb-1">
             <p className="text-sm font-bold text-neutral-900 truncate">{user.name}</p>
             <p className="text-xs text-neutral-500 truncate">{user.email}</p>
           </div>
 
-          {/* เมนูตามที่คุณขอ */}
           <Link 
             href="/profile" 
-            className="block px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
+            className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
             onClick={() => setIsOpen(false)}
           >
-            👤 บัญชีของฉัน
+            <User size={16} /> บัญชีของฉัน
+          </Link>
+          
+          <Link 
+            href="/orders" 
+            className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
+            onClick={() => setIsOpen(false)}
+          >
+            <Package size={16} /> คำสั่งซื้อของฉัน
           </Link>
           
           <Link 
             href="/favorites" 
-            className="block px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
+            className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
             onClick={() => setIsOpen(false)}
           >
-            ❤️ รายการสินค้าโปรด
+            <Heart size={16} /> รายการสินค้าโปรด
           </Link>
 
           {user.role === 'ADMIN' && (
             <Link 
               href="/admin" 
-              className="block px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
+              className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
               onClick={() => setIsOpen(false)}
             >
-              🔧 ระบบหลังบ้าน
+              <Settings size={16} /> ระบบหลังบ้าน
             </Link>
           )}
 
@@ -74,7 +83,7 @@ export default function ProfileDropdown({ user }: { user: any }) {
               onClick={() => signOut()}
               className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-3"
             >
-              🚪 ออกจากระบบ
+              <LogOut size={16} /> ออกจากระบบ
             </button>
           </div>
         </div>

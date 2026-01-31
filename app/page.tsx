@@ -3,28 +3,35 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import ProductCard from '@/components/ProductCard'
 import SearchBar from '@/components/SearchBar'
-import ProfileDropdown from '@/components/ProfileDropdown' // 👈 1. อย่าลืม Import ตัวนี้
-import { auth } from '@/auth'
+import ProfileDropdown from '@/components/ProfileDropdown'
+import { auth, signOut } from '@/auth'
 import { Prisma } from '@prisma/client'
+// 1. Import ไอคอนที่ต้องใช้
+import { 
+  Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, Box, 
+  Fan, Monitor, Laptop, Mouse, Keyboard, Headphones, Armchair, 
+  LayoutGrid, Search, ShoppingBag, User, LogIn, Sparkles
+} from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
+// 2. เปลี่ยน Emoji เป็น Component ไอคอน
 const CATEGORIES = [
-  { id: 'ALL', name: 'All Products', icon: '⚡' },
-  { id: 'CPU', name: 'Processors', icon: '🧠' },
-  { id: 'MOTHERBOARD', name: 'Motherboards', icon: '🔌' },
-  { id: 'GPU', name: 'Graphics Cards', icon: '🎮' },
-  { id: 'RAM', name: 'Memory', icon: '💾' },
-  { id: 'STORAGE', name: 'Storage', icon: '💿' },
-  { id: 'PSU', name: 'Power Supply', icon: '⚡' },
-  { id: 'CASE', name: 'Cases', icon: '📦' },
-  { id: 'COOLER', name: 'Cooling', icon: '❄️' },
-  { id: 'MONITOR', name: 'Monitors', icon: '🖥️' },
-  { id: 'LAPTOP', name: 'Laptops', icon: '💻' },
-  { id: 'MOUSE', name: 'Mice', icon: '🖱️' },
-  { id: 'KEYBOARD', name: 'Keyboards', icon: '⌨️' },
-  { id: 'HEADSET', name: 'Audio', icon: '🎧' },
-  { id: 'CHAIR', name: 'Furniture', icon: '💺' },
+  { id: 'ALL', name: 'All Products', icon: <Sparkles size={18} /> },
+  { id: 'CPU', name: 'Processors', icon: <Cpu size={18} /> },
+  { id: 'MOTHERBOARD', name: 'Motherboards', icon: <CircuitBoard size={18} /> },
+  { id: 'GPU', name: 'Graphics Cards', icon: <Gamepad2 size={18} /> },
+  { id: 'RAM', name: 'Memory', icon: <MemoryStick size={18} /> },
+  { id: 'STORAGE', name: 'Storage', icon: <HardDrive size={18} /> },
+  { id: 'PSU', name: 'Power Supply', icon: <Zap size={18} /> },
+  { id: 'CASE', name: 'Cases', icon: <Box size={18} /> },
+  { id: 'COOLER', name: 'Cooling', icon: <Fan size={18} /> },
+  { id: 'MONITOR', name: 'Monitors', icon: <Monitor size={18} /> },
+  { id: 'LAPTOP', name: 'Laptops', icon: <Laptop size={18} /> },
+  { id: 'MOUSE', name: 'Mice', icon: <Mouse size={18} /> },
+  { id: 'KEYBOARD', name: 'Keyboards', icon: <Keyboard size={18} /> },
+  { id: 'HEADSET', name: 'Audio', icon: <Headphones size={18} /> },
+  { id: 'CHAIR', name: 'Furniture', icon: <Armchair size={18} /> },
 ]
 
 export default async function Home({
@@ -61,7 +68,7 @@ export default async function Home({
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-32">
       
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
         <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
             
@@ -85,8 +92,9 @@ export default async function Home({
 
                <div className="flex items-center gap-4 pl-4 border-l border-neutral-200">
                  
-                 <Link href="/cart" className="relative group p-2 hover:bg-neutral-100 rounded-full transition">
-                    <span className="text-xl">🛍️</span>
+                 {/* ปุ่มตะกร้าสินค้า (เปลี่ยน Emoji เป็น Icon) */}
+                 <Link href="/cart" className="relative group p-2 hover:bg-neutral-100 rounded-full transition text-neutral-600 hover:text-black">
+                    <ShoppingBag size={20} />
                  </Link>
 
                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -95,17 +103,18 @@ export default async function Home({
                  )}
 
                  {user ? (
-                   /* 🔥 2. ตรงนี้คือจุดที่แก้ครับ! เปลี่ยนจาก Div ธรรมดา เป็น ProfileDropdown */
                    <ProfileDropdown user={user} />
                  ) : (
-                   <Link href="/login" className="text-sm font-medium hover:text-neutral-500">Log in</Link>
+                   <Link href="/login" className="text-sm font-medium hover:text-neutral-500 flex items-center gap-2">
+                     <LogIn size={16} /> Log in
+                   </Link>
                  )}
                </div>
             </div>
         </div>
       </header>
 
-      {/* ================= HERO ================= */}
+      {/* HERO SECTION */}
       {!q && currentCategory === 'ALL' && (
         <div className="w-full px-6 mt-6 mb-12">
            <div className="max-w-[1400px] mx-auto bg-[#F5F5F7] rounded-3xl overflow-hidden relative min-h-[400px] flex flex-col md:flex-row items-center">
@@ -117,10 +126,10 @@ export default async function Home({
                    <span className="text-neutral-400">Minimal Design.</span>
                  </h2>
                  <p className="text-neutral-500 mb-8 max-w-md text-lg">
-                   Upgrade your setup with the latest high-performance hardware, curated for creators and gamers.
+                   Upgrade your setup with the latest high-performance hardware.
                  </p>
-                 <Link href="/?category=GPU" className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-medium hover:scale-105 transition-transform shadow-xl shadow-black/10">
-                   Shop Now
+                 <Link href="/?category=GPU" className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-medium hover:scale-105 transition-transform shadow-xl shadow-black/10 flex items-center gap-2">
+                   Shop Now <ShoppingBag size={16} />
                  </Link>
               </div>
 
@@ -136,13 +145,15 @@ export default async function Home({
         </div>
       )}
 
-      {/* ================= CONTENT ================= */}
+      {/* CONTENT LAYOUT */}
       <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row gap-12 pt-4">
         
         {/* SIDEBAR */}
         <aside className="hidden md:block w-48 flex-shrink-0">
            <div className="sticky top-28">
-             <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-6 px-2">Browse</h3>
+             <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-6 px-2 flex items-center gap-2">
+               <LayoutGrid size={14} /> Browse
+             </h3>
              <div className="flex flex-col space-y-1">
                 {CATEGORIES.map((cat) => (
                    <Link 
@@ -155,8 +166,13 @@ export default async function Home({
                        }
                      `}
                    >
-                      <span>{cat.name}</span>
-                      {currentCategory === cat.id && <span className="text-[10px]">●</span>}
+                      <div className="flex items-center gap-3">
+                        {/* Render Icon ตรงนี้ */}
+                        <span className={currentCategory === cat.id ? 'text-white' : 'text-neutral-400 group-hover:text-black'}>
+                          {cat.icon}
+                        </span>
+                        <span>{cat.name}</span>
+                      </div>
                    </Link>
                 ))}
              </div>
@@ -184,7 +200,7 @@ export default async function Home({
             </div>
            ) : (
              <div className="flex flex-col items-center justify-center py-32 text-neutral-300">
-                <div className="text-6xl mb-4 opacity-20">📦</div>
+                <Box size={64} className="mb-4 opacity-20" />
                 <p className="text-neutral-400">No products found.</p>
                 <Link href="/" className="mt-4 text-black text-sm font-bold border-b border-black hover:opacity-70">Clear Filters</Link>
              </div>
