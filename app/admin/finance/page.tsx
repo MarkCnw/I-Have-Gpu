@@ -1,11 +1,11 @@
 // app/admin/finance/page.tsx
 import { prisma } from '@/lib/prisma'
 import AdminFinanceChart from '@/components/AdminFinanceChart'
+import { DollarSign, CreditCard, TrendingUp, ShoppingBag } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminFinancePage() {
-  // 1. ดึงข้อมูลออเดอร์ที่จ่ายเงินแล้ว (ไม่เอา Cancelled / Pending)
   const orders = await prisma.order.findMany({
     where: {
       status: { in: ['PAID', 'SHIPPED', 'COMPLETED'] }
@@ -13,23 +13,17 @@ export default async function AdminFinancePage() {
     orderBy: { createdAt: 'asc' }
   })
 
-  // 2. คำนวณยอดรวม (Stats Cards)
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0)
   const totalOrders = orders.length
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
-  // 3. เตรียมข้อมูลสำหรับกราฟ (Group by Date)
   const salesMap = new Map<string, number>()
-  
   orders.forEach(order => {
-    // แปลงวันที่เป็น YYYY-MM-DD
     const date = new Date(order.createdAt).toISOString().split('T')[0]
     const currentTotal = salesMap.get(date) || 0
     salesMap.set(date, currentTotal + Number(order.total))
   })
 
-  // แปลง Map เป็น Array เพื่อส่งให้ Recharts
-  // (ถ้าข้อมูลจริงน้อย อาจจะดูแหว่งๆ แนะนำให้ลองสั่งซื้อเพิ่มหลายๆ วันครับ)
   const chartData = Array.from(salesMap.entries()).map(([date, total]) => ({
     date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     total
@@ -37,7 +31,9 @@ export default async function AdminFinancePage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-2 text-slate-800">💰 Financial Overview</h1>
+      <h1 className="text-3xl font-bold mb-2 text-slate-800 flex items-center gap-2">
+        <DollarSign className="text-emerald-600" /> Financial Overview
+      </h1>
       <p className="text-slate-500 mb-8">วิเคราะห์รายได้และกระแสเงินสดของร้านค้า</p>
 
       {/* Stats Cards Row */}
@@ -46,11 +42,11 @@ export default async function AdminFinancePage() {
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group">
           <div className="absolute right-0 top-0 w-24 h-24 bg-red-50 rounded-bl-full -mr-4 -mt-4 transition group-hover:bg-red-100"></div>
           <p className="text-slate-500 text-sm uppercase font-bold tracking-wider relative z-10">Total Revenue</p>
-          <h2 className="text-4xl font-black text-slate-800 mt-2 relative z-10">
-            ฿{totalRevenue.toLocaleString()}
+          <h2 className="text-4xl font-black text-slate-800 mt-2 relative z-10 flex items-baseline">
+            <span className="text-2xl mr-1">฿</span>{totalRevenue.toLocaleString()}
           </h2>
           <p className="text-emerald-500 text-xs mt-2 flex items-center font-bold">
-            ▲ +12.5% <span className="text-slate-400 font-normal ml-1">from last month</span>
+            <TrendingUp size={14} className="mr-1" /> +12.5% <span className="text-slate-400 font-normal ml-1">from last month</span>
           </p>
         </div>
 
@@ -58,8 +54,8 @@ export default async function AdminFinancePage() {
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group">
           <div className="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition group-hover:bg-blue-100"></div>
           <p className="text-slate-500 text-sm uppercase font-bold tracking-wider relative z-10">Paid Orders</p>
-          <h2 className="text-4xl font-black text-slate-800 mt-2 relative z-10">
-            {totalOrders}
+          <h2 className="text-4xl font-black text-slate-800 mt-2 relative z-10 flex items-center gap-2">
+            <ShoppingBag className="text-blue-500" /> {totalOrders}
           </h2>
           <p className="text-slate-400 text-xs mt-2">Successful transactions</p>
         </div>
@@ -68,8 +64,8 @@ export default async function AdminFinancePage() {
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden group">
           <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition group-hover:bg-emerald-100"></div>
           <p className="text-slate-500 text-sm uppercase font-bold tracking-wider relative z-10">Avg. Order Value</p>
-          <h2 className="text-4xl font-black text-slate-800 mt-2 relative z-10">
-            ฿{Math.round(avgOrderValue).toLocaleString()}
+          <h2 className="text-4xl font-black text-slate-800 mt-2 relative z-10 flex items-baseline">
+            <span className="text-2xl mr-1">฿</span>{Math.round(avgOrderValue).toLocaleString()}
           </h2>
           <p className="text-slate-400 text-xs mt-2">Per transaction</p>
         </div>
@@ -83,7 +79,9 @@ export default async function AdminFinancePage() {
       {/* Recent Transactions Table */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-50 flex justify-between items-center">
-          <h3 className="font-bold text-lg text-slate-700">💳 Recent Transactions</h3>
+          <h3 className="font-bold text-lg text-slate-700 flex items-center gap-2">
+            <CreditCard size={20} /> Recent Transactions
+          </h3>
           <button className="text-xs text-red-600 font-bold hover:underline">Export CSV</button>
         </div>
         <table className="w-full text-left">

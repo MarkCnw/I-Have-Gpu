@@ -6,16 +6,16 @@ import SearchBar from '@/components/SearchBar'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import { auth, signOut } from '@/auth'
 import { Prisma } from '@prisma/client'
-// 1. Import ไอคอนที่ต้องใช้
+// 1. Import ไอคอนจาก Lucide
 import { 
   Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, Box, 
   Fan, Monitor, Laptop, Mouse, Keyboard, Headphones, Armchair, 
-  LayoutGrid, Search, ShoppingBag, User, LogIn, Sparkles
+  Sparkles, LayoutGrid, ShoppingBag, LogIn 
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
-// 2. เปลี่ยน Emoji เป็น Component ไอคอน
+// 2. เปลี่ยน Emoji เป็น Component
 const CATEGORIES = [
   { id: 'ALL', name: 'All Products', icon: <Sparkles size={18} /> },
   { id: 'CPU', name: 'Processors', icon: <Cpu size={18} /> },
@@ -68,7 +68,7 @@ export default async function Home({
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-32">
       
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
         <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
             
@@ -92,7 +92,7 @@ export default async function Home({
 
                <div className="flex items-center gap-4 pl-4 border-l border-neutral-200">
                  
-                 {/* ปุ่มตะกร้าสินค้า (เปลี่ยน Emoji เป็น Icon) */}
+                 {/* ปุ่มตะกร้าสินค้า (ใช้ Icon) */}
                  <Link href="/cart" className="relative group p-2 hover:bg-neutral-100 rounded-full transition text-neutral-600 hover:text-black">
                     <ShoppingBag size={20} />
                  </Link>
@@ -114,7 +114,7 @@ export default async function Home({
         </div>
       </header>
 
-      {/* HERO SECTION */}
+      {/* ================= HERO ================= */}
       {!q && currentCategory === 'ALL' && (
         <div className="w-full px-6 mt-6 mb-12">
            <div className="max-w-[1400px] mx-auto bg-[#F5F5F7] rounded-3xl overflow-hidden relative min-h-[400px] flex flex-col md:flex-row items-center">
@@ -126,7 +126,7 @@ export default async function Home({
                    <span className="text-neutral-400">Minimal Design.</span>
                  </h2>
                  <p className="text-neutral-500 mb-8 max-w-md text-lg">
-                   Upgrade your setup with the latest high-performance hardware.
+                   Upgrade your setup with the latest high-performance hardware, curated for creators and gamers.
                  </p>
                  <Link href="/?category=GPU" className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-medium hover:scale-105 transition-transform shadow-xl shadow-black/10 flex items-center gap-2">
                    Shop Now <ShoppingBag size={16} />
@@ -145,7 +145,7 @@ export default async function Home({
         </div>
       )}
 
-      {/* CONTENT LAYOUT */}
+      {/* ================= CONTENT ================= */}
       <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row gap-12 pt-4">
         
         {/* SIDEBAR */}
@@ -167,12 +167,12 @@ export default async function Home({
                      `}
                    >
                       <div className="flex items-center gap-3">
-                        {/* Render Icon ตรงนี้ */}
                         <span className={currentCategory === cat.id ? 'text-white' : 'text-neutral-400 group-hover:text-black'}>
                           {cat.icon}
                         </span>
                         <span>{cat.name}</span>
                       </div>
+                      {currentCategory === cat.id && <span className="text-[10px]">●</span>}
                    </Link>
                 ))}
              </div>

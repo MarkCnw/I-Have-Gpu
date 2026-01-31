@@ -3,6 +3,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
+import { Search } from 'lucide-react' // 👈 Import
 
 export default function SearchBar() {
   const router = useRouter()
@@ -21,7 +22,9 @@ export default function SearchBar() {
 
   return (
     <form onSubmit={handleSearch} className="relative w-full">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">🔍</span>
+      {/* เปลี่ยน Emoji เป็น Icon */}
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={16} />
+      
       <input
         type="text"
         placeholder="Search..."

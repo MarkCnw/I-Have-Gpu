@@ -1,28 +1,34 @@
 // app/orders/page.tsx
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth' // อย่าลืม Import auth เพื่อดึง user จริงๆ
+import { ScrollText, ArrowLeft, ShoppingBag } from 'lucide-react'
 
-export const dynamic = 'force-dynamic' // บังคับโหลดข้อมูลใหม่เสมอ (ไม่ cache)
+export const dynamic = 'force-dynamic'
 
 export default async function OrdersPage() {
-  // 1. หา User คนเดิม (ในอนาคตเปลี่ยนเป็น session.user.id)
-  const user = await prisma.user.findFirst({
-    where: { email: 'customer@game.com' }
+  const session = await auth()
+  
+  if (!session?.user?.email) {
+     return <div className="p-8 text-center">Please Login</div>
+  }
+
+  // ใช้ user จาก session แทน hardcode
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
   })
 
   if (!user) {
     return <div className="p-8 text-white">User not found</div>
   }
 
-  // 2. 🔥 ดึง Order + สินค้าข้างใน (Relations)
-  // สังเกตการใช้ include ซ้อน include เพื่อดึงข้อมูลข้าม 3 ตาราง
   const orders = await prisma.order.findMany({
     where: { userId: user.id },
-    orderBy: { createdAt: 'desc' }, // เอาออเดอร์ล่าสุดขึ้นก่อน
+    orderBy: { createdAt: 'desc' },
     include: {
       items: {
         include: {
-          product: true // ขอรายละเอียดสินค้า (ชื่อ, รูป) ของ item นั้นๆ ด้วย
+          product: true
         }
       }
     }
@@ -32,14 +38,17 @@ export default async function OrdersPage() {
     <div className="min-h-screen bg-slate-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-emerald-400">📜 My Orders</h1>
-          <Link href="/" className="text-slate-400 hover:text-white transition">
-            ← Back to Shop
+          <h1 className="text-3xl font-bold text-emerald-400 flex items-center gap-3">
+            <ScrollText /> My Orders
+          </h1>
+          <Link href="/" className="text-slate-400 hover:text-white transition flex items-center gap-2">
+            <ArrowLeft size={16} /> Back to Shop
           </Link>
         </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-12 bg-slate-800 rounded-xl border border-slate-700">
+          <div className="text-center py-12 bg-slate-800 rounded-xl border border-slate-700 flex flex-col items-center">
+            <ShoppingBag size={48} className="text-slate-600 mb-4" />
             <p className="text-slate-400 text-lg">ยังไม่มีรายการสั่งซื้อ</p>
             <Link href="/" className="text-emerald-400 hover:underline mt-2 inline-block">
               ไปช้อปกันเลย!
@@ -49,7 +58,6 @@ export default async function OrdersPage() {
           <div className="space-y-6">
             {orders.map((order) => (
               <div key={order.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
-                {/* หัวบิล (วันที่ + สถานะ) */}
                 <div className="bg-slate-900/50 p-4 flex flex-wrap justify-between items-center border-b border-slate-700 gap-4">
                   <div>
                     <p className="text-xs text-slate-400 uppercase tracking-wide">Order ID</p>
@@ -72,18 +80,17 @@ export default async function OrdersPage() {
                   </div>
                 </div>
 
-                {/* รายการสินค้าในบิล */}
                 <div className="p-4 space-y-3">
                   {order.items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 bg-slate-700/30 p-2 rounded-lg">
-                      {/* รูปสินค้า */}
-                      <div className="w-12 h-12 bg-white rounded overflow-hidden flex-shrink-0">
-                        {item.product.image && (
+                      <div className="w-12 h-12 bg-white rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        {item.product.image ? (
                           <img src={item.product.image} alt={item.product.name} className="w-full h-full object-contain" />
+                        ) : (
+                          <ShoppingBag size={20} className="text-neutral-400" />
                         )}
                       </div>
                       
-                      {/* ชื่อ + ราคา */}
                       <div className="flex-grow">
                         <h4 className="font-medium text-sm text-slate-200 line-clamp-1">{item.product.name}</h4>
                         <p className="text-xs text-slate-400">{item.product.category}</p>
@@ -98,7 +105,6 @@ export default async function OrdersPage() {
                   ))}
                 </div>
 
-                {/* ราคารวมท้ายบิล */}
                 <div className="p-4 bg-emerald-900/20 border-t border-slate-700 flex justify-between items-center">
                   <span className="text-sm text-slate-400">Total Amount</span>
                   <span className="text-2xl font-bold text-white">
