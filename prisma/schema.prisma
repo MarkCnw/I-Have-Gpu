@@ -12,14 +12,18 @@ datasource db {
 
 // 1. ตาราง User
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
   
-  // Relations
+  // 🔥 เพิ่ม 3 ช่องนี้
+  phone         String?
+  dateOfBirth   DateTime?
+  address       String?   @db.Text // เก็บที่อยู่ยาวๆ ได้
+
   builds    Build[]
   orders    Order[]
   favorites UserFavorite[]

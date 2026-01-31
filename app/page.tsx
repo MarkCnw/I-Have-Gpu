@@ -2,9 +2,9 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import ProductCard from '@/components/ProductCard'
-import BuildSummaryBar from '@/components/BuildSummaryBar'
 import SearchBar from '@/components/SearchBar'
-import { auth, signOut } from '@/auth'
+import ProfileDropdown from '@/components/ProfileDropdown' // 👈 1. อย่าลืม Import ตัวนี้
+import { auth } from '@/auth'
 import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
@@ -61,11 +61,10 @@ export default async function Home({
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-32">
       
-      {/* ================= HEADER: CLEAN & MINIMAL ================= */}
+      {/* ================= HEADER ================= */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
         <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
             
-            {/* 1. LOGO */}
             <Link href="/" className="flex-shrink-0 group flex items-center gap-2">
               <div className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg font-bold italic text-lg group-hover:bg-neutral-800 transition">i</div>
               <h1 className="text-xl font-bold tracking-tight text-neutral-900 group-hover:opacity-70 transition">
@@ -73,36 +72,31 @@ export default async function Home({
               </h1>
             </Link>
 
-            {/* 2. NAVIGATION (Center) */}
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-500">
                <Link href="/" className="hover:text-black transition">Store</Link>
                <Link href="/?category=CPU" className="hover:text-black transition">Components</Link>
-               <Link href="/?category=GPU" className="hover:text-black transition">Build PC</Link>
                <Link href="/locations" className="hover:text-black transition">Support</Link>
             </nav>
 
-            {/* 3. TOOLS (Right) */}
             <div className="flex items-center gap-4">
                <div className="w-48 hidden lg:block">
                   <SearchBar /> 
                </div>
 
-               <div className="flex items-center gap-3 pl-4 border-l border-neutral-200">
-                 {/* Admin Link */}
+               <div className="flex items-center gap-4 pl-4 border-l border-neutral-200">
+                 
+                 <Link href="/cart" className="relative group p-2 hover:bg-neutral-100 rounded-full transition">
+                    <span className="text-xl">🛍️</span>
+                 </Link>
+
                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                  {(user as any)?.role === 'ADMIN' && (
                     <Link href="/admin" className="text-[10px] font-bold bg-black text-white px-2 py-1 rounded hover:bg-neutral-800">ADMIN</Link>
                  )}
 
                  {user ? (
-                   <div className="flex items-center gap-3">
-                     <div className="w-8 h-8 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-700">
-                        {user.name?.substring(0, 2).toUpperCase()}
-                     </div>
-                     <form action={async () => { 'use server'; await signOut() }}>
-                        <button className="text-xs font-medium text-neutral-400 hover:text-black">Logout</button>
-                     </form>
-                   </div>
+                   /* 🔥 2. ตรงนี้คือจุดที่แก้ครับ! เปลี่ยนจาก Div ธรรมดา เป็น ProfileDropdown */
+                   <ProfileDropdown user={user} />
                  ) : (
                    <Link href="/login" className="text-sm font-medium hover:text-neutral-500">Log in</Link>
                  )}
@@ -111,7 +105,7 @@ export default async function Home({
         </div>
       </header>
 
-      {/* ================= HERO: MODERN STYLE ================= */}
+      {/* ================= HERO ================= */}
       {!q && currentCategory === 'ALL' && (
         <div className="w-full px-6 mt-6 mb-12">
            <div className="max-w-[1400px] mx-auto bg-[#F5F5F7] rounded-3xl overflow-hidden relative min-h-[400px] flex flex-col md:flex-row items-center">
@@ -119,22 +113,22 @@ export default async function Home({
               <div className="w-full md:w-1/2 p-12 z-10 flex flex-col justify-center items-start">
                  <span className="text-xs font-bold tracking-widest text-neutral-400 mb-4 uppercase">New Arrivals</span>
                  <h2 className="text-5xl font-bold mb-6 leading-tight text-neutral-900">
-                    Pro Performance.<br/>
-                    <span className="text-neutral-400">Minimal Design.</span>
+                   Pro Performance.<br/>
+                   <span className="text-neutral-400">Minimal Design.</span>
                  </h2>
                  <p className="text-neutral-500 mb-8 max-w-md text-lg">
-                    Upgrade your setup with the latest high-performance hardware, curated for creators and gamers.
+                   Upgrade your setup with the latest high-performance hardware, curated for creators and gamers.
                  </p>
                  <Link href="/?category=GPU" className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-medium hover:scale-105 transition-transform shadow-xl shadow-black/10">
-                    Start Building
+                   Shop Now
                  </Link>
               </div>
 
               <div className="w-full md:w-1/2 h-64 md:h-full relative">
                  <img 
-                    src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=2642" 
-                    className="w-full h-full object-cover mix-blend-overlay opacity-80" 
-                    alt="Hero Banner" 
+                   src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=2642" 
+                   className="w-full h-full object-cover mix-blend-overlay opacity-80" 
+                   alt="Hero Banner" 
                  />
                  <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-transparent to-[#F5F5F7]"></div>
               </div>
@@ -142,10 +136,10 @@ export default async function Home({
         </div>
       )}
 
-      {/* ================= MAIN CONTENT ================= */}
+      {/* ================= CONTENT ================= */}
       <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row gap-12 pt-4">
         
-        {/* SIDEBAR: CLEAN LIST */}
+        {/* SIDEBAR */}
         <aside className="hidden md:block w-48 flex-shrink-0">
            <div className="sticky top-28">
              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-6 px-2">Browse</h3>
@@ -191,14 +185,12 @@ export default async function Home({
            ) : (
              <div className="flex flex-col items-center justify-center py-32 text-neutral-300">
                 <div className="text-6xl mb-4 opacity-20">📦</div>
-                <p className="text-neutral-400">No products found in this category.</p>
+                <p className="text-neutral-400">No products found.</p>
                 <Link href="/" className="mt-4 text-black text-sm font-bold border-b border-black hover:opacity-70">Clear Filters</Link>
              </div>
            )}
         </main>
       </div>
-      
-
     </div>
   )
 }
