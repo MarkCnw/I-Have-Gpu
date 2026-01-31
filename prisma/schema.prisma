@@ -1,0 +1,134 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// 1. ตาราง User
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  
+  // Relations
+  builds    Build[]
+  orders    Order[]
+  favorites UserFavorite[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// 2. ตารางสินค้า (เพิ่มหมวดหมู่ใหม่ที่นี่)
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  image       String?
+  category    Category // ใช้ Enum ข้างล่าง
+  specs       Json?    // เก็บสเปคของสินค้าแต่ละประเภท
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orderItems  OrderItem[]
+  buildItems  BuildItem[]
+  favoritedBy UserFavorite[]
+}
+
+// 🔥 หมวดหมู่สินค้าทั้งหมด (รวมของใหม่)
+enum Category {
+  // คอมประกอบ
+  CPU
+  MOTHERBOARD
+  RAM
+  GPU
+  STORAGE
+  PSU
+  CASE
+  COOLER
+  MONITOR
+  
+  // 🔥 เพิ่มหมวด IT ทั่วไป
+  LAPTOP      // โน้ตบุ๊ก
+  DESKTOP     // คอมชุด
+  MOUSE       // เมาส์
+  KEYBOARD    // คีย์บอร์ด
+  HEADSET     // หูฟัง
+  CHAIR       // เก้าอี้เกมมิ่ง
+  ACCESSORY   // สายไฟ/อุปกรณ์เสริม
+}
+
+// 3. ตาราง "จัดสเปค"
+model Build {
+  id          String      @id @default(uuid())
+  name        String
+  totalPrice  Decimal
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  items       BuildItem[]
+  createdAt   DateTime    @default(now())
+}
+
+model BuildItem {
+  id        String  @id @default(uuid())
+  buildId   String
+  build     Build   @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+}
+
+// 4. ตารางคำสั่งซื้อ
+model Order {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  status    OrderStatus @default(PENDING)
+  total     Decimal
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal
+}
+
+// 5. ตารางรายการโปรด
+model UserFavorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
