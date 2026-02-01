@@ -2,19 +2,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Eye, Check, X, Truck, ExternalLink } from 'lucide-react'
+import { Search, Eye, Check, X, Truck, ExternalLink, Copy } from 'lucide-react'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function AdminOrdersPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([])
-  const [filter, setFilter] = useState('ALL') // ALL, VERIFYING, PAID, SHIPPED
+  const [filter, setFilter] = useState('ALL')
 
   useEffect(() => {
-    fetch('/api/orders').then(res => res.json()).then(setOrders)
+    fetch('/api/orders', { cache: 'no-store' }).then(res => res.json()).then(setOrders)
   }, [])
 
-  // ฟังก์ชันเปลี่ยนสถานะ (Confirm Payment)
   const updateStatus = async (id: string, status: string) => {
     if(!confirm(`เปลี่ยนสถานะเป็น ${status}?`)) return
     await fetch(`/api/orders/${id}`, {
@@ -22,10 +21,10 @@ export default function AdminOrdersPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     })
+    alert('✅ อัปเดตสถานะเรียบร้อย')
     window.location.reload()
   }
 
-  // ฟังก์ชันส่งสินค้า (ใส่เลขพัสดุ)
   const handleShip = async (id: string) => {
     const tracking = prompt('กรุณากรอกเลขพัสดุ (Tracking Number):')
     if (!tracking) return
@@ -36,23 +35,24 @@ export default function AdminOrdersPage() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
+        orderId: id,
         status: 'SHIPPED', 
         trackingNumber: tracking,
-        carrier: carrier 
+        carrier: carrier || 'Kerry Express'
       })
     })
+    
+    alert('✅ บันทึกเลขพัสดุเรียบร้อย')
     window.location.reload()
   }
 
-  // กรองออเดอร์
-  const filteredOrders = filter === 'ALL' ? orders : orders.filter(o => o.status === filter)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filteredOrders = filter === 'ALL' ? orders : orders.filter((o: any) => o.status === filter)
 
   return (
-    <div className="p-8">
+    <div className="p-8 min-h-screen bg-slate-50">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">จัดการคำสั่งซื้อ (Orders)</h1>
-        
-        {/* Filter Tabs */}
+        <h1 className="text-2xl font-bold text-slate-800">จัดการคำสั่งซื้อ (Orders)</h1>
         <div className="flex bg-white p-1 rounded-lg border border-slate-200">
           {['ALL', 'VERIFYING', 'PAID', 'SHIPPED'].map(f => (
             <button
@@ -60,7 +60,7 @@ export default function AdminOrdersPage() {
               onClick={() => setFilter(f)}
               className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${filter === f ? 'bg-black text-white' : 'text-slate-500 hover:bg-slate-50'}`}
             >
-              {f} {f === 'VERIFYING' && orders.filter(o => o.status === 'VERIFYING').length > 0 && <span className="ml-1 text-red-400">●</span>}
+              {f} {f === 'VERIFYING' && orders.filter((o: any) => o.status === 'VERIFYING').length > 0 && <span className="ml-1 text-red-400">●</span>}
             </button>
           ))}
         </div>
@@ -75,19 +75,20 @@ export default function AdminOrdersPage() {
               <th className="p-4">Total</th>
               <th className="p-4">Status</th>
               <th className="p-4">Payment</th>
+              <th className="p-4">Tracking</th>
               <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {filteredOrders.map((order) => (
+            {filteredOrders.map((order: any) => (
               <tr key={order.id} className="hover:bg-slate-50">
                 <td className="p-4 font-mono">{order.id.split('-')[0]}</td>
                 <td className="p-4">
                   <p className="font-bold">{order.shippingName}</p>
                   <p className="text-xs text-slate-400">{order.shippingPhone}</p>
                 </td>
-                <td className="p-4 font-bold">฿{Number(order.total).toLocaleString()}</td>
+                <td className="p-4 font-bold text-emerald-600">฿{Number(order.total).toLocaleString()}</td>
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase
                     ${order.status === 'VERIFYING' ? 'bg-yellow-100 text-yellow-700' : 
@@ -107,9 +108,17 @@ export default function AdminOrdersPage() {
                     <span className="text-slate-300">-</span>
                   )}
                 </td>
+                <td className="p-4">
+                   {order.trackingNumber ? (
+                      <div className="text-xs">
+                         <span className="font-bold text-slate-700">{order.carrier}</span>
+                         <br/>
+                         <span className="font-mono text-slate-500">{order.trackingNumber}</span>
+                      </div>
+                   ) : '-'}
+                </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
-                    {/* 1. ปุ่ม Verify (สำหรับสถานะ VERIFYING) */}
                     {order.status === 'VERIFYING' && (
                       <>
                         <button onClick={() => updateStatus(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700">
@@ -120,19 +129,15 @@ export default function AdminOrdersPage() {
                         </button>
                       </>
                     )}
-
-                    {/* 2. ปุ่ม Ship (สำหรับสถานะ PAID) */}
                     {order.status === 'PAID' && (
                       <button onClick={() => handleShip(order.id)} className="bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-neutral-800">
                         <Truck size={14} /> Ship Order
                       </button>
                     )}
-
-                    {/* 3. ดูเลขพัสดุ (สำหรับ SHIPPED) */}
                     {order.status === 'SHIPPED' && (
-                      <span className="text-green-600 font-mono text-xs border border-green-200 bg-green-50 px-2 py-1 rounded">
-                        {order.trackingNumber}
-                      </span>
+                       <button onClick={() => handleShip(order.id)} className="text-blue-600 hover:underline text-xs font-bold">
+                          แก้ไขเลข
+                       </button>
                     )}
                   </div>
                 </td>
