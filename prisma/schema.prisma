@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "postgresql" // หรือ mysql
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
@@ -23,10 +23,10 @@ model User {
   image         String?
   phone         String?
   dateOfBirth   DateTime?
-  // address    String? @db.Text  <-- Removed old field
+  // address    String? @db.Text  <-- ลบอันเก่าออก (ไม่ใช้แล้ว)
 
   // Relations
-  addresses     Address[] // 🔥 Relation to new Address model
+  addresses     Address[] // 🔥 เชื่อมกับตารางที่อยู่ใหม่
   builds        Build[]
   orders        Order[]
   favorites     UserFavorite[]
@@ -38,18 +38,18 @@ enum Role {
   ADMIN
 }
 
-// 🔥 2. Address Table (New)
+// 🔥 2. Address Table (ใหม่: เก็บที่อยู่ละเอียด)
 model Address {
   id          String   @id @default(uuid())
-  name        String   // Recipient Name
-  phone       String   // Recipient Phone
+  name        String   // ชื่อผู้รับ
+  phone       String   // เบอร์ติดต่อ
   
-  // Detailed Address
-  houseNumber String   // House No., Village, Road
-  subdistrict String   // Tambon/Sub-district
-  district    String   // Amphoe/District
-  province    String   // Province
-  zipcode     String   // Postal Code
+  // ที่อยู่แบบละเอียด
+  houseNumber String   // บ้านเลขที่, หมู่, ซอย, ถนน
+  subdistrict String   // ตำบล/แขวง
+  district    String   // อำเภอ/เขต
+  province    String   // จังหวัด
+  zipcode     String   // รหัสไปรษณีย์
   
   isDefault   Boolean  @default(false)
 
@@ -118,33 +118,38 @@ model BuildItem {
   quantity  Int     @default(1)
 }
 
-// 5. Order Table (Updated)
+// 5. Order Table (อัปเดตใหม่ 🔥)
 model Order {
   id        String      @id @default(uuid())
   userId    String
   user      User        @relation(fields: [userId], references: [id])
+  
   status    OrderStatus @default(PENDING)
   total     Decimal
   items     OrderItem[]
   createdAt DateTime    @default(now())
 
-  // 🔥 Logistics Info (New)
-  trackingNumber  String? // e.g., TH12345678
-  carrier         String? // e.g., Kerry, Flash
+  // Logistics
+  trackingNumber  String?
+  carrier         String?
   
-  // 🔥 Address Snapshot (Critical for Audit)
+  // Address Snapshot
   shippingName    String?
   shippingPhone   String?
-  shippingAddress String? // Stores full string: houseNumber + subdistrict + ...
+  shippingAddress String?
   shippingZipcode String?
+
+  // 🔥 Payment Info (เพิ่มส่วนนี้)
+  slipImage       String?   // URL รูปสลิปโอนเงิน
 }
 
 enum OrderStatus {
-  PENDING
-  PAID
-  SHIPPED
-  COMPLETED
-  CANCELLED
+  PENDING     // รอชำระเงิน
+  VERIFYING   // 🔥 รอตรวจสอบ (ลูกค้าแนบสลิปแล้ว)
+  PAID        // ชำระเงินแล้ว (แอดมินคอนเฟิร์ม)
+  SHIPPED     // ส่งสินค้าแล้ว
+  COMPLETED   // สำเร็จ
+  CANCELLED   // ยกเลิก
 }
 
 model OrderItem {

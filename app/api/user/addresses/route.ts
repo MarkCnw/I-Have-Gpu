@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
-// GET: Fetch all addresses for the logged-in user
+// GET: ดึงรายการที่อยู่
 export async function GET() {
   try {
     const session = await auth()
@@ -13,7 +13,7 @@ export async function GET() {
       where: { email: session.user.email },
       include: { 
         addresses: { 
-          orderBy: { isDefault: 'desc' } // Default address first
+          orderBy: { isDefault: 'desc' } // เอาที่อยู่หลักขึ้นก่อน
         } 
       } 
     })
@@ -24,7 +24,7 @@ export async function GET() {
   }
 }
 
-// POST: Add a new address
+// POST: เพิ่มที่อยู่ใหม่
 export async function POST(req: Request) {
   try {
     const session = await auth()
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     const body = await req.json()
     
-    // If setting as default, unset previous default
+    // ถ้าตั้งเป็น Default ให้เคลียร์ค่า Default อันเก่า
     if (body.isDefault) {
       await prisma.address.updateMany({
         where: { userId: user.id },
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       })
     }
 
-    // Force default if it's the first address
+    // ถ้าเป็นที่อยู่แรก ให้บังคับเป็น Default เสมอ
     const addressCount = await prisma.address.count({ where: { userId: user.id } })
     const isFirstAddress = addressCount === 0
 
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
   }
 }
 
-// DELETE: Remove an address
+// DELETE: ลบที่อยู่
 export async function DELETE(req: Request) {
   try {
     const session = await auth()
@@ -79,6 +79,7 @@ export async function DELETE(req: Request) {
     
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
 
+    // ตรวจสอบว่าเป็นเจ้าของ
     const address = await prisma.address.findUnique({ where: { id } })
     const user = await prisma.user.findUnique({ where: { email: session.user.email } })
 

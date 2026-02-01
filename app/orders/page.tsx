@@ -1,121 +1,162 @@
 // app/orders/page.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Package, Clock, CheckCircle, Truck, XCircle, Upload, QrCode, Copy } from 'lucide-react'
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
-import { auth } from '@/auth' // อย่าลืม Import auth เพื่อดึง user จริงๆ
-import { ScrollText, ArrowLeft, ShoppingBag } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function OrdersPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [orders, setOrders] = useState<any[]>([])
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
 
-export default async function OrdersPage() {
-  const session = await auth()
-  
-  if (!session?.user?.email) {
-     return <div className="p-8 text-center">Please Login</div>
-  }
+  useEffect(() => {
+    fetch('/api/orders').then(res => res.json()).then(data => setOrders(data))
+  }, [])
 
-  // ใช้ user จาก session แทน hardcode
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email }
-  })
+  // ฟังก์ชันอัปโหลดสลิป
+  const handleUploadSlip = async (orderId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  if (!user) {
-    return <div className="p-8 text-white">User not found</div>
-  }
+    if(!confirm('ยืนยันการส่งหลักฐานการโอนเงิน?')) return
 
-  const orders = await prisma.order.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      items: {
-        include: {
-          product: true
-        }
-      }
+    setUploadingId(orderId)
+    try {
+      // 1. Upload รูป
+      const formData = new FormData()
+      formData.append('file', file)
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+      const { url } = await uploadRes.json()
+
+      // 2. Update Order
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'VERIFYING', slipImage: url })
+      })
+
+      alert('✅ ส่งหลักฐานเรียบร้อย! กรุณารอตรวจสอบ')
+      window.location.reload() // รีโหลดเพื่ออัปเดตสถานะ
+    } catch (err) {
+      alert('เกิดข้อผิดพลาด')
+    } finally {
+      setUploadingId(null)
     }
-  })
+  }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
+    <div className="min-h-screen bg-[#F8F9FA] p-4 md:p-8 pb-32">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-emerald-400 flex items-center gap-3">
-            <ScrollText /> My Orders
-          </h1>
-          <Link href="/" className="text-slate-400 hover:text-white transition flex items-center gap-2">
-            <ArrowLeft size={16} /> Back to Shop
-          </Link>
-        </div>
+        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
+          <Package /> ประวัติคำสั่งซื้อ
+        </h1>
 
-        {orders.length === 0 ? (
-          <div className="text-center py-12 bg-slate-800 rounded-xl border border-slate-700 flex flex-col items-center">
-            <ShoppingBag size={48} className="text-slate-600 mb-4" />
-            <p className="text-slate-400 text-lg">ยังไม่มีรายการสั่งซื้อ</p>
-            <Link href="/" className="text-emerald-400 hover:underline mt-2 inline-block">
-              ไปช้อปกันเลย!
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {orders.map((order) => (
-              <div key={order.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
-                <div className="bg-slate-900/50 p-4 flex flex-wrap justify-between items-center border-b border-slate-700 gap-4">
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">Order ID</p>
-                    <p className="font-mono text-sm text-slate-300">{order.id.split('-')[0]}...</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">Date</p>
-                    <p className="text-sm">
-                      {new Date(order.createdAt).toLocaleDateString('th-TH', {
-                        year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-                  <div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold
-                      ${order.status === 'PAID' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-yellow-500/20 text-yellow-400'}
-                    `}>
-                      {order.status}
-                    </span>
-                  </div>
+        <div className="space-y-6">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {orders.map((order: any) => (
+            <div key={order.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+              
+              {/* Header */}
+              <div className="bg-slate-50 p-4 flex justify-between items-center border-b border-slate-100">
+                <div>
+                  <p className="text-xs text-slate-500">Order ID: {order.id.split('-')[0]}</p>
+                  <p className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleDateString('th-TH')}</p>
                 </div>
+                <StatusBadge status={order.status} />
+              </div>
 
-                <div className="p-4 space-y-3">
-                  {order.items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 bg-slate-700/30 p-2 rounded-lg">
-                      <div className="w-12 h-12 bg-white rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                        {item.product.image ? (
-                          <img src={item.product.image} alt={item.product.name} className="w-full h-full object-contain" />
-                        ) : (
-                          <ShoppingBag size={20} className="text-neutral-400" />
-                        )}
-                      </div>
-                      
-                      <div className="flex-grow">
-                        <h4 className="font-medium text-sm text-slate-200 line-clamp-1">{item.product.name}</h4>
-                        <p className="text-xs text-slate-400">{item.product.category}</p>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-emerald-400">
-                          ฿{Number(item.price).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="p-4 bg-emerald-900/20 border-t border-slate-700 flex justify-between items-center">
-                  <span className="text-sm text-slate-400">Total Amount</span>
-                  <span className="text-2xl font-bold text-white">
-                    ฿{Number(order.total).toLocaleString()}
-                  </span>
+              {/* Items */}
+              <div className="p-4 border-b border-slate-100">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {order.items.map((item: any) => (
+                  <div key={item.id} className="flex justify-between py-2 text-sm">
+                    <span className="text-slate-700">{item.product.name} (x{item.quantity})</span>
+                    <span className="font-mono">฿{(item.price * item.quantity).toLocaleString()}</span>
+                  </div>
+                ))}
+                <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between font-bold text-lg">
+                  <span>ยอดสุทธิ</span>
+                  <span className="text-black">฿{Number(order.total).toLocaleString()}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Action Section (Payment / Tracking) */}
+              <div className="p-4 bg-slate-50">
+                
+                {/* 1. กรณีรอจ่ายเงิน (PENDING) -> โชว์เลขบัญชี + ปุ่มอัปสลิป */}
+                {order.status === 'PENDING' && (
+                  <div className="grid md:grid-cols-2 gap-6 animate-in fade-in">
+                    <div className="bg-white p-4 rounded-lg border border-slate-200">
+                      <h4 className="font-bold text-sm mb-2 flex items-center gap-2"><QrCode size={16}/> ช่องทางการชำระเงิน</h4>
+                      <p className="text-sm text-slate-600">ธนาคารกสิกรไทย (KBANK)</p>
+                      <p className="text-lg font-bold text-black font-mono my-1">012-3-45678-9</p>
+                      <p className="text-xs text-slate-500">ชื่อบัญชี: บจก. ไอแฮฟจีพียู</p>
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <label className="block w-full cursor-pointer bg-black text-white text-center py-3 rounded-lg font-bold hover:bg-neutral-800 transition">
+                        {uploadingId === order.id ? 'กำลังอัปโหลด...' : '📸 อัปโหลดสลิปโอนเงิน'}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          disabled={!!uploadingId}
+                          onChange={(e) => handleUploadSlip(order.id, e)} 
+                        />
+                      </label>
+                      <p className="text-xs text-center text-slate-400 mt-2">รองรับไฟล์ JPG, PNG</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. กรณีรอตรวจสอบ (VERIFYING) */}
+                {order.status === 'VERIFYING' && (
+                  <div className="text-center py-2 text-yellow-600 bg-yellow-50 rounded-lg border border-yellow-100">
+                    <Clock size={20} className="inline mr-2" />
+                    กำลังตรวจสอบการชำระเงิน (รอแอดมินยืนยัน)
+                  </div>
+                )}
+
+                {/* 3. กรณีส่งแล้ว (SHIPPED) -> โชว์เลขพัสดุ */}
+                {order.status === 'SHIPPED' && (
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-100 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs text-green-600 font-bold uppercase mb-1">Tracking Number</p>
+                      <p className="font-mono text-lg font-bold text-green-800 tracking-wider">{order.trackingNumber}</p>
+                      <p className="text-xs text-green-600 mt-1">ขนส่ง: {order.carrier}</p>
+                    </div>
+                    <Truck size={32} className="text-green-300" />
+                  </div>
+                )}
+
+              </div>
+            </div>
+          ))}
+
+          {orders.length === 0 && (
+            <div className="text-center py-20 text-slate-400">ยังไม่มีคำสั่งซื้อ</div>
+          )}
+        </div>
       </div>
     </div>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const styles = {
+    PENDING: "bg-yellow-100 text-yellow-700",
+    VERIFYING: "bg-blue-100 text-blue-700",
+    PAID: "bg-indigo-100 text-indigo-700",
+    SHIPPED: "bg-green-100 text-green-700",
+    CANCELLED: "bg-red-100 text-red-700",
+    COMPLETED: "bg-gray-100 text-gray-700"
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const style = (styles as any)[status] || "bg-gray-100 text-gray-700"
+  return (
+    <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide ${style}`}>
+      {status}
+    </span>
   )
 }
