@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { Search, Eye, Check, X, Truck, ExternalLink, Copy } from 'lucide-react'
 
-// 🔥 เพิ่มส่วนนี้: แปลงรหัสสถานะเป็นภาษาไทยสำหรับแสดงผล
+// 🔥 ตัวแปลงภาษา: สถานะออเดอร์ (ใช้ทั้งใน Filter และในตาราง)
 const STATUS_LABEL: Record<string, string> = {
   ALL: 'ทั้งหมด',
   PENDING: 'รอชำระเงิน',
@@ -19,7 +19,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default function AdminOrdersPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([])
-  const [filter, setFilter] = useState('ALL') // ค่า filter ยังคงเป็นภาษาอังกฤษเพื่อ Logic
+  const [filter, setFilter] = useState('ALL') // Logic ยังใช้ภาษาอังกฤษ (ALL, PAID, ...)
 
   useEffect(() => {
     fetch('/api/orders', { cache: 'no-store' }).then(res => res.json()).then(setOrders)
@@ -27,7 +27,7 @@ export default function AdminOrdersPage() {
 
   // ฟังก์ชันเปลี่ยนสถานะ (Confirm Payment)
   const updateStatus = async (id: string, status: string) => {
-    // แสดงชื่อสถานะภาษาไทยใน Confirm Box
+    // แสดงชื่อไทยใน Confirm Box
     const statusTH = STATUS_LABEL[status] || status
     if(!confirm(`ยืนยันการเปลี่ยนสถานะเป็น "${statusTH}" ใช่หรือไม่?`)) return
     
@@ -63,6 +63,7 @@ export default function AdminOrdersPage() {
     window.location.reload()
   }
 
+  // กรองข้อมูล
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredOrders = filter === 'ALL' ? orders : orders.filter((o: any) => o.status === filter)
 
@@ -71,7 +72,7 @@ export default function AdminOrdersPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-slate-800">จัดการคำสั่งซื้อ (Orders)</h1>
         
-        {/* Filter Tabs */}
+        {/* Filter Tabs (แสดงภาษาไทย) */}
         <div className="flex bg-white p-1 rounded-lg border border-slate-200">
           {['ALL', 'VERIFYING', 'PAID', 'SHIPPED'].map(f => (
             <button
@@ -79,8 +80,7 @@ export default function AdminOrdersPage() {
               onClick={() => setFilter(f)}
               className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${filter === f ? 'bg-black text-white' : 'text-slate-500 hover:bg-slate-50'}`}
             >
-              {/* แสดงผลภาษาไทยบนปุ่ม Filter */}
-              {STATUS_LABEL[f]} 
+              {STATUS_LABEL[f]} {/* แสดงชื่อไทย */}
               {f === 'VERIFYING' && orders.filter((o: any) => o.status === 'VERIFYING').length > 0 && <span className="ml-1 text-red-400">●</span>}
             </button>
           ))}
@@ -107,20 +107,23 @@ export default function AdminOrdersPage() {
                 <td className="p-4 font-mono">{order.id.split('-')[0]}</td>
                 <td className="p-4">
                   <p className="font-bold">{order.shippingName}</p>
-                  <p className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleDateString('th-TH')}</p>
+                  <p className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
                 </td>
                 <td className="p-4 font-bold text-emerald-600">฿{Number(order.total).toLocaleString()}</td>
+                
+                {/* 🔥 แก้ไขตรงนี้: Badge สถานะแสดงภาษาไทย */}
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded text-[10px] font-bold 
                     ${order.status === 'VERIFYING' ? 'bg-yellow-100 text-yellow-700' : 
                       order.status === 'PAID' ? 'bg-indigo-100 text-indigo-700' :
-                      order.status === 'SHIPPED' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+                      order.status === 'SHIPPED' ? 'bg-green-100 text-green-700' : 
+                      order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
-                    {/* แสดงสถานะภาษาไทยในตาราง */}
                     {STATUS_LABEL[order.status] || order.status}
                   </span>
                 </td>
+
                 <td className="p-4">
                   {order.slipImage ? (
                     <a href={order.slipImage} target="_blank" className="text-blue-600 flex items-center gap-1 hover:underline text-xs">
@@ -143,7 +146,6 @@ export default function AdminOrdersPage() {
 
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
-                    {/* ปุ่ม Verify (สำหรับสถานะ รอตรวจสอบ) */}
                     {order.status === 'VERIFYING' && (
                       <>
                         <button onClick={() => updateStatus(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700 text-xs font-bold">
@@ -155,14 +157,12 @@ export default function AdminOrdersPage() {
                       </>
                     )}
 
-                    {/* ปุ่ม Ship (สำหรับสถานะ ชำระแล้ว) */}
                     {order.status === 'PAID' && (
                       <button onClick={() => handleShip(order.id)} className="bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-neutral-800 text-xs font-bold">
                         <Truck size={14} /> จัดส่งสินค้า
                       </button>
                     )}
                     
-                    {/* ปุ่มแก้เลข (สำหรับสถานะ จัดส่งแล้ว) */}
                     {order.status === 'SHIPPED' && (
                        <button onClick={() => handleShip(order.id)} className="text-blue-600 hover:underline text-xs font-bold">
                           แก้ไขเลข
