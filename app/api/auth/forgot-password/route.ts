@@ -32,6 +32,9 @@ export async function POST(req: Request) {
         pass: process.env.GMAIL_PASS,
       },
     })
+    // 🔥 เพิ่มบรรทัดนี้เพื่อ Debug (เช็คว่าอ่านค่าได้ไหม)
+    console.log("Debug Email User:", process.env.GMAIL_USER);
+    console.log("Debug Pass Length:", process.env.GMAIL_PASS?.length);
 
     const resetLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${token}`
 
