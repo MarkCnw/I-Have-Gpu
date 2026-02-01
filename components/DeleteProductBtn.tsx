@@ -1,52 +1,37 @@
 // components/DeleteProductBtn.tsx
 'use client'
-
-import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'react-hot-toast'
-import ConfirmModal from '@/components/ConfirmModal' // 👈 Import Modal
+import { useState } from 'react'
+import { Trash2, Loader2 } from 'lucide-react' // 👈 Import
 
 export default function DeleteProductBtn({ id }: { id: string }) {
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleDelete = async () => {
+    if (!confirm('ยืนยันที่จะลบสินค้านี้? (กู้คืนไม่ได้นะ)')) return
+
     setLoading(true)
-    try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete')
-      
-      toast.success('ลบสินค้าเรียบร้อย')
-      router.refresh()
-    } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการลบ')
-    } finally {
-      setLoading(false)
-      setIsOpen(false)
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'DELETE'
+    })
+
+    if (res.ok) {
+      router.refresh() 
+    } else {
+      alert('❌ ลบไม่สำเร็จ (อาจมีออเดอร์ค้างอยู่)')
     }
+    setLoading(false)
   }
 
   return (
-    <>
-      <button 
-        onClick={() => setIsOpen(true)} // 🔥 เปิด Modal
-        className="text-red-400 hover:text-red-600 transition p-2 hover:bg-red-50 rounded-full"
-      >
-        <Trash2 size={20} />
-      </button>
-
-      <ConfirmModal 
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onConfirm={handleDelete}
-        title="ลบสินค้า?"
-        message="สินค้าที่ลบจะไม่สามารถกู้คืนได้ คุณแน่ใจหรือไม่?"
-        confirmText="ลบสินค้า"
-        loading={loading}
-        variant="danger"
-      />
-    </>
+    <button 
+      onClick={handleDelete}
+      disabled={loading}
+      className="bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white p-2 rounded transition"
+      title="Delete Product"
+    >
+      {loading ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+    </button>
   )
 }

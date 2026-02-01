@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Package, Heart, User, MapPin, Save, Plus, Trash2, Home, LogOut } from 'lucide-react'
-import { toast } from 'react-hot-toast' // 👈 ใช้ Toast
-import ConfirmModal from '@/components/ConfirmModal' // 👈 ใช้ Custom Modal
+import { toast } from 'react-hot-toast' 
+import ConfirmModal from '@/components/ConfirmModal' // 👈 เรียกใช้ Modal ที่เพิ่งสร้าง
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ProfileView({ user, orders, favorites }: { user: any, orders: any[], favorites: any[] }) {
@@ -36,10 +36,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
     isDefault: false
   })
 
-  // --- Modal State ---
+  // 🔥 State สำหรับ Modal ลบที่อยู่ (แทน confirm)
   const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null)
 
-  // Load addresses when tab changes
   useEffect(() => {
     if (activeTab === 'ADDRESS') {
       fetch('/api/user/addresses').then(res => res.json()).then(data => {
@@ -59,7 +58,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         body: JSON.stringify(formData)
       })
       if (res.ok) {
-        toast.success('บันทึกข้อมูลเรียบร้อย') // 🔥 Toast
+        toast.success('บันทึกข้อมูลเรียบร้อย')
         router.refresh()
       } else {
         toast.error('เกิดข้อผิดพลาดในการบันทึก')
@@ -80,11 +79,10 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         body: JSON.stringify(newAddress)
       })
       if (res.ok) {
-        toast.success('เพิ่มที่อยู่สำเร็จ') // 🔥 Toast
+        toast.success('เพิ่มที่อยู่สำเร็จ')
         setShowAddressForm(false)
         setNewAddress({ name: user.name || '', phone: user.phone || '', houseNumber: '', subdistrict: '', district: '', province: '', zipcode: '', isDefault: false })
         
-        // Refresh List
         const updated = await fetch('/api/user/addresses').then(r => r.json())
         setAddresses(updated)
       } else {
@@ -95,14 +93,14 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
     }
   }
 
-  // Delete Address (เรียกเมื่อกด Confirm ใน Modal)
+  // 🔥 ฟังก์ชันลบที่อยู่ (จะถูกเรียกเมื่อกด "ลบที่อยู่" ใน Modal เท่านั้น)
   const confirmDeleteAddress = async () => {
     if(!deleteAddressId) return
     
     await fetch(`/api/user/addresses?id=${deleteAddressId}`, { method: 'DELETE' })
     setAddresses(addresses.filter(a => a.id !== deleteAddressId))
     
-    toast.success('ลบที่อยู่เรียบร้อย') // 🔥 Toast
+    toast.success('ลบที่อยู่เรียบร้อย')
     setDeleteAddressId(null) // ปิด Modal
   }
 
@@ -283,7 +281,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
 
                       <div className="flex items-center gap-2 self-end md:self-start md:opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => setDeleteAddressId(addr.id)} // 🔥 เปิด Modal แทน confirm()
+                          onClick={() => setDeleteAddressId(addr.id)} 
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition" 
                           title="ลบที่อยู่"
                         >
