@@ -1,62 +1,92 @@
 // app/admin/products/page.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Plus, Search, Edit, Trash2, Package } from 'lucide-react'
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
-import DeleteProductBtn from '@/components/DeleteProductBtn' 
+import DeleteProductBtn from '@/components/DeleteProductBtn'
 
-export const dynamic = 'force-dynamic'
+export default function AdminProductsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [products, setProducts] = useState<any[]>([])
+  const [search, setSearch] = useState('')
 
-export default async function AdminProductsPage() {
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: 'desc' }
-  })
+  useEffect(() => {
+    fetch('/api/products').then(res => res.json()).then(setProducts)
+  }, [])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filtered = products.filter((p: any) => p.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900">Manage Products</h1>
-        <Link 
-          href="/admin/products/new" 
-          className="bg-black hover:bg-neutral-800 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition shadow-lg shadow-black/10 flex items-center gap-2"
-        >
-          + Add Product
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">จัดการสินค้า (Inventory)</h1>
+          <p className="text-slate-500 text-sm">สินค้าทั้งหมด {products.length} รายการ</p>
+        </div>
+        <Link href="/admin/products/new" className="bg-black text-white px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 transition shadow-lg">
+          <Plus size={18} /> เพิ่มสินค้าใหม่
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase font-semibold border-b border-neutral-200">
+      {/* Search Bar */}
+      <div className="bg-white p-2 rounded-xl border border-slate-200 flex items-center gap-2 shadow-sm">
+        <Search className="text-slate-400 ml-2" size={20} />
+        <input 
+          placeholder="ค้นหาชื่อสินค้า..." 
+          className="w-full p-2 outline-none text-sm"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
             <tr>
-              <th className="p-4 pl-6">Image</th>
-              <th className="p-4">Name</th>
-              <th className="p-4">Category</th>
-              <th className="p-4 text-right">Price</th>
-              <th className="p-4 text-center">Stock</th>
-              <th className="p-4 pr-6 text-right">Actions</th>
+              <th className="p-4 w-[80px]">รูปภาพ</th>
+              <th className="p-4">ชื่อสินค้า</th>
+              <th className="p-4">หมวดหมู่</th>
+              <th className="p-4">ราคา</th>
+              <th className="p-4">สต็อก</th>
+              <th className="p-4 text-right">จัดการ</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
-            {products.map((p) => (
-              <tr key={p.id} className="hover:bg-neutral-50 transition group">
-                <td className="p-4 pl-6">
-                  <div className="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 p-1">
-                    {p.image && <img src={p.image} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />}
+          <tbody className="divide-y divide-slate-100">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {filtered.map((product: any) => (
+              <tr key={product.id} className="hover:bg-slate-50 transition">
+                <td className="p-4">
+                  <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center">
+                    {product.image ? (
+                      <img src={product.image} className="w-full h-full object-cover" />
+                    ) : (
+                      <Package className="text-slate-300" size={20} />
+                    )}
                   </div>
                 </td>
-                <td className="p-4 font-medium text-neutral-900">{p.name}</td>
-                <td className="p-4"><span className="bg-neutral-100 text-neutral-600 px-2 py-1 rounded text-xs border border-neutral-200">{p.category}</span></td>
-                <td className="p-4 text-right font-mono text-neutral-900">฿{Number(p.price).toLocaleString()}</td>
-                <td className="p-4 text-center text-neutral-500">{p.stock}</td>
-                
-                <td className="p-4 pr-6 text-right opacity-50 group-hover:opacity-100 transition">
-                  <DeleteProductBtn id={p.id} />
+                <td className="p-4 font-bold text-slate-800">{product.name}</td>
+                <td className="p-4">
+                  <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold uppercase">{product.category}</span>
+                </td>
+                <td className="p-4 font-mono font-bold">฿{product.price.toLocaleString()}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${product.stock <= 5 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                    {product.stock} ชิ้น
+                  </span>
+                </td>
+                <td className="p-4 text-right">
+                  <div className="flex justify-end gap-2">
+                    <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="แก้ไข">
+                      <Edit size={18} />
+                    </button>
+                    <DeleteProductBtn id={product.id} />
+                  </div>
                 </td>
               </tr>
             ))}
-            {products.length === 0 && (
-               <tr>
-                  <td colSpan={6} className="p-12 text-center text-neutral-400">No products found.</td>
-               </tr>
-            )}
           </tbody>
         </table>
       </div>

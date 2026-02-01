@@ -3,6 +3,19 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
+// ✅ 1. เพิ่มฟังก์ชัน GET เพื่อให้หน้า Admin ดึงข้อมูลสินค้าได้
+export async function GET() {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' } // เรียงสินค้าใหม่สุดขึ้นก่อน
+    })
+    return NextResponse.json(products)
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })
+  }
+}
+
+// ✅ 2. ฟังก์ชัน POST เดิม (สำหรับการเพิ่มสินค้า)
 export async function POST(request: Request) {
   try {
     const session = await auth()

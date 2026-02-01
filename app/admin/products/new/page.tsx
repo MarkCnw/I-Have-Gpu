@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Upload, Save, ArrowLeft, Loader2, Package } from 'lucide-react'
 import Link from 'next/link'
-import { CATEGORY_SPECS } from '@/lib/spec-config' // Import Config ที่เราสร้าง
+import { CATEGORY_SPECS } from '@/lib/spec-config'
+import { toast } from 'react-hot-toast'
 
 const CATEGORIES = [
   'CPU', 'MOTHERBOARD', 'RAM', 'GPU', 'STORAGE', 'PSU', 'CASE', 'COOLER', 'MONITOR',
@@ -22,23 +23,18 @@ export default function NewProductPage() {
     name: '',
     price: '',
     stock: '',
-    category: '', // เริ่มต้นเป็นค่าว่าง
+    category: '', 
     description: ''
   })
 
-  // --- State: Image ---
   const [imageUrl, setImageUrl] = useState('')
-
-  // --- State: Dynamic Specs ---
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [specs, setSpecs] = useState<Record<string, any>>({})
 
-  // เมื่อเปลี่ยน Category ให้เคลียร์ Specs เก่าทิ้ง
   useEffect(() => {
     setSpecs({})
   }, [basicInfo.category])
 
-  // ฟังก์ชันอัปโหลดรูป
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -48,29 +44,25 @@ export default function NewProductPage() {
     formData.append('file', file)
 
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.success) {
         setImageUrl(data.url)
+        toast.success('อัปโหลดรูปสำเร็จ')
       } else {
-        alert('Upload Failed')
+        toast.error('อัปโหลดไม่สำเร็จ')
       }
     } catch (error) {
-      console.error(error)
-      alert('Upload Error')
+      toast.error('เกิดข้อผิดพลาดในการอัปโหลด')
     } finally {
       setUploading(false)
     }
   }
 
-  // ฟังก์ชันบันทึกสินค้า
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!basicInfo.category) return alert('กรุณาเลือกหมวดหมู่')
-    if (!imageUrl) return alert('กรุณาอัปโหลดรูปสินค้า')
+    if (!basicInfo.category) return toast.error('กรุณาเลือกหมวดหมู่')
+    if (!imageUrl) return toast.error('กรุณาอัปโหลดรูปสินค้า')
 
     setLoading(true)
     try {
@@ -79,7 +71,7 @@ export default function NewProductPage() {
         price: Number(basicInfo.price),
         stock: Number(basicInfo.stock),
         image: imageUrl,
-        specs: specs // ส่ง JSON specs ไปด้วย
+        specs: specs 
       }
 
       const res = await fetch('/api/products', {
@@ -89,20 +81,19 @@ export default function NewProductPage() {
       })
 
       if (res.ok) {
-        alert('✅ เพิ่มสินค้าสำเร็จ!')
+        toast.success('เพิ่มสินค้าสำเร็จ! 🎉')
         router.push('/admin/products')
       } else {
         const err = await res.json()
-        alert(`Error: ${err.message}`)
+        toast.error(`Error: ${err.message}`)
       }
     } catch (error) {
-      alert('Something went wrong')
+      toast.error('เกิดข้อผิดพลาดบางอย่าง')
     } finally {
       setLoading(false)
     }
   }
 
-  // หา Field สเปคของหมวดปัจจุบัน
   const currentSpecFields = CATEGORY_SPECS[basicInfo.category] || []
 
   return (
@@ -113,20 +104,20 @@ export default function NewProductPage() {
         <Link href="/admin/products" className="p-2 hover:bg-neutral-100 rounded-full transition">
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-2xl font-bold">เพิ่มสินค้าใหม่ (Add Product)</h1>
+        <h1 className="text-2xl font-bold text-slate-800">เพิ่มสินค้าใหม่</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         
-        {/* === SECTION 1: Basic Info === */}
+        {/* === ข้อมูลพื้นฐาน === */}
         <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
             <Package size={20} className="text-blue-600" /> ข้อมูลพื้นฐาน
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className="block text-sm font-bold mb-2">ชื่อสินค้า</label>
+              <label className="block text-sm font-bold mb-2 text-slate-600">ชื่อสินค้า</label>
               <input 
                 required
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none"
@@ -137,7 +128,7 @@ export default function NewProductPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold mb-2">หมวดหมู่ (Category)</label>
+              <label className="block text-sm font-bold mb-2 text-slate-600">หมวดหมู่</label>
               <select 
                 required
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none bg-white"
@@ -153,7 +144,7 @@ export default function NewProductPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold mb-2">ราคา (บาท)</label>
+                <label className="block text-sm font-bold mb-2 text-slate-600">ราคา (บาท)</label>
                 <input 
                   required type="number" min="0"
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none"
@@ -162,7 +153,7 @@ export default function NewProductPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold mb-2">จำนวน (Stock)</label>
+                <label className="block text-sm font-bold mb-2 text-slate-600">จำนวน (สต็อก)</label>
                 <input 
                   required type="number" min="0"
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none"
@@ -173,19 +164,20 @@ export default function NewProductPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-bold mb-2">รายละเอียด (Description)</label>
+              <label className="block text-sm font-bold mb-2 text-slate-600">รายละเอียด</label>
               <textarea 
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none h-24"
                 value={basicInfo.description}
                 onChange={e => setBasicInfo({...basicInfo, description: e.target.value})}
+                placeholder="รายละเอียดเพิ่มเติมของสินค้า..."
               />
             </div>
           </div>
         </div>
 
-        {/* === SECTION 2: Image Upload === */}
+        {/* === อัปโหลดรูป === */}
         <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
             <Upload size={20} className="text-purple-600" /> รูปภาพสินค้า
           </h2>
           
@@ -196,12 +188,12 @@ export default function NewProductPage() {
               ) : imageUrl ? (
                 <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
               ) : (
-                <span className="text-xs text-neutral-400">Preview</span>
+                <span className="text-xs text-neutral-400">ตัวอย่างรูป</span>
               )}
             </div>
             
             <div className="flex-1">
-              <label className="block mb-2 text-sm text-neutral-600">อัปโหลดรูปภาพ (แนะนำ 1:1 หรือ PNG พื้นใส)</label>
+              <label className="block mb-2 text-sm text-neutral-600">อัปโหลดไฟล์ (แนะนำสัดส่วน 1:1 หรือ PNG พื้นใส)</label>
               <input 
                 type="file" 
                 accept="image/*"
@@ -216,28 +208,22 @@ export default function NewProductPage() {
                 "
               />
               {imageUrl && (
-                <p className="text-xs text-green-600 mt-2">✓ อัปโหลดสำเร็จ: {imageUrl}</p>
+                <p className="text-xs text-green-600 mt-2">✓ อัปโหลดสำเร็จแล้ว</p>
               )}
             </div>
           </div>
         </div>
 
-        {/* === SECTION 3: Dynamic Specs (หัวใจสำคัญ 🔥) === */}
+        {/* === สเปคสินค้า (Dynamic) === */}
         {basicInfo.category && (
           <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm animate-in fade-in slide-in-from-bottom-4">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold flex items-center gap-2">
+              <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800">
                 <Save size={20} className="text-emerald-600" /> สเปคสินค้า: <span className="text-black">{basicInfo.category}</span>
               </h2>
-              {currentSpecFields.length === 0 && (
-                <span className="text-xs text-orange-500 bg-orange-50 px-2 py-1 rounded">
-                  หมวดหมู่นี้ยังไม่ได้ตั้งค่า Spec Config (ใช้ฟิลด์ทั่วไปได้)
-                </span>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* วนลูปสร้าง Input ตาม Config */}
               {currentSpecFields.map((field) => (
                 <div key={field.key}>
                   <label className="block text-sm font-bold mb-2 text-neutral-700">
@@ -250,7 +236,7 @@ export default function NewProductPage() {
                       value={specs[field.key] || ''}
                       onChange={(e) => setSpecs({ ...specs, [field.key]: e.target.value })}
                     >
-                      <option value="">Select...</option>
+                      <option value="">เลือก...</option>
                       {field.options?.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
@@ -270,7 +256,6 @@ export default function NewProductPage() {
           </div>
         )}
 
-        {/* Submit Button */}
         <div className="flex justify-end pt-4">
           <button
             type="submit"
