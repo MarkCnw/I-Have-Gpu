@@ -1,26 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/api/orders/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
-// 🔥 1. GET: ดึงรายการออเดอร์
+// GET: ดึงรายการออเดอร์
 export async function GET(request: Request) {
   try {
     const session = await auth()
-    
-    // ✅ เพิ่มการเช็ค session.user
     if (!session || !session.user || !session.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // เช็ค Role ว่าเป็นใคร
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isAdmin = (session.user as any).role === 'ADMIN'
 
     let orders;
 
     if (isAdmin) {
-      // Admin: เห็นทุกออเดอร์
       orders = await prisma.order.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
@@ -29,7 +26,6 @@ export async function GET(request: Request) {
         }
       })
     } else {
-      // User: เห็นแค่ออเดอร์ตัวเอง
       const user = await prisma.user.findUnique({ where: { email: session.user.email } })
       if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
@@ -45,17 +41,14 @@ export async function GET(request: Request) {
     return NextResponse.json(orders)
 
   } catch (error) {
-    console.error("Fetch Orders Error:", error)
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
   }
 }
 
-// 🔥 2. PATCH: อัปเดตสถานะ (ยืนยันจ่าย, ส่งของ, หรือลูกค้าแนบสลิป)
+// PATCH: อัปเดตสถานะ (Admin Only) / แนบสลิป (User)
 export async function PATCH(request: Request) {
   try {
     const session = await auth()
-    
-    // ✅ เพิ่มการเช็ค session.user ตรงนี้ด้วย
     if (!session || !session.user || !session.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -66,8 +59,44 @@ export async function PATCH(request: Request) {
     const body = await request.json()
     const { orderId, status, slipImage, trackingNumber, carrier } = body
 
-    // กรณี Admin อัปเดต (เปลี่ยนสถานะ / ใส่เลขพัสดุ)
+    // 🔒 ADMIN SECTION (เปลี่ยนสถานะ / ส่งของ / ยกเลิก)
     if (userRole === 'ADMIN') {
+      
+      // 🔥 Logic: Restock คืนของเมื่อยกเลิกออเดอร์
+      if (status === 'CANCELLED') {
+        await prisma.$transaction(async (tx) => {
+          // 1. ดึงรายการสินค้าในออเดอร์
+          const order = await tx.order.findUnique({
+            where: { id: orderId },
+            include: { items: true }
+          })
+
+          if (!order) throw new Error('Order not found')
+          
+          // ถ้าออเดอร์เคยถูกยกเลิกไปแล้ว ไม่ต้องคืนของซ้ำ
+          if (order.status === 'CANCELLED') {
+             throw new Error('Order already cancelled')
+          }
+
+          // 2. วนลูปคืนสต็อก
+          for (const item of order.items) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } } // บวกกลับเข้าไป
+            })
+          }
+
+          // 3. เปลี่ยนสถานะเป็น CANCELLED
+          await tx.order.update({
+            where: { id: orderId },
+            data: { status: 'CANCELLED' }
+          })
+        })
+        
+        return NextResponse.json({ success: true, message: 'Order cancelled & Stock restored' })
+      }
+
+      // กรณีเปลี่ยนสถานะอื่นๆ (PAID, SHIPPED)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: any = {}
       if (status) updateData.status = status
@@ -81,9 +110,8 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: true, order: updatedOrder })
     }
 
-    // กรณี User อัปเดต (แนบสลิป -> เปลี่ยนเป็น VERIFYING)
+    // 👤 USER SECTION (แนบสลิป)
     if (slipImage && status === 'VERIFYING') {
-      // เช็คว่าเป็นเจ้าของออเดอร์ไหม
       const user = await prisma.user.findUnique({ where: { email: session.user.email } })
       const order = await prisma.order.findUnique({ where: { id: orderId } })
 
@@ -93,18 +121,15 @@ export async function PATCH(request: Request) {
 
       await prisma.order.update({
         where: { id: orderId },
-        data: { 
-          status: 'VERIFYING',
-          slipImage: slipImage
-        }
+        data: { status: 'VERIFYING', slipImage: slipImage }
       })
       return NextResponse.json({ success: true })
     }
 
     return NextResponse.json({ error: 'Forbidden action' }, { status: 403 })
 
-  } catch (error) {
-    console.error("Update Order Error:", error)
-    return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
+  } catch (error: any) {
+    console.error("Update Error:", error)
+    return NextResponse.json({ error: error.message || 'Failed to update' }, { status: 500 })
   }
 }

@@ -2,7 +2,7 @@
 'use client'
 
 import { useCartStore } from '@/app/store/useCartStore'
-import { Trash2, Minus, Plus, ShoppingBag, MapPin, ArrowRight, AlertCircle } from 'lucide-react'
+import { Trash2, Minus, Plus, ShoppingBag, MapPin, ArrowRight, AlertCircle, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -19,7 +19,14 @@ export default function CartPage() {
   const [addresses, setAddresses] = useState<any[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
 
-  // โหลดที่อยู่เมื่อ User Login
+  // --- Tax Invoice State (ใหม่!) ---
+  const [needTaxInvoice, setNeedTaxInvoice] = useState(false)
+  const [taxInfo, setTaxInfo] = useState({
+    taxId: '',
+    taxName: '',
+    taxAddress: ''
+  })
+
   useEffect(() => {
     if (session?.user) {
       fetch('/api/user/addresses')
@@ -27,7 +34,6 @@ export default function CartPage() {
         .then(data => {
           if (Array.isArray(data) && data.length > 0) {
             setAddresses(data)
-            // เลือก Default หรือตัวแรกเป็นค่าเริ่มต้น
             const defaultAddr = data.find((a: any) => a.isDefault) || data[0]
             setSelectedAddressId(defaultAddr.id)
           }
@@ -36,26 +42,20 @@ export default function CartPage() {
   }, [session])
 
   const handleCheckout = async () => {
-    if (!session) {
-      alert('กรุณาเข้าสู่ระบบก่อนสั่งซื้อ')
-      router.push('/login')
-      return
-    }
+    if (!session) return router.push('/login')
+    if (addresses.length === 0) return alert('กรุณาเพิ่มที่อยู่จัดส่งก่อน')
+    if (!selectedAddressId) return alert('กรุณาเลือกที่อยู่จัดส่ง')
 
-    if (addresses.length === 0) {
-      alert('กรุณาเพิ่มที่อยู่จัดส่งในหน้าข้อมูลส่วนตัวก่อน')
-      router.push('/profile')
-      return
-    }
-
-    if (!selectedAddressId) {
-      alert('กรุณาเลือกที่อยู่จัดส่ง')
-      return
+    // --- Validation (ตรวจสอบความถูกต้อง) ---
+    if (needTaxInvoice) {
+      if (!taxInfo.taxName) return alert('กรุณากรอกชื่อบริษัท/บุคคล สำหรับใบกำกับภาษี')
+      if (!/^\d{13}$/.test(taxInfo.taxId)) return alert('เลขผู้เสียภาษีต้องเป็นตัวเลข 13 หลักเท่านั้น')
+      if (!taxInfo.taxAddress) return alert('กรุณากรอกที่อยู่สำหรับใบกำกับภาษี')
     }
 
     if (!confirm('ยืนยันการสั่งซื้อ?')) return
 
-    setLoading(true)
+    setLoading(true) // 🔒 เริ่มโหลด (กันกดเบิ้ล)
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -63,7 +63,8 @@ export default function CartPage() {
         body: JSON.stringify({ 
           items, 
           totalPrice: totalPrice(),
-          addressId: selectedAddressId // 🔥 ส่ง ID ที่อยู่ที่เลือกไปด้วย
+          addressId: selectedAddressId,
+          taxInfo: needTaxInvoice ? taxInfo : null // ส่งข้อมูลภาษีไปด้วย (ถ้ามี)
         })
       })
 
@@ -71,15 +72,14 @@ export default function CartPage() {
 
       if (res.ok) {
         clearCart()
-        alert('🎉 สั่งซื้อสำเร็จ! กรุณาชำระเงินในขั้นตอนต่อไป')
-        router.push('/orders') // ไปหน้าประวัติการสั่งซื้อ เพื่อแจ้งโอนเงิน
+        // alert('🎉 สั่งซื้อสำเร็จ!') <-- ตัดออกเพื่อให้ flow ไหลลื่น
+        router.push('/orders') 
       } else {
         alert(data.error || 'สั่งซื้อไม่สำเร็จ')
+        setLoading(false) // 🔓 ปลดล็อกถ้าพัง
       }
     } catch (error) {
-      console.error(error)
       alert('เกิดข้อผิดพลาดในการเชื่อมต่อ')
-    } finally {
       setLoading(false)
     }
   }
@@ -91,7 +91,6 @@ export default function CartPage() {
           <ShoppingBag size={40} className="text-neutral-400" />
         </div>
         <h1 className="text-2xl font-bold text-neutral-800">ตะกร้าว่างเปล่า</h1>
-        <p className="text-neutral-500">ยังไม่มีสินค้าในตะกร้าของคุณ</p>
         <Link href="/" className="bg-black text-white px-6 py-3 rounded-full font-bold hover:bg-neutral-800 transition">
           ไปเลือกซื้อสินค้า
         </Link>
@@ -109,11 +108,10 @@ export default function CartPage() {
         {/* รายการสินค้า */}
         <div className="flex-1 space-y-6">
           {items.map((item) => (
-            <div key={item.id} className="flex gap-6 p-4 border border-neutral-100 rounded-xl hover:border-neutral-300 transition bg-white shadow-sm">
+            <div key={item.id} className="flex gap-6 p-4 border border-neutral-100 rounded-xl bg-white shadow-sm">
               <div className="w-24 h-24 bg-neutral-50 rounded-lg flex-shrink-0 flex items-center justify-center p-2">
                 <img src={item.image || ''} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
               </div>
-              
               <div className="flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="font-bold text-lg text-neutral-900 line-clamp-1">{item.name}</h3>
@@ -121,33 +119,19 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between items-end">
                   <div className="font-mono font-bold text-lg">฿{item.price.toLocaleString()}</div>
-                  
                   <div className="flex items-center gap-3 bg-neutral-100 rounded-lg p-1">
-                    <button 
-                      onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                      className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm hover:bg-neutral-50"
-                    >
-                      <Minus size={14} />
-                    </button>
+                    <button onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))} className="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-neutral-50"><Minus size={14} /></button>
                     <span className="font-bold w-4 text-center text-sm">{item.quantity}</span>
-                    <button 
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm hover:bg-neutral-50"
-                    >
-                      <Plus size={14} />
-                    </button>
+                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-neutral-50"><Plus size={14} /></button>
                   </div>
                 </div>
               </div>
-              
-              <button onClick={() => removeItem(item.id)} className="text-neutral-300 hover:text-red-500 transition self-start">
-                <Trash2 size={20} />
-              </button>
+              <button onClick={() => removeItem(item.id)} className="text-neutral-300 hover:text-red-500 transition self-start"><Trash2 size={20} /></button>
             </div>
           ))}
         </div>
 
-        {/* สรุปยอด & ที่อยู่จัดส่ง */}
+        {/* สรุปยอด & Checkout Form */}
         <div className="w-full lg:w-[400px] h-fit sticky top-24">
           <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-200">
             <h3 className="font-bold text-lg mb-4">สรุปคำสั่งซื้อ</h3>
@@ -160,70 +144,81 @@ export default function CartPage() {
               <span>ค่าจัดส่ง</span>
               <span className="text-green-600 font-bold">ฟรี</span>
             </div>
-            
             <div className="border-t border-neutral-200 my-4 pt-4 flex justify-between items-end">
               <span className="font-bold text-xl">ยอดสุทธิ</span>
               <span className="font-bold text-2xl text-black">฿{totalPrice().toLocaleString()}</span>
             </div>
 
-            {/* 🔥 ส่วนเลือกที่อยู่จัดส่ง */}
+            {/* ส่วนเลือกที่อยู่ */}
             <div className="mb-6 pt-4 border-t border-neutral-200">
-              <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
-                <MapPin size={16} /> ที่อยู่จัดส่ง
-              </h4>
-              
-              {!session ? (
-                 <div className="text-sm text-neutral-500 bg-white p-3 rounded-lg border border-neutral-200">
-                   กรุณาเข้าสู่ระบบเพื่อเลือกที่อยู่
-                 </div>
-              ) : addresses.length > 0 ? (
-                <div className="space-y-2">
-                   <select 
-                     className="w-full p-3 text-sm border border-neutral-300 rounded-lg bg-white outline-none focus:border-black transition"
-                     value={selectedAddressId}
-                     onChange={(e) => setSelectedAddressId(e.target.value)}
-                   >
-                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                     {addresses.map((addr: any) => (
-                       <option key={addr.id} value={addr.id}>
-                         {addr.name} ({addr.houseNumber}, {addr.province}) {addr.isDefault ? '[Default]' : ''}
-                       </option>
-                     ))}
-                   </select>
-                   {/* แสดงรายละเอียดที่อยู่ที่เลือกแบบย่อ */}
-                   {selectedAddressId && (
-                     <div className="text-xs text-neutral-500 px-1">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {(() => {
-                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                           const addr = addresses.find((a: any) => a.id === selectedAddressId)
-                           return addr ? `${addr.subdistrict}, ${addr.district}, ${addr.province} ${addr.zipcode}` : ''
-                        })()}
-                     </div>
-                   )}
-                </div>
+              <h4 className="font-bold text-sm mb-3 flex items-center gap-2"><MapPin size={16} /> ที่อยู่จัดส่ง</h4>
+              {addresses.length > 0 ? (
+                <select className="w-full p-3 text-sm border border-neutral-300 rounded-lg bg-white outline-none focus:border-black transition" value={selectedAddressId} onChange={(e) => setSelectedAddressId(e.target.value)}>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {addresses.map((addr: any) => (
+                    <option key={addr.id} value={addr.id}>{addr.name} ({addr.province})</option>
+                  ))}
+                </select>
               ) : (
-                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 flex items-start gap-2">
+                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-start gap-2">
                    <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                   <div>
-                     <p className="font-bold">ยังไม่มีที่อยู่จัดส่ง</p>
-                     <Link href="/profile" className="underline hover:text-red-800">เพิ่มที่อยู่ใหม่</Link>
-                   </div>
+                   <Link href="/profile" className="underline font-bold">เพิ่มที่อยู่ใหม่</Link>
                 </div>
               )}
             </div>
 
+            {/* 🔥 ส่วนขอใบกำกับภาษี (ใหม่!) */}
+            <div className="mb-6 pt-4 border-t border-neutral-200">
+              <div className="flex items-center gap-2 mb-3">
+                <input 
+                  type="checkbox" 
+                  id="tax" 
+                  className="w-4 h-4 accent-black"
+                  checked={needTaxInvoice} 
+                  onChange={(e) => setNeedTaxInvoice(e.target.checked)} 
+                />
+                <label htmlFor="tax" className="font-bold text-sm flex items-center gap-2 cursor-pointer">
+                  <FileText size={16} /> ขอใบกำกับภาษีเต็มรูป
+                </label>
+              </div>
+
+              {needTaxInvoice && (
+                <div className="space-y-3 animate-in slide-in-from-top-2">
+                  <input 
+                    placeholder="เลขประจำตัวผู้เสียภาษี (13 หลัก)" 
+                    className="w-full p-3 text-sm border rounded-lg outline-none focus:border-black"
+                    maxLength={13}
+                    value={taxInfo.taxId}
+                    onChange={(e) => setTaxInfo({...taxInfo, taxId: e.target.value.replace(/\D/g, '')})} // รับเฉพาะตัวเลข
+                  />
+                  <input 
+                    placeholder="ชื่อบริษัท / ชื่อบุคคล (สำนักงานใหญ่/สาขา)" 
+                    className="w-full p-3 text-sm border rounded-lg outline-none focus:border-black"
+                    value={taxInfo.taxName}
+                    onChange={(e) => setTaxInfo({...taxInfo, taxName: e.target.value})}
+                  />
+                  <textarea 
+                    placeholder="ที่อยู่ตาม ภ.พ. 20" 
+                    className="w-full p-3 text-sm border rounded-lg outline-none focus:border-black resize-none h-20"
+                    value={taxInfo.taxAddress}
+                    onChange={(e) => setTaxInfo({...taxInfo, taxAddress: e.target.value})}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* ปุ่ม Checkout (ป้องกันกดเบิ้ล) */}
             <button 
               onClick={handleCheckout}
-              disabled={loading}
-              className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-neutral-800 transition flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-black/10"
+              disabled={loading} // 🔒 Disable เมื่อโหลด
+              className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-neutral-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
-              {loading ? 'กำลังดำเนินการ...' : <><span className="text-lg">ยืนยันการสั่งซื้อ</span> <ArrowRight size={20} /></>}
+              {loading ? (
+                <>กำลังดำเนินการ...</>
+              ) : (
+                <><span className="text-lg">ยืนยันการสั่งซื้อ</span> <ArrowRight size={20} /></>
+              )}
             </button>
-            
-            <p className="text-xs text-center text-neutral-400 mt-4">
-              🔒 ข้อมูลของคุณปลอดภัยเสมอ
-            </p>
           </div>
         </div>
       </div>

@@ -129,27 +129,32 @@ model Order {
   items     OrderItem[]
   createdAt DateTime    @default(now())
 
-  // Logistics
+  // --- 🚚 Logistics Info ---
   trackingNumber  String?
   carrier         String?
   
-  // Address Snapshot
+  // --- 🏠 Shipping Address Snapshot ---
   shippingName    String?
   shippingPhone   String?
   shippingAddress String?
   shippingZipcode String?
 
-  // 🔥 Payment Info (เพิ่มส่วนนี้)
-  slipImage       String?   // URL รูปสลิปโอนเงิน
+  // --- 📄 Tax Invoice Info (ใหม่!) ---
+  taxId           String?   // เลขผู้เสียภาษี 13 หลัก
+  taxName         String?   // ชื่อบริษัท/บุคคล
+  taxAddress      String?   // ที่อยู่ตาม ภ.พ. 20
+
+  // --- 💰 Payment Info ---
+  slipImage       String?
 }
 
 enum OrderStatus {
-  PENDING     // รอชำระเงิน
-  VERIFYING   // 🔥 รอตรวจสอบ (ลูกค้าแนบสลิปแล้ว)
-  PAID        // ชำระเงินแล้ว (แอดมินคอนเฟิร์ม)
-  SHIPPED     // ส่งสินค้าแล้ว
-  COMPLETED   // สำเร็จ
-  CANCELLED   // ยกเลิก
+  PENDING
+  VERIFYING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
 }
 
 model OrderItem {

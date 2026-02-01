@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // app/api/checkout/route.ts
 import { NextResponse } from 'next/server'
@@ -7,71 +8,56 @@ import { auth } from '@/auth'
 export async function POST(request: Request) {
   try {
     const session = await auth()
-    if (!session || !session.user || !session.user.email) {
-      return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบก่อนสั่งซื้อ' }, { status: 401 })
-    }
+    if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { items, totalPrice, addressId } = body // 👈 รับ addressId จาก Frontend
+    const { items, totalPrice, addressId, taxInfo } = body // 👈 รับ taxInfo
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: { addresses: true }
     })
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    // 1. หาที่อยู่ที่จะใช้ส่งของ
-    let shippingAddress = user.addresses.find(a => a.id === addressId)
-    // ถ้าไม่ส่งมา ให้ใช้ Default หรือตัวแรก (Fallback)
-    if (!shippingAddress) {
-      shippingAddress = user.addresses.find(a => a.isDefault) || user.addresses[0]
-    }
+    // ... (Logic หา Shipping Address เหมือนเดิม) ...
+    let shippingAddress = user.addresses.find(a => a.id === addressId) || user.addresses.find(a => a.isDefault) || user.addresses[0]
+    if (!shippingAddress) return NextResponse.json({ error: 'No shipping address' }, { status: 400 })
 
-    if (!shippingAddress) {
-      return NextResponse.json({ error: 'กรุณาเพิ่มที่อยู่จัดส่งในหน้าข้อมูลส่วนตัวก่อนครับ' }, { status: 400 })
-    }
-
-    // 2. เริ่ม Transaction: ตัดสต็อก + สร้าง Order
     const newOrder = await prisma.$transaction(async (tx) => {
-      
-      // A. เช็คสต็อกและตัดของ
+      // 1. ตัดสต็อก (Validation Stock >= 0 ในตัว)
       for (const item of items) {
         const product = await tx.product.findUnique({ where: { id: item.id } })
-        if (!product) throw new Error(`สินค้า "${item.name}" ไม่พบในระบบ`)
-        
-        const buyQty = item.quantity || 1
-        // เช็คของหมด
-        if (product.stock < buyQty) {
-          throw new Error(`ขออภัย! สินค้า "${item.name}" สินค้าหมด (เหลือ: ${product.stock})`)
+        if (!product || product.stock < item.quantity) {
+          throw new Error(`สินค้า ${item.name} หมดหรือมีไม่พอ`)
         }
-
-        // ตัดสต็อก
         await tx.product.update({
           where: { id: item.id },
-          data: { stock: { decrement: buyQty } }
+          data: { stock: { decrement: item.quantity } }
         })
       }
 
-      // B. สร้าง Order พร้อม Snapshot ที่อยู่ 🔥
+      // 2. สร้าง Order (บันทึก Tax Info ด้วย) 🔥
       return await tx.order.create({
         data: {
           userId: user.id,
           total: totalPrice,
-          status: 'PENDING', // รอจ่ายเงิน
+          status: 'PENDING',
           
-          // 🔥 บันทึก Snapshot ที่อยู่ (สำคัญมากสำหรับ Audit)
           shippingName: shippingAddress.name,
           shippingPhone: shippingAddress.phone,
-          shippingAddress: `${shippingAddress.houseNumber}, ${shippingAddress.subdistrict}, ${shippingAddress.district}, ${shippingAddress.province}`,
+          shippingAddress: `${shippingAddress.houseNumber} ${shippingAddress.subdistrict} ${shippingAddress.district} ${shippingAddress.province}`,
           shippingZipcode: shippingAddress.zipcode,
+
+          // บันทึกข้อมูลใบกำกับภาษี (ถ้ามี)
+          taxId: taxInfo?.taxId || null,
+          taxName: taxInfo?.taxName || null,
+          taxAddress: taxInfo?.taxAddress || null,
 
           items: {
             create: items.map((item: any) => ({
               productId: item.id,
-              quantity: item.quantity || 1,
+              quantity: item.quantity,
               price: item.price
             }))
           }
@@ -82,7 +68,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, orderId: newOrder.id })
 
   } catch (error: any) {
-    console.error("Checkout Error:", error)
-    return NextResponse.json({ error: error.message || 'Something went wrong' }, { status: 500 })
+    return NextResponse.json({ error: error.message || 'Checkout failed' }, { status: 500 })
   }
 }
