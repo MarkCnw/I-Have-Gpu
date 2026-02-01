@@ -191,3 +191,14 @@ model Review {
   product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
 }
+
+// 🔥 เพิ่ม Model ใหม่สำหรับเก็บ Token รีเซ็ตรหัสผ่าน
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}

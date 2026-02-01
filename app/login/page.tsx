@@ -51,13 +51,37 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-slate-400 text-sm mb-1">Email</label>
-            <input name="email" type="email" required className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-emerald-500 outline-none" />
+            <input 
+              name="email" 
+              type="email" 
+              required 
+              className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-emerald-500 outline-none transition" 
+            />
           </div>
           <div>
             <label className="block text-slate-400 text-sm mb-1">Password</label>
-            <input name="password" type="password" required className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-emerald-500 outline-none" />
+            <input 
+              name="password" 
+              type="password" 
+              required 
+              className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-emerald-500 outline-none transition" 
+            />
           </div>
-          <button disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded font-bold transition disabled:opacity-50">
+
+          {/* 🔥 ส่วนที่เพิ่ม: ลิงก์ลืมรหัสผ่าน */}
+          <div className="flex justify-end">
+            <Link 
+              href="/forgot-password" 
+              className="text-sm text-slate-400 hover:text-emerald-400 transition hover:underline"
+            >
+              ลืมรหัสผ่าน?
+            </Link>
+          </div>
+
+          <button 
+            disabled={loading} 
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded font-bold transition disabled:opacity-50 shadow-lg shadow-emerald-900/20"
+          >
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
