@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { toast } from 'react-hot-toast' // 👈 1. Import toast
+import { toast } from 'react-hot-toast'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCartStore()
@@ -44,7 +44,7 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     if (!session) {
-        toast.error('กรุณาเข้าสู่ระบบก่อนสั่งซื้อ') // 🔥 ใช้ toast แทน alert
+        toast.error('กรุณาเข้าสู่ระบบก่อนสั่งซื้อ')
         return router.push('/login')
     }
     if (addresses.length === 0) return toast.error('กรุณาเพิ่มที่อยู่จัดส่งก่อน')
@@ -57,12 +57,9 @@ export default function CartPage() {
       if (!taxInfo.taxAddress) return toast.error('กรุณากรอกที่อยู่สำหรับใบกำกับภาษี')
     }
 
-    // ใช้ confirm แบบเดิมไปก่อน (หรือจะเปลี่ยนเป็น Custom Modal ก็ได้ แต่ toast.promise จะช่วยเรื่อง UX ตอนโหลด)
-    if (!confirm('ยืนยันการสั่งซื้อ?')) return 
-
+    // 🔥 ลบ confirm ออกแล้ว: กดปุ่มปุ๊บ สั่งซื้อทันที (UX ลื่นกว่า)
     setLoading(true)
     
-    // 🔥 ใช้ toast.promise เพื่อโชว์สถานะ Loading -> Success/Error แบบสวยๆ
     const checkoutPromise = fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,6 +75,7 @@ export default function CartPage() {
         return data
     })
 
+    // แสดงสถานะ Loading -> Success แบบสวยงาม
     toast.promise(checkoutPromise, {
         loading: 'กำลังดำเนินการ...',
         success: (data) => {
