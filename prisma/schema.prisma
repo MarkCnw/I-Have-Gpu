@@ -5,32 +5,32 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql" // หรือ mysql
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-// 1. ตาราง User
+// 1. User Table
 model User {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  name        String?
-  password    String
-  role        Role      @default(USER)
-  createdAt   DateTime  @default(now())
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
   
   // Profile Info
-  image       String?
-  phone       String?
-  dateOfBirth DateTime?
-  // address   String?  @db.Text // ❌ อันเก่า (เลิกใช้)
+  image         String?
+  phone         String?
+  dateOfBirth   DateTime?
+  // address    String? @db.Text  <-- Removed old field
 
   // Relations
-  addresses Address[]   // 🔥 ความสัมพันธ์กับตารางที่อยู่ใหม่
-  builds    Build[]
-  orders    Order[]
-  favorites UserFavorite[]
-  reviews   Review[]
+  addresses     Address[] // 🔥 Relation to new Address model
+  builds        Build[]
+  orders        Order[]
+  favorites     UserFavorite[]
+  reviews       Review[]
 }
 
 enum Role {
@@ -38,20 +38,20 @@ enum Role {
   ADMIN
 }
 
-// 🔥 2. ตารางที่อยู่ (ใหม่)
+// 🔥 2. Address Table (New)
 model Address {
   id          String   @id @default(uuid())
-  name        String   // ชื่อผู้รับ
-  phone       String   // เบอร์ติดต่อ
+  name        String   // Recipient Name
+  phone       String   // Recipient Phone
   
-  // ที่อยู่ละเอียด
-  houseNumber String   // บ้านเลขที่, หมู่, ซอย, ถนน
-  subdistrict String   // แขวง/ตำบล
-  district    String   // เขต/อำเภอ
-  province    String   // จังหวัด
-  zipcode     String   // รหัสไปรษณีย์
+  // Detailed Address
+  houseNumber String   // House No., Village, Road
+  subdistrict String   // Tambon/Sub-district
+  district    String   // Amphoe/District
+  province    String   // Province
+  zipcode     String   // Postal Code
   
-  isDefault   Boolean  @default(false) // เป็นที่อยู่หลักหรือไม่
+  isDefault   Boolean  @default(false)
 
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -59,7 +59,7 @@ model Address {
   createdAt   DateTime @default(now())
 }
 
-// 3. ตารางสินค้า
+// 3. Product Table
 model Product {
   id          String   @id @default(uuid())
   name        String
@@ -98,7 +98,7 @@ enum Category {
   ALL
 }
 
-// 4. ตารางจัดสเปค
+// 4. Build Table
 model Build {
   id          String      @id @default(uuid())
   name        String
@@ -118,7 +118,7 @@ model BuildItem {
   quantity  Int     @default(1)
 }
 
-// 5. ตารางคำสั่งซื้อ (อัปเดต)
+// 5. Order Table (Updated)
 model Order {
   id        String      @id @default(uuid())
   userId    String
@@ -128,14 +128,14 @@ model Order {
   items     OrderItem[]
   createdAt DateTime    @default(now())
 
-  // 🔥 Logistics Info (ใหม่)
-  trackingNumber  String? // เลขพัสดุ
-  carrier         String? // บริษัทขนส่ง (Kerry, Flash, EMS)
+  // 🔥 Logistics Info (New)
+  trackingNumber  String? // e.g., TH12345678
+  carrier         String? // e.g., Kerry, Flash
   
-  // 🔥 Snapshot ที่อยู่จัดส่ง (เก็บแยกเผื่อ User เปลี่ยนที่อยู่ทีหลัง)
+  // 🔥 Address Snapshot (Critical for Audit)
   shippingName    String?
   shippingPhone   String?
-  shippingAddress String? // เก็บรวม houseNumber + subdistrict...
+  shippingAddress String? // Stores full string: houseNumber + subdistrict + ...
   shippingZipcode String?
 }
 
@@ -157,7 +157,7 @@ model OrderItem {
   price     Decimal
 }
 
-// 6. ตารางรายการโปรด
+// 6. Favorites Table
 model UserFavorite {
   id        String   @id @default(uuid())
   userId    String
@@ -169,7 +169,7 @@ model UserFavorite {
   @@unique([userId, productId])
 }
 
-// 7. ตารางรีวิว
+// 7. Review Table
 model Review {
   id        String   @id @default(uuid())
   rating    Int      @default(5)

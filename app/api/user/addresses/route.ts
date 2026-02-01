@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
-// GET: ดึงรายการที่อยู่ทั้งหมดของ User
+// GET: Fetch all addresses for the logged-in user
 export async function GET() {
   try {
     const session = await auth()
@@ -13,7 +13,7 @@ export async function GET() {
       where: { email: session.user.email },
       include: { 
         addresses: { 
-          orderBy: { isDefault: 'desc' } // เอา Default ขึ้นก่อน
+          orderBy: { isDefault: 'desc' } // Default address first
         } 
       } 
     })
@@ -24,7 +24,7 @@ export async function GET() {
   }
 }
 
-// POST: เพิ่มที่อยู่ใหม่
+// POST: Add a new address
 export async function POST(req: Request) {
   try {
     const session = await auth()
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     const body = await req.json()
     
-    // ถ้าตั้งเป็น Default ให้เคลียร์ค่า Default อันเก่าก่อน
+    // If setting as default, unset previous default
     if (body.isDefault) {
       await prisma.address.updateMany({
         where: { userId: user.id },
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       })
     }
 
-    // ถ้าเป็นที่อยู่แรก ให้บังคับเป็น Default เสมอ
+    // Force default if it's the first address
     const addressCount = await prisma.address.count({ where: { userId: user.id } })
     const isFirstAddress = addressCount === 0
 
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
   }
 }
 
-// DELETE: ลบที่อยู่
+// DELETE: Remove an address
 export async function DELETE(req: Request) {
   try {
     const session = await auth()
@@ -79,9 +79,7 @@ export async function DELETE(req: Request) {
     
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
 
-    // ตรวจสอบว่าเป็นเจ้าของที่อยู่จริงไหม
     const address = await prisma.address.findUnique({ where: { id } })
-    // หา User ID จาก email
     const user = await prisma.user.findUnique({ where: { email: session.user.email } })
 
     if (!address || address.userId !== user?.id) {

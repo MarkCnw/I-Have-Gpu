@@ -8,63 +8,68 @@ export async function POST(request: Request) {
   try {
     const session = await auth()
     if (!session || !session.user || !session.user.email) {
-      return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบก่อนสั่งซื้อ (Please Login)' }, { status: 401 })
+      return NextResponse.json({ error: 'Please login first' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { items, totalPrice } = body
+    const { items, totalPrice, addressId } = body // 👈 Expect addressId from frontend
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
+      include: { addresses: true }
     })
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // 🔥 ใช้ Transaction: ทำทุกอย่างพร้อมกัน (เช็คของ -> ตัดของ -> สร้างบิล)
-    // ถ้าขั้นตอนไหนล้มเหลว มันจะยกเลิกทั้งหมด (Rollback)
+    // 1. Determine Shipping Address
+    // If frontend sends addressId, use it. Otherwise, use default. Fallback to first address.
+    let shippingAddress = user.addresses.find(a => a.id === addressId)
+    if (!shippingAddress) {
+      shippingAddress = user.addresses.find(a => a.isDefault) || user.addresses[0]
+    }
+
+    if (!shippingAddress) {
+      return NextResponse.json({ error: 'Please add a shipping address in your profile.' }, { status: 400 })
+    }
+
+    // 2. Transaction: Deduct stock + Create Order
     const newOrder = await prisma.$transaction(async (tx) => {
       
-      // 1. วนลูปเช็คสินค้าและตัดสต็อกทีละชิ้น
+      // A. Check & Deduct Stock
       for (const item of items) {
-        // ดึงข้อมูลสินค้าล่าสุดจาก DB (เผื่อมีคนอื่นแย่งซื้อตัดหน้า)
-        const product = await tx.product.findUnique({
-          where: { id: item.id }
-        })
-
-        if (!product) {
-          throw new Error(`สินค้า "${item.name}" ไม่พบในระบบ`)
-        }
-
-        const buyQty = item.quantity || 1 // จำนวนที่จะซื้อ
-
-        // 🛑 เช็คสต็อก (Logic Overselling)
+        const product = await tx.product.findUnique({ where: { id: item.id } })
+        if (!product) throw new Error(`Product "${item.name}" not found`)
+        
+        const buyQty = item.quantity || 1
         if (product.stock < buyQty) {
-          throw new Error(`ขออภัย! สินค้า "${item.name}" มีสินค้าไม่พอ (เหลือ ${product.stock} ชิ้น)`)
+          throw new Error(`Sorry, "${item.name}" is out of stock (Left: ${product.stock})`)
         }
 
-        // ✂️ ตัดสต็อก
         await tx.product.update({
           where: { id: item.id },
-          data: {
-            stock: {
-              decrement: buyQty // ลดจำนวนลงตามที่ซื้อ
-            }
-          }
+          data: { stock: { decrement: buyQty } }
         })
       }
 
-      // 2. สร้าง Order เมื่อตัดของผ่านหมดแล้ว
+      // B. Create Order with Address Snapshot 🔥
       return await tx.order.create({
         data: {
           userId: user.id,
           total: totalPrice,
-          status: 'PAID', // สมมติว่าจ่ายเงินสำเร็จแล้ว
+          status: 'PAID',
+          
+          // 🔥 Save Address Snapshot (Critical!)
+          shippingName: shippingAddress.name,
+          shippingPhone: shippingAddress.phone,
+          shippingAddress: `${shippingAddress.houseNumber}, ${shippingAddress.subdistrict}, ${shippingAddress.district}, ${shippingAddress.province}`,
+          shippingZipcode: shippingAddress.zipcode,
+
           items: {
             create: items.map((item: any) => ({
               productId: item.id,
-              quantity: item.quantity || 1, // บันทึกจำนวนจริงที่ซื้อ
+              quantity: item.quantity || 1,
               price: item.price
             }))
           }
@@ -76,7 +81,6 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error("Checkout Error:", error)
-    // ส่งข้อความ Error กลับไปแจ้งเตือนหน้าเว็บ (เช่น "ของหมด")
     return NextResponse.json({ error: error.message || 'Something went wrong' }, { status: 500 })
   }
 }

@@ -2,7 +2,8 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer"; // 👈 1. Import Footer มา
+import Footer from "@/components/Footer";
+import Providers from "@/components/Providers"; // 👈 1. Import Providers
 
 const kanit = Kanit({
   subsets: ["latin", "thai"],
@@ -22,18 +23,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
-      {/* 2. ปรับ Body:
-            - เปลี่ยน bg-black -> bg-white (ให้ตรงกับธีม Clean)
-            - เปลี่ยน text-white -> text-neutral-900 (ตัวหนังสือสีเข้มบนพื้นขาว)
-            - เพิ่ม min-h-screen และ flex-col เพื่อดัน Footer ลงล่างสุดเสมอ
-      */}
       <body className={`${kanit.variable} font-sans antialiased bg-white text-neutral-900 min-h-screen flex flex-col`}>
-        <div className="flex-1">
-          {children}
-        </div>
-        
-        {/* 3. ใส่ Footer ไว้ด้านล่างสุด */}
-        <Footer />
+        {/* 2. ครอบ Providers ไว้ที่นี่ เพื่อให้ทุกหน้า (รวมถึง Cart) ใช้ useSession ได้ */}
+        <Providers>
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
