@@ -5,8 +5,9 @@ import ProductCard from '@/components/ProductCard'
 import SearchBar from '@/components/SearchBar'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import HeroCarousel from '@/components/HeroCarousel'
-import StoreFeatures from '@/components/StoreFeatures' // 👈 Import จุดเด่นร้าน
-import BrandMarquee from '@/components/BrandMarquee'   // 👈 Import แบรนด์
+import StoreFeatures from '@/components/StoreFeatures'
+import BrandMarquee from '@/components/BrandMarquee'
+import CategoryFilter from '@/components/CategoryFilter' // 👈 1. Import Component ใหม่
 import { auth } from '@/auth'
 import { Prisma } from '@prisma/client'
 import { 
@@ -38,17 +39,56 @@ const CATEGORIES = [
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string }>
+  // 🔥 อัปเดต Type ให้รองรับ key อื่นๆ (เช่น spec_bus)
+  searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
   const session = await auth()
   const user = session?.user
-  const { q, category } = await searchParams
+  
+  // รอรับค่า params
+  const params = await searchParams
+  const { q, category } = params
   const currentCategory = category || 'ALL'
 
-  const whereCondition: Prisma.ProductWhereInput = {}
-  if (q) whereCondition.name = { contains: q, mode: 'insensitive' }
+  // --- 🔥 สร้างเงื่อนไขการค้นหา (Advanced Filter Logic) ---
+  // 1. สร้าง Array เก็บเงื่อนไขย่อยๆ (ใช้ AND เพื่อให้ต้องตรงทุกเงื่อนไข)
+  const andConditions: Prisma.ProductWhereInput[] = []
+
+  // 2. เงื่อนไขค้นหาชื่อ (q)
+  if (q) {
+    andConditions.push({ name: { contains: q, mode: 'insensitive' } })
+  }
+
+  // 3. เงื่อนไขหมวดหมู่ (Category)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (category && category !== 'ALL') whereCondition.category = category as any
+  if (category && category !== 'ALL') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    andConditions.push({ category: category as any })
+  }
+
+  // 4. 🔥 เงื่อนไขสเปค (Specs) - วนลูปหา params ที่ขึ้นต้นด้วย spec_
+  for (const key of Object.keys(params)) {
+    if (key.startsWith('spec_') && params[key]) {
+      const specKey = key.replace('spec_', '') // ตัด prefix ออก (เช่น spec_bus -> bus)
+      const specValue = params[key]
+
+      if (specValue) {
+        // เพิ่มเงื่อนไข JSON Filter ลงใน Array
+        andConditions.push({
+          specs: {
+            path: [specKey], // ระบุ key ใน JSON
+            equals: specValue // ค่าต้องตรงกัน
+          }
+        })
+      }
+    }
+  }
+
+  // 5. รวมเงื่อนไขทั้งหมดเข้าด้วยกัน
+  const whereCondition: Prisma.ProductWhereInput = {
+    AND: andConditions
+  }
+  // -----------------------------------------------------
 
   const rawProducts = await prisma.product.findMany({
     where: whereCondition,
@@ -113,16 +153,10 @@ export default async function Home({
       </header>
 
       {/* ================= HERO & FEATURES SECTION ================= */}
-      {/* แสดงเฉพาะหน้าแรก (ไม่ค้นหา และเลือกหมวด All) */}
-      {!q && currentCategory === 'ALL' && (
+      {!q && currentCategory === 'ALL' && !Object.keys(params).some(k => k.startsWith('spec_')) && (
         <>
-          {/* 1. Banner Slider */}
           <HeroCarousel />
-
-          {/* 2. Store Features (จุดเด่นร้าน) */}
           <StoreFeatures />
-
-          {/* 3. Trusted Brands (แบรนด์พาร์ทเนอร์) */}
           <BrandMarquee />
         </>
       )}
@@ -130,7 +164,7 @@ export default async function Home({
       {/* ================= MAIN CONTENT ================= */}
       <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row gap-12 pt-4">
         
-        {/* SIDEBAR */}
+        {/* SIDEBAR (คงเดิมไว้สำหรับ Desktop) */}
         <aside className="hidden md:block w-48 flex-shrink-0">
            <div className="sticky top-28">
              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-6 px-2 flex items-center gap-2">
@@ -163,6 +197,11 @@ export default async function Home({
 
         {/* PRODUCT GRID */}
         <main className="flex-1">
+           {/* 🔥 ใส่ CategoryFilter ตรงนี้ (แสดงผลเฉพาะเมื่อมีการเลือก Category) */}
+           <div className="mb-4">
+              <CategoryFilter />
+           </div>
+
            <div className="flex items-baseline justify-between mb-8 border-b border-neutral-100 pb-4">
               <h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
                  {currentCategory === 'ALL' ? 'Selected for You' : CATEGORIES.find(c => c.id === currentCategory)?.name}
@@ -183,7 +222,7 @@ export default async function Home({
            ) : (
              <div className="flex flex-col items-center justify-center py-32 text-neutral-300">
                 <Box size={64} className="mb-4 opacity-20" />
-                <p className="text-neutral-400">No products found.</p>
+                <p className="text-neutral-400">No products found matching your filters.</p>
                 <Link href="/" className="mt-4 text-black text-sm font-bold border-b border-black hover:opacity-70">Clear Filters</Link>
              </div>
            )}

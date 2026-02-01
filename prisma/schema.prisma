@@ -5,28 +5,32 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "postgresql" // หรือ mysql
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 // 1. ตาราง User
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String?
-  password      String
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
+  id          String    @id @default(uuid())
+  email       String    @unique
+  name        String?
+  password    String
+  role        Role      @default(USER)
+  createdAt   DateTime  @default(now())
   
-  // 🔥 เพิ่ม 3 ช่องนี้
-  phone         String?
-  dateOfBirth   DateTime?
-  address       String?   @db.Text // เก็บที่อยู่ยาวๆ ได้
+  // Profile Info
+  image       String?
+  phone       String?
+  dateOfBirth DateTime?
+  // address   String?  @db.Text // ❌ อันเก่า (เลิกใช้)
 
+  // Relations
+  addresses Address[]   // 🔥 ความสัมพันธ์กับตารางที่อยู่ใหม่
   builds    Build[]
   orders    Order[]
   favorites UserFavorite[]
+  reviews   Review[]
 }
 
 enum Role {
@@ -34,7 +38,28 @@ enum Role {
   ADMIN
 }
 
-// 2. ตารางสินค้า (เพิ่มหมวดหมู่ใหม่ที่นี่)
+// 🔥 2. ตารางที่อยู่ (ใหม่)
+model Address {
+  id          String   @id @default(uuid())
+  name        String   // ชื่อผู้รับ
+  phone       String   // เบอร์ติดต่อ
+  
+  // ที่อยู่ละเอียด
+  houseNumber String   // บ้านเลขที่, หมู่, ซอย, ถนน
+  subdistrict String   // แขวง/ตำบล
+  district    String   // เขต/อำเภอ
+  province    String   // จังหวัด
+  zipcode     String   // รหัสไปรษณีย์
+  
+  isDefault   Boolean  @default(false) // เป็นที่อยู่หลักหรือไม่
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+}
+
+// 3. ตารางสินค้า
 model Product {
   id          String   @id @default(uuid())
   name        String
@@ -42,20 +67,18 @@ model Product {
   price       Decimal  @db.Decimal(10, 2)
   stock       Int      @default(0)
   image       String?
-  category    Category // ใช้ Enum ข้างล่าง
-  specs       Json?    // เก็บสเปคของสินค้าแต่ละประเภท
+  category    Category
+  specs       Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
   orderItems  OrderItem[]
   buildItems  BuildItem[]
   favoritedBy UserFavorite[]
+  reviews     Review[]
 }
 
-// 🔥 หมวดหมู่สินค้าทั้งหมด (รวมของใหม่)
 enum Category {
-  // คอมประกอบ
   CPU
   MOTHERBOARD
   RAM
@@ -65,18 +88,17 @@ enum Category {
   CASE
   COOLER
   MONITOR
-  
-  // 🔥 เพิ่มหมวด IT ทั่วไป
-  LAPTOP      // โน้ตบุ๊ก
-  DESKTOP     // คอมชุด
-  MOUSE       // เมาส์
-  KEYBOARD    // คีย์บอร์ด
-  HEADSET     // หูฟัง
-  CHAIR       // เก้าอี้เกมมิ่ง
-  ACCESSORY   // สายไฟ/อุปกรณ์เสริม
+  LAPTOP
+  DESKTOP
+  MOUSE
+  KEYBOARD
+  HEADSET
+  CHAIR
+  ACCESSORY
+  ALL
 }
 
-// 3. ตาราง "จัดสเปค"
+// 4. ตารางจัดสเปค
 model Build {
   id          String      @id @default(uuid())
   name        String
@@ -96,7 +118,7 @@ model BuildItem {
   quantity  Int     @default(1)
 }
 
-// 4. ตารางคำสั่งซื้อ
+// 5. ตารางคำสั่งซื้อ (อัปเดต)
 model Order {
   id        String      @id @default(uuid())
   userId    String
@@ -105,6 +127,16 @@ model Order {
   total     Decimal
   items     OrderItem[]
   createdAt DateTime    @default(now())
+
+  // 🔥 Logistics Info (ใหม่)
+  trackingNumber  String? // เลขพัสดุ
+  carrier         String? // บริษัทขนส่ง (Kerry, Flash, EMS)
+  
+  // 🔥 Snapshot ที่อยู่จัดส่ง (เก็บแยกเผื่อ User เปลี่ยนที่อยู่ทีหลัง)
+  shippingName    String?
+  shippingPhone   String?
+  shippingAddress String? // เก็บรวม houseNumber + subdistrict...
+  shippingZipcode String?
 }
 
 enum OrderStatus {
@@ -125,7 +157,7 @@ model OrderItem {
   price     Decimal
 }
 
-// 5. ตารางรายการโปรด
+// 6. ตารางรายการโปรด
 model UserFavorite {
   id        String   @id @default(uuid())
   userId    String
@@ -135,4 +167,17 @@ model UserFavorite {
   createdAt DateTime @default(now())
 
   @@unique([userId, productId])
+}
+
+// 7. ตารางรีวิว
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int      @default(5)
+  comment   String?  @db.Text
+  images    String[]
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
 }
