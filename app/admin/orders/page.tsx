@@ -3,6 +3,9 @@
 
 import { useState, useEffect } from 'react'
 import { Search, Eye, Check, X, Truck, ExternalLink, Copy } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import ConfirmModal from '@/components/ConfirmModal'
+import InputModal from '@/components/InputModal'
 
 // 🔥 ตัวแปลงภาษา: สถานะออเดอร์ (ใช้ทั้งใน Filter และในตาราง)
 const STATUS_LABEL: Record<string, string> = {
@@ -21,46 +24,100 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [filter, setFilter] = useState('ALL') // Logic ยังใช้ภาษาอังกฤษ (ALL, PAID, ...)
 
-  useEffect(() => {
-    fetch('/api/orders', { cache: 'no-store' }).then(res => res.json()).then(setOrders)
-  }, [])
+  // State สำหรับ Confirm Modal
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [confirmData, setConfirmData] = useState<{ id: string; status: string } | null>(null)
+  const [confirmLoading, setConfirmLoading] = useState(false)
 
-  // ฟังก์ชันเปลี่ยนสถานะ (Confirm Payment)
-  const updateStatus = async (id: string, status: string) => {
-    // แสดงชื่อไทยใน Confirm Box
-    const statusTH = STATUS_LABEL[status] || status
-    if(!confirm(`ยืนยันการเปลี่ยนสถานะเป็น "${statusTH}" ใช่หรือไม่?`)) return
-    
-    await fetch(`/api/orders/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    })
-    
-    alert('✅ อัปเดตสถานะเรียบร้อย')
-    window.location.reload()
+  // State สำหรับ Input Modal (Tracking)
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
+  const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null)
+  const [trackingNumber, setTrackingNumber] = useState('')
+  
+  // State สำหรับ Input Modal (Carrier)
+  const [isCarrierModalOpen, setIsCarrierModalOpen] = useState(false)
+  const [trackingLoading, setTrackingLoading] = useState(false)
+
+  const fetchOrders = async () => {
+    const res = await fetch('/api/orders', { cache: 'no-store' })
+    const data = await res.json()
+    setOrders(data)
   }
 
-  // ฟังก์ชันส่งสินค้า (ใส่เลขพัสดุ)
-  const handleShip = async (id: string) => {
-    const tracking = prompt('กรุณากรอกเลขพัสดุ (Tracking Number):')
-    if (!tracking) return 
+  useEffect(() => {
+    fetchOrders()
+  }, [])
 
-    const carrier = prompt('ชื่อบริษัทขนส่ง (เช่น Kerry, Flash):', 'Kerry Express')
+  // ฟังก์ชันเปิด Confirm Modal สำหรับเปลี่ยนสถานะ
+  const openStatusConfirm = (id: string, status: string) => {
+    setConfirmData({ id, status })
+    setIsConfirmOpen(true)
+  }
+
+  // ฟังก์ชันยืนยันเปลี่ยนสถานะ
+  const confirmStatusChange = async () => {
+    if (!confirmData) return
     
-    await fetch(`/api/orders/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        orderId: id,
-        status: 'SHIPPED', 
-        trackingNumber: tracking,
-        carrier: carrier || 'Kerry Express' 
+    setConfirmLoading(true)
+    try {
+      await fetch(`/api/orders/${confirmData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: confirmData.status })
       })
-    })
+      
+      toast.success('✅ อัปเดตสถานะเรียบร้อย')
+      await fetchOrders()
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาด')
+    } finally {
+      setConfirmLoading(false)
+      setIsConfirmOpen(false)
+      setConfirmData(null)
+    }
+  }
+
+  // ฟังก์ชันเปิด Modal กรอกเลขพัสดุ
+  const openTrackingModal = (id: string) => {
+    setTrackingOrderId(id)
+    setTrackingNumber('')
+    setIsTrackingModalOpen(true)
+  }
+
+  // ฟังก์ชันรับเลขพัสดุแล้วเปิด Modal ถามชื่อขนส่ง
+  const handleTrackingSubmit = (value: string) => {
+    setTrackingNumber(value)
+    setIsTrackingModalOpen(false)
+    setIsCarrierModalOpen(true)
+  }
+
+  // ฟังก์ชันบันทึกเลขพัสดุและชื่อขนส่ง
+  const handleCarrierSubmit = async (carrier: string) => {
+    if (!trackingOrderId || !trackingNumber) return
     
-    alert('✅ บันทึกเลขพัสดุเรียบร้อย')
-    window.location.reload()
+    setTrackingLoading(true)
+    try {
+      await fetch(`/api/orders/${trackingOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderId: trackingOrderId,
+          status: 'SHIPPED', 
+          trackingNumber: trackingNumber,
+          carrier: carrier || 'Kerry Express' 
+        })
+      })
+      
+      toast.success('✅ บันทึกเลขพัสดุเรียบร้อย')
+      await fetchOrders()
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาด')
+    } finally {
+      setTrackingLoading(false)
+      setIsCarrierModalOpen(false)
+      setTrackingOrderId(null)
+      setTrackingNumber('')
+    }
   }
 
   // กรองข้อมูล
@@ -148,23 +205,23 @@ export default function AdminOrdersPage() {
                   <div className="flex justify-end gap-2">
                     {order.status === 'VERIFYING' && (
                       <>
-                        <button onClick={() => updateStatus(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700 text-xs font-bold">
+                        <button onClick={() => openStatusConfirm(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700 text-xs font-bold">
                           <Check size={14} /> ยืนยัน
                         </button>
-                        <button onClick={() => updateStatus(order.id, 'PENDING')} className="bg-red-50 text-red-600 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-red-100 border border-red-200 text-xs font-bold">
+                        <button onClick={() => openStatusConfirm(order.id, 'PENDING')} className="bg-red-50 text-red-600 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-red-100 border border-red-200 text-xs font-bold">
                           <X size={14} /> ปฏิเสธ
                         </button>
                       </>
                     )}
 
                     {order.status === 'PAID' && (
-                      <button onClick={() => handleShip(order.id)} className="bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-neutral-800 text-xs font-bold">
+                      <button onClick={() => openTrackingModal(order.id)} className="bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-neutral-800 text-xs font-bold">
                         <Truck size={14} /> จัดส่งสินค้า
                       </button>
                     )}
                     
                     {order.status === 'SHIPPED' && (
-                       <button onClick={() => handleShip(order.id)} className="text-blue-600 hover:underline text-xs font-bold">
+                       <button onClick={() => openTrackingModal(order.id)} className="text-blue-600 hover:underline text-xs font-bold">
                           แก้ไขเลข
                        </button>
                     )}
@@ -175,6 +232,40 @@ export default function AdminOrdersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal ยืนยันเปลี่ยนสถานะ */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmStatusChange}
+        title="ยืนยันการเปลี่ยนสถานะ"
+        message={`คุณต้องการเปลี่ยนสถานะเป็น "${confirmData ? STATUS_LABEL[confirmData.status] || confirmData.status : ''}" ใช่หรือไม่?`}
+        confirmText="ยืนยัน"
+        loading={confirmLoading}
+        variant={confirmData?.status === 'PENDING' ? 'danger' : 'info'}
+      />
+
+      {/* Modal กรอกเลขพัสดุ */}
+      <InputModal
+        isOpen={isTrackingModalOpen}
+        onClose={() => setIsTrackingModalOpen(false)}
+        onConfirm={handleTrackingSubmit}
+        title="กรุณากรอกเลขพัสดุ (Tracking Number)"
+        placeholder="เช่น TH12345678901"
+        confirmText="ถัดไป"
+      />
+
+      {/* Modal กรอกชื่อขนส่ง */}
+      <InputModal
+        isOpen={isCarrierModalOpen}
+        onClose={() => setIsCarrierModalOpen(false)}
+        onConfirm={handleCarrierSubmit}
+        title="ชื่อบริษัทขนส่ง"
+        placeholder="เช่น Kerry, Flash, Thailand Post"
+        defaultValue="Kerry Express"
+        confirmText="บันทึก"
+        loading={trackingLoading}
+      />
     </div>
   )
 }

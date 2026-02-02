@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { toast } from 'react-hot-toast'
+import ConfirmModal from '@/components/ConfirmModal'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCartStore()
@@ -27,6 +29,9 @@ export default function CartPage() {
     taxAddress: ''
   })
 
+  // --- Confirm Modal State ---
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+
   useEffect(() => {
     if (session?.user) {
       fetch('/api/user/addresses')
@@ -41,21 +46,26 @@ export default function CartPage() {
     }
   }, [session])
 
-  const handleCheckout = async () => {
+  // ฟังก์ชันเช็คความถูกต้องก่อนเปิด Modal
+  const onCheckoutClick = () => {
     if (!session) return router.push('/login')
-    if (addresses.length === 0) return alert('กรุณาเพิ่มที่อยู่จัดส่งก่อน')
-    if (!selectedAddressId) return alert('กรุณาเลือกที่อยู่จัดส่ง')
+    if (addresses.length === 0) return toast.error('กรุณาเพิ่มที่อยู่จัดส่งก่อน')
+    if (!selectedAddressId) return toast.error('กรุณาเลือกที่อยู่จัดส่ง')
 
     // --- Validation (ตรวจสอบความถูกต้อง) ---
     if (needTaxInvoice) {
-      if (!taxInfo.taxName) return alert('กรุณากรอกชื่อบริษัท/บุคคล สำหรับใบกำกับภาษี')
-      if (!/^\d{13}$/.test(taxInfo.taxId)) return alert('เลขผู้เสียภาษีต้องเป็นตัวเลข 13 หลักเท่านั้น')
-      if (!taxInfo.taxAddress) return alert('กรุณากรอกที่อยู่สำหรับใบกำกับภาษี')
+      if (!taxInfo.taxName) return toast.error('กรุณากรอกชื่อบริษัท/บุคคล สำหรับใบกำกับภาษี')
+      if (!/^\d{13}$/.test(taxInfo.taxId)) return toast.error('เลขผู้เสียภาษีต้องเป็นตัวเลข 13 หลักเท่านั้น')
+      if (!taxInfo.taxAddress) return toast.error('กรุณากรอกที่อยู่สำหรับใบกำกับภาษี')
     }
 
-    if (!confirm('ยืนยันการสั่งซื้อ?')) return
+    // เปิด Modal ยืนยัน
+    setIsConfirmOpen(true)
+  }
 
-    setLoading(true) // 🔒 เริ่มโหลด (กันกดเบิ้ล)
+  // ฟังก์ชันสั่งซื้อจริง (เรียกจาก Modal)
+  const processCheckout = async () => {
+    setLoading(true)
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -64,7 +74,7 @@ export default function CartPage() {
           items, 
           totalPrice: totalPrice(),
           addressId: selectedAddressId,
-          taxInfo: needTaxInvoice ? taxInfo : null // ส่งข้อมูลภาษีไปด้วย (ถ้ามี)
+          taxInfo: needTaxInvoice ? taxInfo : null
         })
       })
 
@@ -72,15 +82,17 @@ export default function CartPage() {
 
       if (res.ok) {
         clearCart()
-        // alert('🎉 สั่งซื้อสำเร็จ!') <-- ตัดออกเพื่อให้ flow ไหลลื่น
+        toast.success('🎉 สั่งซื้อสำเร็จ!')
         router.push('/orders') 
       } else {
-        alert(data.error || 'สั่งซื้อไม่สำเร็จ')
-        setLoading(false) // 🔓 ปลดล็อกถ้าพัง
+        toast.error(data.error || 'สั่งซื้อไม่สำเร็จ')
+        setLoading(false)
       }
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการเชื่อมต่อ')
+      toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อ')
       setLoading(false)
+    } finally {
+      setIsConfirmOpen(false)
     }
   }
 
@@ -189,7 +201,7 @@ export default function CartPage() {
                     className="w-full p-3 text-sm border rounded-lg outline-none focus:border-black"
                     maxLength={13}
                     value={taxInfo.taxId}
-                    onChange={(e) => setTaxInfo({...taxInfo, taxId: e.target.value.replace(/\D/g, '')})} // รับเฉพาะตัวเลข
+                    onChange={(e) => setTaxInfo({...taxInfo, taxId: e.target.value.replace(/\D/g, '')})}
                   />
                   <input 
                     placeholder="ชื่อบริษัท / ชื่อบุคคล (สำนักงานใหญ่/สาขา)" 
@@ -209,8 +221,8 @@ export default function CartPage() {
 
             {/* ปุ่ม Checkout (ป้องกันกดเบิ้ล) */}
             <button 
-              onClick={handleCheckout}
-              disabled={loading} // 🔒 Disable เมื่อโหลด
+              onClick={onCheckoutClick}
+              disabled={loading}
               className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-neutral-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               {loading ? (
@@ -222,6 +234,18 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* 🔥 Modal ยืนยันการสั่งซื้อ */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={processCheckout}
+        title="ยืนยันการสั่งซื้อ"
+        message={`ยอดชำระทั้งหมด ฿${totalPrice().toLocaleString()} คุณต้องการดำเนินการต่อหรือไม่?`}
+        confirmText="ชำระเงิน"
+        loading={loading}
+        variant="info"
+      />
     </div>
   )
 }

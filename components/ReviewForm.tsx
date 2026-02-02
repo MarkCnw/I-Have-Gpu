@@ -4,6 +4,8 @@
 import { useState } from 'react'
 import { Star, Send } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
+import ConfirmModal from './ConfirmModal'
 
 export default function ReviewForm({ productId }: { productId: string }) {
   const router = useRouter()
@@ -11,11 +13,14 @@ export default function ReviewForm({ productId }: { productId: string }) {
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!confirm('ยืนยันการส่งรีวิว?')) return
+    setIsConfirmOpen(true)
+  }
 
+  const submitReview = async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/reviews', {
@@ -25,17 +30,18 @@ export default function ReviewForm({ productId }: { productId: string }) {
       })
 
       if (res.ok) {
-        alert('ขอบคุณสำหรับรีวิวครับ! 🎉')
+        toast.success('ขอบคุณสำหรับรีวิวครับ! 🎉')
         setComment('')
         setIsOpen(false)
         router.refresh() // รีโหลดหน้าเพื่อโชว์รีวิวใหม่
       } else {
-        alert('เกิดข้อผิดพลาด หรือคุณยังไม่ได้เข้าสู่ระบบ')
+        toast.error('เกิดข้อผิดพลาด หรือคุณยังไม่ได้เข้าสู่ระบบ')
       }
     } catch (err) {
-      alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้')
+      toast.error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้')
     } finally {
       setLoading(false)
+      setIsConfirmOpen(false)
     }
   }
 
@@ -51,44 +57,56 @@ export default function ReviewForm({ productId }: { productId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8 animate-in slide-in-from-top-2">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-slate-800">เขียนรีวิวของคุณ</h3>
-        <button type="button" onClick={() => setIsOpen(false)} className="text-xs text-slate-400 hover:text-red-500">ยกเลิก</button>
-      </div>
+    <>
+      <form onSubmit={handleSubmit} className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8 animate-in slide-in-from-top-2">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-slate-800">เขียนรีวิวของคุณ</h3>
+          <button type="button" onClick={() => setIsOpen(false)} className="text-xs text-slate-400 hover:text-red-500">ยกเลิก</button>
+        </div>
 
-      {/* เลือกดาว */}
-      <div className="flex gap-1 mb-4">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            onClick={() => setRating(star)}
-            className={`${star <= rating ? 'text-yellow-400' : 'text-slate-300'} transition hover:scale-110`}
-          >
-            <Star size={24} fill="currentColor" />
-          </button>
-        ))}
-        <span className="ml-2 text-sm text-slate-500 font-medium">({rating}/5 คะแนน)</span>
-      </div>
+        {/* เลือกดาว */}
+        <div className="flex gap-1 mb-4">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+              className={`${star <= rating ? 'text-yellow-400' : 'text-slate-300'} transition hover:scale-110`}
+            >
+              <Star size={24} fill="currentColor" />
+            </button>
+          ))}
+          <span className="ml-2 text-sm text-slate-500 font-medium">({rating}/5 คะแนน)</span>
+        </div>
 
-      {/* ช่องกรอกข้อความ */}
-      <textarea
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        placeholder="สินค้าเป็นอย่างไรบ้าง? เล่าให้เพื่อนๆ ฟังหน่อย..."
-        className="w-full p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-black/10 min-h-[100px] text-sm"
-        required
-      />
+        {/* ช่องพิมพ์รีวิว */}
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="เขียนความคิดเห็นของคุณ..."
+          className="w-full p-3 border border-slate-200 rounded-lg mb-4 outline-none focus:border-black resize-none h-24"
+          required
+        />
 
-      <div className="mt-4 flex justify-end">
         <button 
+          type="submit"
           disabled={loading}
-          className="bg-black text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-neutral-800 transition flex items-center gap-2 disabled:opacity-50"
+          className="w-full bg-black text-white py-2.5 rounded-lg font-bold hover:bg-neutral-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? 'กำลังส่ง...' : <><Send size={16} /> ส่งรีวิว</>}
+          <Send size={16} /> {loading ? 'กำลังส่ง...' : 'ส่งรีวิว'}
         </button>
-      </div>
-    </form>
+      </form>
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={submitReview}
+        title="ยืนยันการส่งรีวิว"
+        message="คุณต้องการส่งรีวิวนี้ใช่หรือไม่?"
+        confirmText="ส่งรีวิว"
+        loading={loading}
+        variant="info"
+      />
+    </>
   )
 }

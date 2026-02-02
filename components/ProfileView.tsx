@@ -4,9 +4,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Heart, User, MapPin, Save, Plus, Trash2, Home, LogOut } from 'lucide-react'
-import { toast } from 'react-hot-toast' 
-import ConfirmModal from '@/components/ConfirmModal' // 👈 เรียกใช้ Modal ที่เพิ่งสร้าง
+import { Package, Heart, User, MapPin, Save, Plus, Trash2, Home } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import ConfirmModal from './ConfirmModal'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ProfileView({ user, orders, favorites }: { user: any, orders: any[], favorites: any[] }) {
@@ -36,9 +36,11 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
     isDefault: false
   })
 
-  // 🔥 State สำหรับ Modal ลบที่อยู่ (แทน confirm)
+  // --- Delete Address Modal State ---
   const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
+  // Load addresses
   useEffect(() => {
     if (activeTab === 'ADDRESS') {
       fetch('/api/user/addresses').then(res => res.json()).then(data => {
@@ -58,10 +60,10 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         body: JSON.stringify(formData)
       })
       if (res.ok) {
-        toast.success('บันทึกข้อมูลเรียบร้อย')
+        toast.success('✅ บันทึกข้อมูลเรียบร้อย')
         router.refresh()
       } else {
-        toast.error('เกิดข้อผิดพลาดในการบันทึก')
+        toast.error('❌ เกิดข้อผิดพลาด')
       }
     } finally {
       setLoading(false)
@@ -82,26 +84,27 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         toast.success('เพิ่มที่อยู่สำเร็จ')
         setShowAddressForm(false)
         setNewAddress({ name: user.name || '', phone: user.phone || '', houseNumber: '', subdistrict: '', district: '', province: '', zipcode: '', isDefault: false })
-        
         const updated = await fetch('/api/user/addresses').then(r => r.json())
         setAddresses(updated)
-      } else {
-        toast.error('เพิ่มที่อยู่ไม่สำเร็จ')
       }
     } finally {
       setLoading(false)
     }
   }
 
-  // 🔥 ฟังก์ชันลบที่อยู่ (จะถูกเรียกเมื่อกด "ลบที่อยู่" ใน Modal เท่านั้น)
-  const confirmDeleteAddress = async () => {
-    if(!deleteAddressId) return
-    
+  // Delete Address
+  const openDeleteModal = (id: string) => {
+    setDeleteAddressId(id)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleDeleteAddress = async () => {
+    if (!deleteAddressId) return
     await fetch(`/api/user/addresses?id=${deleteAddressId}`, { method: 'DELETE' })
     setAddresses(addresses.filter(a => a.id !== deleteAddressId))
-    
-    toast.success('ลบที่อยู่เรียบร้อย')
-    setDeleteAddressId(null) // ปิด Modal
+    toast.success('ลบที่อยู่สำเร็จ')
+    setIsDeleteModalOpen(false)
+    setDeleteAddressId(null)
   }
 
   return (
@@ -122,30 +125,24 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
 
           <div>
             <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">บัญชี</h3>
-            <button onClick={() => setActiveTab('INFO')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'INFO' ? 'font-bold text-black bg-neutral-50' : 'text-neutral-600 hover:text-black hover:bg-neutral-50'}`}>
+            <button onClick={() => setActiveTab('INFO')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'INFO' ? 'font-bold text-black' : 'text-neutral-600 hover:text-black'}`}>
               <User size={16} /> ข้อมูลส่วนตัว
             </button>
-            <button onClick={() => setActiveTab('ADDRESS')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'ADDRESS' ? 'font-bold text-black bg-neutral-50' : 'text-neutral-600 hover:text-black hover:bg-neutral-50'}`}>
+            <button onClick={() => setActiveTab('ADDRESS')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'ADDRESS' ? 'font-bold text-black' : 'text-neutral-600 hover:text-black'}`}>
               <MapPin size={16} /> สมุดที่อยู่
             </button>
-            <button onClick={() => setActiveTab('ORDERS')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'ORDERS' ? 'font-bold text-black bg-neutral-50' : 'text-neutral-600 hover:text-black hover:bg-neutral-50'}`}>
+            <button onClick={() => setActiveTab('ORDERS')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'ORDERS' ? 'font-bold text-black' : 'text-neutral-600 hover:text-black'}`}>
               <Package size={16} /> ประวัติสั่งซื้อ
             </button>
-            <button onClick={() => setActiveTab('FAVORITES')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'FAVORITES' ? 'font-bold text-black bg-neutral-50' : 'text-neutral-600 hover:text-black hover:bg-neutral-50'}`}>
+            <button onClick={() => setActiveTab('FAVORITES')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'FAVORITES' ? 'font-bold text-black' : 'text-neutral-600 hover:text-black'}`}>
               <Heart size={16} /> สินค้าที่ชอบ
             </button>
-            
-            <div className="mt-6 pt-6 border-t border-neutral-100">
-                <Link href="/api/auth/signout" className="w-full text-left px-3 py-2 text-sm rounded-lg transition flex items-center gap-3 text-red-600 hover:bg-red-50 font-bold">
-                    <LogOut size={16} /> ออกจากระบบ
-                </Link>
-            </div>
           </div>
         </div>
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 bg-white rounded-2xl border border-neutral-100 p-8 shadow-sm min-h-[500px]">
+      <main className="flex-1 bg-white rounded-2xl border border-neutral-100 p-8 shadow-sm">
         
         {/* --- TAB: INFO --- */}
         {activeTab === 'INFO' && (
@@ -156,7 +153,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">ชื่อ - นามสกุล</label>
-                <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 text-sm focus:border-black outline-none transition focus:ring-1 focus:ring-black" />
+                <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 text-sm focus:border-black outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">อีเมล</label>
@@ -164,22 +161,22 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
               </div>
               <div>
                 <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">เบอร์โทรศัพท์</label>
-                <input type="tel" value={formData.phone} placeholder="08x-xxx-xxxx" onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 text-sm focus:border-black outline-none transition focus:ring-1 focus:ring-black" />
+                <input type="tel" value={formData.phone} placeholder="08x-xxx-xxxx" onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 text-sm focus:border-black outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">วันเกิด</label>
-                <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 text-sm focus:border-black outline-none transition focus:ring-1 focus:ring-black" />
+                <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3 text-sm focus:border-black outline-none" />
               </div>
             </div>
             <div className="pt-6 flex justify-end">
-              <button disabled={loading} className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-black/10 active:scale-95">
+              <button disabled={loading} className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition disabled:opacity-50 flex items-center gap-2">
                 {loading ? 'กำลังบันทึก...' : <><Save size={18} /> บันทึกการเปลี่ยนแปลง</>}
               </button>
             </div>
           </form>
         )}
 
-        {/* --- TAB: ADDRESS --- */}
+        {/* --- TAB: ADDRESS (NEW) --- */}
         {activeTab === 'ADDRESS' && (
           <div className="animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-6 border-b border-neutral-100 pb-4">
@@ -187,7 +184,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 <MapPin className="text-neutral-400" /> สมุดที่อยู่
               </h2>
               {!showAddressForm && (
-                <button onClick={() => setShowAddressForm(true)} className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-neutral-800 shadow-md transition active:scale-95">
+                <button onClick={() => setShowAddressForm(true)} className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-neutral-800 shadow-md">
                   <Plus size={16} /> เพิ่มที่อยู่ใหม่
                 </button>
               )}
@@ -201,54 +198,55 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">ชื่อผู้รับ</label>
-                    <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm outline-none focus:border-black" value={newAddress.name} onChange={e => setNewAddress({...newAddress, name: e.target.value})} required />
+                    <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.name} onChange={e => setNewAddress({...newAddress, name: e.target.value})} required />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">เบอร์โทรศัพท์</label>
-                    <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm outline-none focus:border-black" value={newAddress.phone} onChange={e => setNewAddress({...newAddress, phone: e.target.value})} required />
+                    <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.phone} onChange={e => setNewAddress({...newAddress, phone: e.target.value})} required />
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">ที่อยู่ (บ้านเลขที่, หมู่, ซอย, ถนน)</label>
-                  <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm outline-none focus:border-black" value={newAddress.houseNumber} onChange={e => setNewAddress({...newAddress, houseNumber: e.target.value})} required />
+                  <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.houseNumber} onChange={e => setNewAddress({...newAddress, houseNumber: e.target.value})} required />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                      <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">แขวง / ตำบล</label>
-                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm outline-none focus:border-black" value={newAddress.subdistrict} onChange={e => setNewAddress({...newAddress, subdistrict: e.target.value})} required />
+                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.subdistrict} onChange={e => setNewAddress({...newAddress, subdistrict: e.target.value})} required />
                   </div>
                   <div>
                      <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">เขต / อำเภอ</label>
-                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm outline-none focus:border-black" value={newAddress.district} onChange={e => setNewAddress({...newAddress, district: e.target.value})} required />
+                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.district} onChange={e => setNewAddress({...newAddress, district: e.target.value})} required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
                      <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">จังหวัด</label>
-                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm outline-none focus:border-black" value={newAddress.province} onChange={e => setNewAddress({...newAddress, province: e.target.value})} required />
+                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.province} onChange={e => setNewAddress({...newAddress, province: e.target.value})} required />
                   </div>
                   <div>
                      <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">รหัสไปรษณีย์</label>
-                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm outline-none focus:border-black" value={newAddress.zipcode} onChange={e => setNewAddress({...newAddress, zipcode: e.target.value})} required />
+                     <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.zipcode} onChange={e => setNewAddress({...newAddress, zipcode: e.target.value})} required />
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mb-6 bg-white p-3 rounded-lg border border-neutral-200 cursor-pointer" onClick={() => setNewAddress({...newAddress, isDefault: !newAddress.isDefault})}>
-                  <input type="checkbox" id="default" className="w-4 h-4 accent-black" checked={newAddress.isDefault} onChange={e => setNewAddress({...newAddress, isDefault: e.target.checked})} />
-                  <label htmlFor="default" className="text-sm font-medium cursor-pointer select-none">ตั้งเป็นที่อยู่หลัก (Default)</label>
+                <div className="flex items-center gap-2 mb-6 bg-white p-3 rounded-lg border border-neutral-200">
+                  <input type="checkbox" id="default" className="w-4 h-4" checked={newAddress.isDefault} onChange={e => setNewAddress({...newAddress, isDefault: e.target.checked})} />
+                  <label htmlFor="default" className="text-sm font-medium cursor-pointer">ตั้งเป็นที่อยู่หลัก (Default)</label>
                 </div>
 
                 <div className="flex gap-2 justify-end">
-                  <button type="button" onClick={() => setShowAddressForm(false)} className="text-neutral-500 px-6 py-2 text-sm hover:text-black font-bold">ยกเลิก</button>
+                  <button type="button" onClick={() => setShowAddressForm(false)} className="text-neutral-500 px-6 py-2 text-sm hover:text-black">ยกเลิก</button>
                   <button disabled={loading} className="bg-black text-white px-8 py-2.5 rounded-lg text-sm font-bold hover:bg-neutral-800 shadow-lg">
                     {loading ? 'บันทึก...' : 'บันทึกที่อยู่'}
                   </button>
                 </div>
               </form>
             ) : (
+              // แสดงรายการที่อยู่
               <div className="grid grid-cols-1 gap-4">
                 {addresses.length === 0 ? (
                   <div className="text-center py-16 text-neutral-400 bg-neutral-50 rounded-xl border border-dashed border-neutral-200 flex flex-col items-center">
@@ -279,9 +277,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 self-end md:self-start md:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-2 self-end md:self-start opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => setDeleteAddressId(addr.id)} 
+                          onClick={() => openDeleteModal(addr.id)} 
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition" 
                           title="ลบที่อยู่"
                         >
@@ -306,26 +304,25 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
               <div className="text-center py-20 bg-neutral-50 rounded-xl flex flex-col items-center">
                 <Package size={48} className="text-neutral-300 mb-2" />
                 <p className="text-neutral-400">ยังไม่มีคำสั่งซื้อ</p>
-                <Link href="/" className="mt-4 text-black underline font-bold">ไปช้อปเลย</Link>
               </div>
             ) : (
               <div className="space-y-4">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {orders.map((order: any) => (
-                  <div key={order.id} className="border border-neutral-100 rounded-xl p-4 hover:border-black transition bg-white shadow-sm">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+                  <div key={order.id} className="border border-neutral-100 rounded-xl p-4 hover:border-black transition">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p className="text-xs text-neutral-400">Order ID: #{order.id.split('-')[0]}</p>
-                        <p className="text-sm font-bold">{new Date(order.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className="text-xs text-neutral-400">Order ID: {order.id.split('-')[0]}</p>
+                        <p className="text-sm font-bold">{new Date(order.createdAt).toLocaleDateString('th-TH')}</p>
                       </div>
                       <div className="text-right">
-                         <span className={`text-xs px-2 py-1 rounded font-bold inline-block mb-1
+                         <span className={`text-xs px-2 py-1 rounded font-bold block mb-1
                            ${order.status === 'PAID' ? 'bg-green-100 text-green-700' : 
                              order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                             order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :
                              'bg-gray-100 text-gray-700'}`}>
                            {order.status}
                          </span>
+                         {/* Show Tracking if available */}
                          {order.trackingNumber && (
                            <p className="text-xs text-neutral-500 font-mono mt-1 flex items-center justify-end gap-1">
                              🚚 {order.carrier}: {order.trackingNumber}
@@ -333,23 +330,10 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                          )}
                       </div>
                     </div>
-                    
-                    {/* Items Preview */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 mb-2 custom-scrollbar">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {order.items.map((item: any) => (
-                            <img key={item.id} src={item.product?.image} className="w-10 h-10 object-contain bg-neutral-50 rounded border border-neutral-100 flex-shrink-0" title={item.product?.name} />
-                        ))}
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-neutral-50 pt-3 mt-2">
+                    <div className="flex items-center justify-between border-t border-neutral-50 pt-3">
                       <p className="text-sm text-neutral-500">{order.items.length} รายการ</p>
-                      <p className="font-bold text-lg">฿{Number(order.total).toLocaleString()}</p>
+                      <p className="font-bold">฿{Number(order.total).toLocaleString()}</p>
                     </div>
-                    
-                    <Link href={`/order-success?id=${order.id}`} className="block mt-3 text-center w-full py-2 border border-neutral-200 rounded-lg text-sm font-bold hover:bg-neutral-50 transition">
-                        ดูรายละเอียด
-                    </Link>
                   </div>
                 ))}
               </div>
@@ -372,7 +356,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {favorites.map((fav: any) => (
-                  <Link href={`/products/${fav.product.id}`} key={fav.id} className="flex gap-4 p-4 border border-neutral-100 rounded-xl hover:border-black transition items-center bg-white shadow-sm hover:shadow-md">
+                  <Link href={`/products/${fav.product.id}`} key={fav.id} className="flex gap-4 p-4 border border-neutral-100 rounded-xl hover:border-black transition items-center">
                     <div className="w-16 h-16 bg-neutral-50 rounded-lg flex-shrink-0 flex items-center justify-center p-2">
                        <img src={fav.product.image} className="max-w-full max-h-full mix-blend-multiply" />
                     </div>
@@ -390,13 +374,13 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
 
       </main>
 
-      {/* 🔥 Modal ยืนยันลบที่อยู่ */}
-      <ConfirmModal 
-        isOpen={!!deleteAddressId} 
-        onClose={() => setDeleteAddressId(null)}
-        onConfirm={confirmDeleteAddress}
-        title="ลบที่อยู่?"
-        message="คุณต้องการลบที่อยู่จัดส่งนี้ใช่หรือไม่?"
+      {/* Modal ยืนยันลบที่อยู่ */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAddress}
+        title="ยืนยันการลบที่อยู่"
+        message="คุณต้องการลบที่อยู่นี้ใช่หรือไม่?"
         confirmText="ลบที่อยู่"
         variant="danger"
       />

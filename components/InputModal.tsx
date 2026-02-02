@@ -1,37 +1,38 @@
-// components/ConfirmModal.tsx
+// components/InputModal.tsx
 'use client'
 
+import { useState } from 'react'
 import { X } from 'lucide-react'
 
-interface ConfirmModalProps {
+interface InputModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: (value: string) => void
   title: string
-  message: string
+  placeholder?: string
+  defaultValue?: string
   confirmText?: string
-  cancelText?: string
   loading?: boolean
-  variant?: 'danger' | 'warning' | 'info'
 }
 
-export default function ConfirmModal({
+export default function InputModal({
   isOpen,
   onClose,
   onConfirm,
   title,
-  message,
-  confirmText = 'ยืนยัน',
-  cancelText = 'ยกเลิก',
-  loading = false,
-  variant = 'info'
-}: ConfirmModalProps) {
+  placeholder = '',
+  defaultValue = '',
+  confirmText = 'ตกลง',
+  loading = false
+}: InputModalProps) {
+  const [value, setValue] = useState(defaultValue)
+
   if (!isOpen) return null
 
-  const variantStyles = {
-    danger: 'bg-red-600 hover:bg-red-700',
-    warning: 'bg-yellow-500 hover:bg-yellow-600',
-    info: 'bg-black hover:bg-neutral-800'
+  const handleConfirm = () => {
+    if (value.trim()) {
+      onConfirm(value)
+    }
   }
 
   return (
@@ -44,8 +45,16 @@ export default function ConfirmModal({
           <X size={24} />
         </button>
 
-        <h3 className="text-xl font-bold mb-2 text-neutral-900">{title}</h3>
-        <p className="text-neutral-600 mb-6">{message}</p>
+        <h3 className="text-xl font-bold mb-4 text-neutral-900">{title}</h3>
+        
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          className="w-full p-3 border border-neutral-200 rounded-xl mb-4 outline-none focus:border-black transition"
+          autoFocus
+        />
 
         <div className="flex gap-3">
           <button
@@ -53,12 +62,12 @@ export default function ConfirmModal({
             disabled={loading}
             className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 font-bold text-neutral-600 hover:bg-neutral-50 transition disabled:opacity-50"
           >
-            {cancelText}
+            ยกเลิก
           </button>
           <button
-            onClick={onConfirm}
-            disabled={loading}
-            className={`flex-1 px-4 py-3 rounded-xl font-bold text-white transition disabled:opacity-50 ${variantStyles[variant]}`}
+            onClick={handleConfirm}
+            disabled={loading || !value.trim()}
+            className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-black hover:bg-neutral-800 transition disabled:opacity-50"
           >
             {loading ? 'กำลังดำเนินการ...' : confirmText}
           </button>
