@@ -2,8 +2,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Package, Upload, QrCode, X, Copy, Truck, ExternalLink } from 'lucide-react'
+import { Package, Upload, QrCode, X, Copy, Truck, ExternalLink, Loader2 } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import Link from 'next/link'
+
+// 🔥 ตัวแปลงภาษา (ฝั่ง User)
+const STATUS_LABEL_TH: Record<string, string> = {
+  PENDING: 'รอชำระเงิน',
+  VERIFYING: 'รอตรวจสอบ',
+  PAID: 'ชำระแล้ว',
+  SHIPPED: 'จัดส่งแล้ว',
+  CANCELLED: 'ยกเลิก',
+  COMPLETED: 'สำเร็จ',
+  // เผื่อตัวเล็ก
+  pending: 'รอชำระเงิน',
+  verifying: 'รอตรวจสอบ',
+  paid: 'ชำระแล้ว',
+  shipped: 'จัดส่งแล้ว',
+  cancelled: 'ยกเลิก',
+  completed: 'สำเร็จ'
+}
 
 export default function OrdersPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,125 +29,163 @@ export default function OrdersPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [uploading, setUploading] = useState(false)
+  const [loadingPage, setLoadingPage] = useState(true)
 
-  // ใช้ fetch แบบธรรมดา (ไม่ต้องใช้ toast ก็ได้ ถ้าชอบแบบเดิม)
   const fetchOrders = async () => {
+    try {
       const res = await fetch('/api/orders', { cache: 'no-store' })
       const data = await res.json()
       if (Array.isArray(data)) setOrders(data)
+    } catch (error) {
+      toast.error('ไม่สามารถโหลดข้อมูลได้')
+    } finally {
+      setLoadingPage(false)
+    }
   }
 
   useEffect(() => { fetchOrders() }, [])
+
+  // ✅ ฟังก์ชันช่วยคัดลอก (แก้บั๊ก Clipboard undefined)
+  const safeCopy = (text: string) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text)
+      toast.success('คัดลอกแล้ว')
+    } else {
+      // Fallback สำหรับ Browser เก่า หรือ HTTP
+      toast.error('Browser ไม่รองรับการคัดลอก')
+    }
+  }
 
   const handleUploadSlip = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !selectedOrder) return
 
     setUploading(true)
+    const toastId = toast.loading('กำลังอัปโหลดสลิป...')
     try {
       const formData = new FormData()
       formData.append('file', file)
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
       const uploadData = await uploadRes.json()
 
-      await fetch(`/api/orders/${selectedOrder.id}`, {
+      const updateRes = await fetch(`/api/orders/${selectedOrder.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'VERIFYING', slipImage: uploadData.url })
       })
 
-      alert('✅ แจ้งโอนเงินเรียบร้อย!')
+      if (!updateRes.ok) throw new Error('Update failed')
+
+      toast.success('แจ้งโอนเงินเรียบร้อย!', { id: toastId })
       await fetchOrders()
       setSelectedOrder(null)
     } catch (err) {
-      alert('เกิดข้อผิดพลาด')
+      toast.error('เกิดข้อผิดพลาด', { id: toastId })
     } finally {
       setUploading(false)
     }
   }
 
+  if (loadingPage) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-slate-400" /></div>
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] p-4 md:p-8 pb-32">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-          <Package className="text-blue-600" /> คำสั่งซื้อของฉัน
+        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3 text-slate-900">
+          <Package className="text-black" /> คำสั่งซื้อของฉัน
         </h1>
 
         <div className="space-y-6">
           {orders.length === 0 ? (
-             <div className="text-center py-20 text-slate-400 bg-white rounded-xl border border-dashed">
+             <div className="text-center py-20 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
                 ยังไม่มีคำสั่งซื้อ
              </div>
           ) : (
              // eslint-disable-next-line @typescript-eslint/no-explicit-any
              orders.map((order: any) => (
-              <div key={order.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition hover:shadow-md">
+              <div key={order.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition hover:shadow-md">
                 
-                {/* Header */}
-                <div className="bg-slate-50 p-4 flex justify-between items-center border-b border-slate-100">
+                {/* Header Card */}
+                <div className="bg-slate-50/50 p-4 flex justify-between items-center border-b border-slate-100">
                   <div>
-                    <p className="text-xs text-slate-500 font-mono">Order ID: #{order.id.split('-')[0]}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5">Order ID</p>
+                    <p className="text-sm font-mono font-bold text-slate-700">#{order.id.split('-')[0]}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">
                       {new Date(order.createdAt).toLocaleString('th-TH', { dateStyle: 'long', timeStyle: 'short' })}
                     </p>
                   </div>
+                  {/* Status Badge ภาษาไทย */}
                   <StatusBadge status={order.status} />
                 </div>
 
-                <div className="p-4">
+                <div className="p-5">
                   {/* Items */}
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {order.items.map((item: any) => (
-                    <div key={item.id} className="flex justify-between py-2 text-sm border-b border-slate-50 last:border-0">
+                    <div key={item.id} className="flex justify-between items-center text-sm mb-3 last:mb-0">
                       <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-slate-100 rounded flex-shrink-0 overflow-hidden">
-                            {item.product?.image && <img src={item.product.image} className="w-full h-full object-cover" />}
+                         <div className="w-12 h-12 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden border border-slate-200">
+                            {item.product?.image && <img src={item.product.image} className="w-full h-full object-cover mix-blend-multiply" />}
                          </div>
                          <div>
-                            <span className="font-medium text-slate-700">{item.product?.name}</span>
-                            <span className="text-slate-400 text-xs ml-2">x{item.quantity}</span>
+                            <span className="font-bold text-slate-800 line-clamp-1">{item.product?.name}</span>
+                            <span className="text-slate-500 text-xs">จำนวน: {item.quantity} ชิ้น</span>
                          </div>
                       </div>
-                      <span className="font-mono text-slate-600">฿{(item.price * item.quantity).toLocaleString()}</span>
+                      <span className="font-mono font-bold text-slate-600">฿{(item.price * item.quantity).toLocaleString()}</span>
                     </div>
                   ))}
                   
-                  {/* 🔥 ส่วนแสดง Tracking Number (เพิ่มให้แล้วตามที่ขอ) */}
+                  {/* Divider */}
+                  <div className="border-t border-slate-100 my-4"></div>
+
+                  {/* 🔥 Tracking Number (ภาษาไทย) */}
                   {order.status === 'SHIPPED' && order.trackingNumber && (
-                    <div className="mt-4 bg-blue-50 p-3 rounded-lg border border-blue-100 flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div className="flex items-center gap-2 text-blue-800">
-                            <Truck size={18} />
+                    <div className="mb-4 bg-blue-50/50 rounded-xl p-4 border border-blue-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-100 p-2 rounded-full text-blue-600">
+                                <Truck size={20} />
+                            </div>
                             <div>
-                                <span className="text-xs font-bold uppercase">{order.carrier || 'Shipping'}: </span>
-                                <span className="font-mono font-bold text-lg">{order.trackingNumber}</span>
+                                <p className="text-xs text-blue-600 font-bold uppercase tracking-wide">เลขพัสดุ ({order.carrier})</p>
+                                <p className="text-lg font-mono font-bold text-blue-900 tracking-wide">{order.trackingNumber}</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <button onClick={() => navigator.clipboard.writeText(order.trackingNumber)} className="px-3 py-1 bg-white text-xs border border-blue-200 rounded hover:bg-blue-50">Copy</button>
-                            <a href={`https://www.google.com/search?q=${order.trackingNumber}`} target="_blank" className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Track</a>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            <button 
+                                onClick={() => safeCopy(order.trackingNumber)} // ✅ เรียกใช้ safeCopy แทน
+                                className="flex-1 sm:flex-none px-3 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-50 transition flex items-center justify-center gap-1"
+                            >
+                                <Copy size={14} /> คัดลอก
+                            </button>
+                            <a 
+                                href={`https://www.google.com/search?q=${order.trackingNumber}`} 
+                                target="_blank"
+                                className="flex-1 sm:flex-none px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition flex items-center justify-center gap-1"
+                            >
+                                <ExternalLink size={14} /> เช็คสถานะ
+                            </a>
                         </div>
                     </div>
                   )}
 
-                  {/* Footer */}
-                  <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                  {/* Footer Actions */}
+                  <div className="flex justify-between items-center">
                     <div>
-                        <p className="text-xs text-slate-400">ยอดสุทธิ</p>
-                        <span className="font-bold text-xl text-slate-900">฿{Number(order.total).toLocaleString()}</span>
+                        <p className="text-xs text-slate-400 font-bold uppercase">ยอดสุทธิ</p>
+                        <span className="font-bold text-2xl text-slate-900">฿{Number(order.total).toLocaleString()}</span>
                     </div>
                     
-                    {order.status === 'PENDING' && (
+                    {order.status === 'PENDING' ? (
                       <button 
                         onClick={() => setSelectedOrder(order)} 
-                        className="bg-black text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-neutral-800 flex items-center gap-2"
+                        className="bg-black text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition flex items-center gap-2 shadow-lg shadow-black/10 active:scale-95"
                       >
-                        <QrCode size={18} /> แจ้งโอนเงิน
+                        <QrCode size={18} /> แจ้งชำระเงิน
                       </button>
-                    )}
-                    
-                    {order.status !== 'PENDING' && (
-                       <Link href={`/order-success?id=${order.id}`} className="text-sm font-bold text-blue-600 hover:underline">
-                          ดูรายละเอียด
+                    ) : (
+                       <Link href={`/order-success?id=${order.id}`} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition">
+                          ดูบิลใบเสร็จ
                        </Link>
                     )}
                   </div>
@@ -140,37 +196,42 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Popup QR Code (เหมือนเดิมเป๊ะ) */}
+      {/* Modal Popup (QrCode) */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/60 z-[99] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-            <button onClick={() => setSelectedOrder(null)} className="absolute top-4 right-4 text-slate-400 hover:text-black">
-              <X size={24} />
+        <div className="fixed inset-0 bg-black/60 z-[99] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <button onClick={() => setSelectedOrder(null)} className="absolute top-5 right-5 text-slate-400 hover:text-black transition bg-slate-100 rounded-full p-1">
+              <X size={20} />
             </button>
 
-            <h3 className="text-xl font-bold mb-6 text-center">แจ้งชำระเงิน</h3>
+            <h3 className="text-xl font-bold mb-6 text-center text-slate-800">ชำระเงิน (Payment)</h3>
             
             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-6 text-center">
-              <div className="bg-white p-3 inline-block rounded-lg shadow-sm border border-slate-100 mb-4">
+              <div className="bg-white p-4 inline-block rounded-xl shadow-sm border border-slate-100 mb-4">
                  <img 
                    src={`https://promptpay.io/0123456789/${Number(selectedOrder.total)}.png`} 
                    alt="PromptPay QR" 
-                   className="w-40 h-40 object-contain"
+                   className="w-48 h-48 object-contain mix-blend-multiply"
                  />
               </div>
-              <p className="text-sm text-slate-500 mb-1">ธนาคารกสิกรไทย (KBANK)</p>
-              <p className="text-xl font-bold font-mono text-black tracking-wider">012-3-45678-9</p>
+              <p className="text-sm text-slate-500 font-bold">สแกน QR เพื่อโอนเงิน</p>
+              <p className="text-xs text-slate-400 mt-1">ธ.กสิกรไทย • บจก. ไอแฮฟจีพียู</p>
               <div className="my-4 border-t border-dashed border-slate-300"></div>
               <div className="flex justify-between items-end px-4">
-                  <span className="text-sm text-slate-500">ยอดที่ต้องโอน</span>
+                  <span className="text-sm text-slate-500 font-bold">ยอดที่ต้องโอน</span>
                   <span className="text-3xl font-bold text-emerald-600">฿{Number(selectedOrder.total).toLocaleString()}</span>
               </div>
             </div>
 
-            <label className={`block w-full border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:bg-slate-50 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+            <label className={`block w-full border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition group ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex flex-col items-center gap-2">
-                <Upload size={32} className="text-slate-400" />
-                <span className="font-bold text-slate-700 block">{uploading ? 'กำลังอัปโหลด...' : 'แนบสลิปการโอนเงิน'}</span>
+                <div className="bg-slate-100 p-3 rounded-full group-hover:bg-white transition mb-1">
+                    {uploading ? <Loader2 size={24} className="text-slate-400 animate-spin" /> : <Upload size={24} className="text-slate-400 group-hover:text-black" />}
+                </div>
+                <div>
+                    <span className="font-bold text-slate-700 block">{uploading ? 'กำลังอัปโหลด...' : 'แนบสลิปการโอนเงิน'}</span>
+                    <span className="text-[10px] text-slate-400 uppercase">Supports JPG, PNG</span>
+                </div>
               </div>
               <input type="file" accept="image/*" className="hidden" onChange={handleUploadSlip} disabled={uploading} />
             </label>
@@ -183,16 +244,20 @@ export default function OrdersPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-700",
-    VERIFYING: "bg-blue-100 text-blue-700",
-    PAID: "bg-green-100 text-green-700",
-    SHIPPED: "bg-black text-white",
-    CANCELLED: "bg-red-100 text-red-700",
-    COMPLETED: "bg-purple-100 text-purple-700"
+    PENDING: "bg-amber-100 text-amber-700 border-amber-200",
+    VERIFYING: "bg-blue-100 text-blue-700 border-blue-200",
+    PAID: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    SHIPPED: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    CANCELLED: "bg-rose-100 text-rose-700 border-rose-200",
+    COMPLETED: "bg-purple-100 text-purple-700 border-purple-200"
   }
+  
+  // แปลงสถานะเป็นไทย
+  const label = STATUS_LABEL_TH[status] || STATUS_LABEL_TH[status.toUpperCase()] || status
+
   return (
-    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${styles[status] || 'bg-gray-100 text-gray-600'}`}>
-      {status}
+    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${styles[status.toUpperCase()] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+      {label}
     </span>
   )
 }

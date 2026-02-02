@@ -1,5 +1,6 @@
 // app/page.tsx
 import Link from 'next/link'
+import Image from 'next/image' // ✅ 1. เพิ่ม Import Image
 import { prisma } from '@/lib/prisma'
 import ProductCard from '@/components/ProductCard'
 import SearchBar from '@/components/SearchBar'
@@ -7,7 +8,7 @@ import ProfileDropdown from '@/components/ProfileDropdown'
 import HeroCarousel from '@/components/HeroCarousel'
 import StoreFeatures from '@/components/StoreFeatures'
 import BrandMarquee from '@/components/BrandMarquee'
-import CategoryFilter from '@/components/CategoryFilter' // 👈 1. Import Component ใหม่
+import CategoryFilter from '@/components/CategoryFilter'
 import { auth } from '@/auth'
 import { Prisma } from '@prisma/client'
 import { 
@@ -39,19 +40,16 @@ const CATEGORIES = [
 export default async function Home({
   searchParams,
 }: {
-  // 🔥 อัปเดต Type ให้รองรับ key อื่นๆ (เช่น spec_bus)
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
   const session = await auth()
   const user = session?.user
   
-  // รอรับค่า params
   const params = await searchParams
   const { q, category } = params
   const currentCategory = category || 'ALL'
 
   // --- 🔥 สร้างเงื่อนไขการค้นหา (Advanced Filter Logic) ---
-  // 1. สร้าง Array เก็บเงื่อนไขย่อยๆ (ใช้ AND เพื่อให้ต้องตรงทุกเงื่อนไข)
   const andConditions: Prisma.ProductWhereInput[] = []
 
   // 2. เงื่อนไขค้นหาชื่อ (q)
@@ -66,25 +64,23 @@ export default async function Home({
     andConditions.push({ category: category as any })
   }
 
-  // 4. 🔥 เงื่อนไขสเปค (Specs) - วนลูปหา params ที่ขึ้นต้นด้วย spec_
+  // 4. 🔥 เงื่อนไขสเปค (Specs)
   for (const key of Object.keys(params)) {
     if (key.startsWith('spec_') && params[key]) {
-      const specKey = key.replace('spec_', '') // ตัด prefix ออก (เช่น spec_bus -> bus)
+      const specKey = key.replace('spec_', '')
       const specValue = params[key]
 
       if (specValue) {
-        // เพิ่มเงื่อนไข JSON Filter ลงใน Array
         andConditions.push({
           specs: {
-            path: [specKey], // ระบุ key ใน JSON
-            equals: specValue // ค่าต้องตรงกัน
+            path: [specKey],
+            equals: specValue
           }
         })
       }
     }
   }
 
-  // 5. รวมเงื่อนไขทั้งหมดเข้าด้วยกัน
   const whereCondition: Prisma.ProductWhereInput = {
     AND: andConditions
   }
@@ -112,11 +108,17 @@ export default async function Home({
       {/* ================= HEADER ================= */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
         <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
-            <Link href="/" className="flex-shrink-0 group flex items-center gap-2">
-              <div className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg font-bold italic text-lg group-hover:bg-neutral-800 transition">i</div>
-              <h1 className="text-xl font-bold tracking-tight text-neutral-900 group-hover:opacity-70 transition">
-                iHAVE<span className="font-normal text-neutral-500">GPU</span>
-              </h1>
+            
+            {/* ✅ 2. แก้ไขส่วน Logo ตรงนี้ */}
+            <Link href="/" className="flex-shrink-0 group flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <Image
+                src="/logo.svg"      // path ของไฟล์ในโฟลเดอร์ public
+                alt="iHAVEGPU Logo"
+                width={140}          // ปรับความกว้างตามต้องการ
+                height={40}          // ปรับความสูงตามต้องการ
+                className="object-contain h-10 w-auto" 
+                priority             // โหลดรูปนี้ก่อนเพื่อน
+              />
             </Link>
 
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-500">
@@ -164,7 +166,7 @@ export default async function Home({
       {/* ================= MAIN CONTENT ================= */}
       <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row gap-12 pt-4">
         
-        {/* SIDEBAR (คงเดิมไว้สำหรับ Desktop) */}
+        {/* SIDEBAR */}
         <aside className="hidden md:block w-48 flex-shrink-0">
            <div className="sticky top-28">
              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-6 px-2 flex items-center gap-2">
@@ -197,7 +199,7 @@ export default async function Home({
 
         {/* PRODUCT GRID */}
         <main className="flex-1">
-           {/* 🔥 ใส่ CategoryFilter ตรงนี้ (แสดงผลเฉพาะเมื่อมีการเลือก Category) */}
+           {/* แสดง Filter เฉพาะเมื่อมีการเลือก Category */}
            <div className="mb-4">
               <CategoryFilter />
            </div>
