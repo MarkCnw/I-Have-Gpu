@@ -1,12 +1,12 @@
 // app/products/[id]/page.tsx
 import Link from 'next/link'
-import Image from 'next/image' // เพิ่ม import
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import FavoriteButton from '@/components/FavoriteButton'
 import AddToCartSection from '@/components/AddToCartSection'
 import ReviewForm from '@/components/ReviewForm'
-import ProductGallery from '@/components/ProductGallery' // ✅ Import Gallery
+import ProductGallery from '@/components/ProductGallery'
 import { 
   ChevronRight, AlertCircle, Star, User, 
   ShieldCheck, Truck, RotateCcw, Package 
@@ -41,17 +41,20 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const relatedProducts = await prisma.product.findMany({
     where: {
       category: product.category,
-      id: { not: product.id } // ไม่เอาตัวปัจจุบัน
+      id: { not: product.id },
+      isArchived: false  // 🔥 เพิ่มบรรทัดนี้: กรองสินค้าที่ถูกลบออก
     },
     take: 4
   })
 
-  // 3. เตรียมรูปภาพ (รองรับทั้งระบบเก่าและใหม่)
+  // 3. 🔥 แก้ไขตรงนี้: เตรียมรูปภาพ (รองรับทั้งระบบเก่าและใหม่)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const images = (product as any).images && (product as any).images.length > 0
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ? (product as any).images
-    : [product.image || '/placeholder.png']
+  const productImages = (product as any).images as string[] | null | undefined
+  const images: string[] = (productImages && productImages.length > 0)
+    ? productImages
+    : product.image 
+      ? [product.image] 
+      : ['/placeholder.png']
 
   // คำนวณรีวิว & Favorite
   const totalReviews = product.reviews.length
@@ -121,8 +124,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div className="grid grid-cols-2 gap-4 text-sm text-neutral-600">
                <div className="flex gap-3"><ShieldCheck size={20} className="text-black" /><div><span className="font-bold text-black block">ประกันศูนย์ไทย</span>ของแท้ 100%</div></div>
                <div className="flex gap-3"><Truck size={20} className="text-black" /><div><span className="font-bold text-black block">ส่งฟรีทั่วไทย</span>ถึงไว 1-2 วัน</div></div>
-               <div className="flex gap-3"><RotateCcw size={20} className="text-black" /><div><span className="font-bold text-black block">เปลี่ยนคืน 7 วัน</span>มีปัญหาเปลี่ยนใหม่</div></div>
-               <div className="flex gap-3"><Package size={20} className="text-black" /><div><span className="font-bold text-black block">แพ็คแน่นหนา</span>ปลอดภัยหายห่วง</div></div>
+               <div className="flex gap-3"><RotateCcw size={20} className="text-black" /><div><span className="font-bold text-black block">เปลี่ยนคืน 7 วัน</span>มีปัญหาเคลมได้</div></div>
+               <div className="flex gap-3"><Package size={20} className="text-black" /><div><span className="font-bold text-black block">แพ็คแน่นหนา</span>ปลอดภัยทุกชิ��น</div></div>
             </div>
           </div>
         </div>
@@ -205,7 +208,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {relatedProducts.map((related) => (
-                        <Link key={related.id} href={`/products/${related.id}`} className="group bg-white border border-neutral-100 rounded-2xl p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <Link key={related.id} href={`/products/${related.id}`} className="group bg-white border border-neutral-100 rounded-2xl p-4 hover:shadow-lg hover:-translate-y-1 transition-all">
                             <div className="aspect-square relative bg-neutral-50 rounded-xl mb-4 overflow-hidden">
                                 <Image 
                                     src={related.image || '/placeholder.png'} 

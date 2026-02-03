@@ -15,14 +15,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // ✅ เพิ่มส่วนนี้เพื่อแก้ Error ครับ
       {
         protocol: 'https',
         hostname: 'static.gigabyte.com',
         port: '',
         pathname: '/**',
       },
-      // 👇 ผมแถมโดเมนแบรนด์คอมฯ อื่นๆ ให้ด้วย เผื่อคุณก๊อปรูปมาใช้จะได้ไม่ Error อีก
       {
         protocol: 'https',
         hostname: 'dlcdnwebimgs.asus.com', // ASUS
@@ -38,6 +36,50 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'www.corsair.com', // Corsair
+        port: '',
+        pathname: '/**',
+      },
+      // 🔥 เพิ่ม Amazon
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images-na.ssl-images-amazon.com',
+        port: '',
+        pathname: '/**',
+      },
+      // 🔥 เพิ่มแบรนด์อื่นๆ ที่นิยมใช้
+      {
+        protocol: 'https',
+        hostname: 'www.jib.co.th', // JIB
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.advice.co.th', // Advice
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.bananait.co.th', // Banana IT
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com', // Cloudinary
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com', // Imgur
         port: '',
         pathname: '/**',
       },

@@ -22,7 +22,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await auth()
-    
+
     // 🔒 SECURITY CHECK: ต้องเป็น Admin เท่านั้น
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!session || (session.user as any)?.role !== 'ADMIN') {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    
+
     // ✅ เพิ่ม 'images' เข้ามาใน destructuring
     const { name, description, price, stock, image, images, category, specs } = body
 
@@ -40,8 +40,8 @@ export async function POST(request: Request) {
         description,
         price,
         stock,
-        image,          // รูปปก (String)
-        images: images || [], // ✅ บันทึกรูปภาพทั้งหมด (String[])
+        image,
+        images: images || [],  // 🔥 เพิ่มบรรทัดนี้
         category,
         specs: specs || {}
       }

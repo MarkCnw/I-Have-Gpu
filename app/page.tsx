@@ -88,6 +88,7 @@ export default async function Home({
   const rawProducts = await prisma.product.findMany({
     where: whereCondition,
     orderBy: { category: 'asc' },
+    
   })
 
   let favoriteIds: string[] = []
