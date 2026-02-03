@@ -1,16 +1,14 @@
-// components/ProductGallery.tsx
 'use client'
 
 import { useState } from 'react'
 import Image from 'next/image'
-
 
 export default function ProductGallery({ images }: { images: string[] }) {
   const [mainImage, setMainImage] = useState(images[0])
 
   return (
     <div className="flex flex-col gap-4">
-      {/* รูปใหญ่ (Main Image) */}
+      {/* รูปใหญ่ */}
       <div className="aspect-square bg-white rounded-2xl border border-neutral-100 p-8 flex items-center justify-center relative overflow-hidden group shadow-sm">
          <Image 
            src={mainImage} 

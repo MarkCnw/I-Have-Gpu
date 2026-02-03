@@ -59,17 +59,20 @@ model Address {
 
 // 3. Product Table
 model Product {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   description String?
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
-  image       String?
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int       @default(0)
+  
+  image       String?   // เก็บรูปปก (รูปแรก)
+  images      String[]  // ✅ เพิ่มบรรทัดนี้: เพื่อเก็บรูปภาพทั้งหมดเป็น Array
+  
   category    Category
   specs       Json?
   
   // 🔥 เพิ่ม Field นี้เพื่อใช้ทำ Soft Delete
-  isArchived  Boolean  @default(false)
+  isArchived  Boolean   @default(false)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

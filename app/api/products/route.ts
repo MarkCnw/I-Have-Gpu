@@ -3,12 +3,12 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
-// ✅ 1. แก้ไขฟังก์ชัน GET: เพิ่มเงื่อนไขกรองสินค้าที่ลบแล้ว (isArchived: false)
+// 1. GET: ดึงสินค้า (เฉพาะที่ยังไม่ถูกลบ)
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
       where: {
-        isArchived: false // 👈 สำคัญ: เพิ่มบรรทัดนี้ เพื่อซ่อนสินค้าที่ลบแล้วในหน้า Admin
+        isArchived: false // กรองสินค้าที่ถูกลบออก (Soft Delete)
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -18,7 +18,7 @@ export async function GET() {
   }
 }
 
-// ✅ 2. ฟังก์ชัน POST (คงเดิมไว้ ไม่ต้องแก้)
+// 2. POST: เพิ่มสินค้าใหม่ (รองรับหลายรูป)
 export async function POST(request: Request) {
   try {
     const session = await auth()
@@ -30,7 +30,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, description, price, stock, image, category, specs } = body
+    
+    // ✅ เพิ่ม 'images' เข้ามาใน destructuring
+    const { name, description, price, stock, image, images, category, specs } = body
 
     const product = await prisma.product.create({
       data: {
@@ -38,7 +40,8 @@ export async function POST(request: Request) {
         description,
         price,
         stock,
-        image,
+        image,          // รูปปก (String)
+        images: images || [], // ✅ บันทึกรูปภาพทั้งหมด (String[])
         category,
         specs: specs || {}
       }
@@ -46,6 +49,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(product)
   } catch (error) {
+    console.error('Create product error:', error)
     return NextResponse.json({ error: 'Failed to create product' }, { status: 500 })
   }
 }

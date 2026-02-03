@@ -9,16 +9,40 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // เผื่อไว้สำหรับรูปที่อัปโหลดเองในโปรเจกต์ (ถ้ามี)
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com', // เผื่อกรณีใช้ Google Auth แล้วดึงรูปโปรไฟล์
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      // ✅ เพิ่มส่วนนี้เพื่อแก้ Error ครับ
+      {
+        protocol: 'https',
+        hostname: 'static.gigabyte.com',
+        port: '',
+        pathname: '/**',
+      },
+      // 👇 ผมแถมโดเมนแบรนด์คอมฯ อื่นๆ ให้ด้วย เผื่อคุณก๊อปรูปมาใช้จะได้ไม่ Error อีก
+      {
+        protocol: 'https',
+        hostname: 'dlcdnwebimgs.asus.com', // ASUS
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'asset.msi.com', // MSI
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.corsair.com', // Corsair
         port: '',
         pathname: '/**',
       },
     ],
   },
-  // Config อื่นๆ (ถ้ามี)
 };
 
 export default nextConfig;
