@@ -1,6 +1,6 @@
 // app/page.tsx
 import Link from 'next/link'
-import Image from 'next/image' // ✅ 1. เพิ่ม Import Image
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import ProductCard from '@/components/ProductCard'
 import SearchBar from '@/components/SearchBar'
@@ -9,12 +9,13 @@ import HeroCarousel from '@/components/HeroCarousel'
 import StoreFeatures from '@/components/StoreFeatures'
 import BrandMarquee from '@/components/BrandMarquee'
 import CategoryFilter from '@/components/CategoryFilter'
+import NavbarCart from '@/components/NavbarCart' // ✅ 1. Import ตรงนี้
 import { auth } from '@/auth'
 import { Prisma } from '@prisma/client'
-import { 
-  Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, Box, 
-  Fan, Monitor, Laptop, Mouse, Keyboard, Headphones, Armchair, 
-  Sparkles, LayoutGrid, ShoppingBag, LogIn 
+import {
+  Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, Box,
+  Fan, Monitor, Laptop, Mouse, Keyboard, Headphones, Armchair,
+  Sparkles, LayoutGrid, LogIn
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -44,27 +45,26 @@ export default async function Home({
 }) {
   const session = await auth()
   const user = session?.user
-  
+
   const params = await searchParams
   const { q, category } = params
   const currentCategory = category || 'ALL'
 
-  // --- 🔥 สร้างเงื่อนไขการค้นหา (Advanced Filter Logic) ---
   const andConditions: Prisma.ProductWhereInput[] = []
 
-  // 2. เงื่อนไขค้นหาชื่อ (q)
+  // กรองสินค้าที่ถูกลบ (Soft Delete)
+  andConditions.push({ isArchived: false })
+
   if (q) {
     andConditions.push({ name: { contains: q, mode: 'insensitive' } })
   }
 
-  // 3. เงื่อนไขหมวดหมู่ (Category)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (category && category !== 'ALL') {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     andConditions.push({ category: category as any })
   }
 
-  // 4. 🔥 เงื่อนไขสเปค (Specs)
   for (const key of Object.keys(params)) {
     if (key.startsWith('spec_') && params[key]) {
       const specKey = key.replace('spec_', '')
@@ -84,7 +84,6 @@ export default async function Home({
   const whereCondition: Prisma.ProductWhereInput = {
     AND: andConditions
   }
-  // -----------------------------------------------------
 
   const rawProducts = await prisma.product.findMany({
     where: whereCondition,
@@ -104,54 +103,64 @@ export default async function Home({
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-32">
-      
+
       {/* ================= HEADER ================= */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
-        <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
-            
-            {/* ✅ 2. แก้ไขส่วน Logo ตรงนี้ */}
-            <Link href="/" className="flex-shrink-0 group flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Image
-                src="/logo.svg"      // path ของไฟล์ในโฟลเดอร์ public
-                alt="iHAVEGPU Logo"
-                width={140}          // ปรับความกว้างตามต้องการ
-                height={40}          // ปรับความสูงตามต้องการ
-                className="object-contain h-10 w-auto" 
-                priority             // โหลดรูปนี้ก่อนเพื่อน
-              />
-            </Link>
+        
+        {/* Top Row: Logo, Search, Actions */}
+        <div className="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between gap-8">
 
-            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-500">
-               <Link href="/" className="hover:text-black transition">Store</Link>
-               <Link href="/?category=CPU" className="hover:text-black transition">Components</Link>
-               <Link href="/locations" className="hover:text-black transition">Support</Link>
-            </nav>
+          {/* 1. LEFT: Logo */}
+          <Link href="/" className="flex-shrink-0 group flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Image
+              src="/logo.svg"
+              alt="iHAVEGPU Logo"
+              width={200}
+              height={60}
+              className="object-contain h-16 w-auto"
+              priority
+            />
+          </Link>
 
-            <div className="flex items-center gap-4">
-               <div className="w-48 hidden lg:block">
-                  <SearchBar /> 
-               </div>
+          {/* 2. CENTER: Search Bar */}
+          <div className="hidden lg:block flex-1 max-w-2xl px-8">
+             <SearchBar />
+          </div>
 
-               <div className="flex items-center gap-4 pl-4 border-l border-neutral-200">
-                 <Link href="/cart" className="relative group p-2 hover:bg-neutral-100 rounded-full transition text-neutral-600 hover:text-black">
-                    <ShoppingBag size={20} />
-                 </Link>
+          {/* 3. RIGHT: User Actions */}
+          <div className="flex items-center gap-4 flex-shrink-0">
+             <div className="lg:hidden">
+                <SearchBar />
+             </div>
 
-                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                 {(user as any)?.role === 'ADMIN' && (
-                    <Link href="/admin" className="text-[10px] font-bold bg-black text-white px-2 py-1 rounded hover:bg-neutral-800">ADMIN</Link>
-                 )}
+             {/* ✅ 2. แทนที่ Link เดิมด้วย NavbarCart */}
+             <NavbarCart />
 
-                 {user ? (
-                   <ProfileDropdown user={user} />
-                 ) : (
-                   <Link href="/login" className="text-sm font-medium hover:text-neutral-500 flex items-center gap-2">
-                     <LogIn size={16} /> Log in
-                   </Link>
-                 )}
-               </div>
-            </div>
+             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+             {(user as any)?.role === 'ADMIN' && (
+                 <Link href="/admin" className="text-[10px] font-bold bg-black text-white px-2 py-1 rounded hover:bg-neutral-800">ADMIN</Link>
+             )}
+
+             {user ? (
+                <ProfileDropdown user={user} />
+             ) : (
+                <Link href="/login" className="text-sm font-medium hover:text-neutral-500 flex items-center gap-2">
+                  <LogIn size={20} /> Log in
+                </Link>
+             )}
+          </div>
         </div>
+
+        {/* Secondary Navigation */}
+        <div>
+          <div className="max-w-[1400px] mx-auto px-4 h-12 flex items-center justify-end gap-10 text-sm font-bold text-neutral-500">
+            <Link href="/" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">หน้าแรก</Link>
+            <Link href="/warranty" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">การรับประกัน</Link>
+            <Link href="/contact" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">ติดต่อเรา</Link>
+            <Link href="/about" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">เกี่ยวกับเรา</Link>
+          </div>
+        </div>
+
       </header>
 
       {/* ================= HERO & FEATURES SECTION ================= */}
@@ -164,70 +173,63 @@ export default async function Home({
       )}
 
       {/* ================= MAIN CONTENT ================= */}
-      <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row gap-12 pt-4">
+      <div className="max-w-[1400px] mx-auto px-6 py-8">
         
-        {/* SIDEBAR */}
-        <aside className="hidden md:block w-48 flex-shrink-0">
-           <div className="sticky top-28">
-             <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-6 px-2 flex items-center gap-2">
-               <LayoutGrid size={14} /> Browse
-             </h3>
-             <div className="flex flex-col space-y-1">
-                {CATEGORIES.map((cat) => (
-                   <Link 
-                     key={cat.id} 
-                     href={`/?category=${cat.id}`}
-                     className={`px-3 py-2 text-sm rounded-lg transition-all flex items-center justify-between group
-                       ${currentCategory === cat.id 
-                         ? 'bg-black text-white font-medium shadow-md' 
-                         : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'
-                       }
-                     `}
-                   >
-                      <div className="flex items-center gap-3">
-                        <span className={currentCategory === cat.id ? 'text-white' : 'text-neutral-400 group-hover:text-black'}>
-                          {cat.icon}
-                        </span>
-                        <span>{cat.name}</span>
-                      </div>
-                      {currentCategory === cat.id && <span className="text-[10px]">●</span>}
-                   </Link>
-                ))}
-             </div>
-           </div>
-        </aside>
+        {/* Categories Bar */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 text-neutral-400 text-xs font-bold uppercase tracking-wider mb-3">
+             <LayoutGrid size={14} /> Categories
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/?category=${cat.id}`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-medium transition-all
+                  ${currentCategory === cat.id
+                    ? 'bg-black text-white border-black shadow-lg'
+                    : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400 hover:text-black'
+                  }
+                `}
+              >
+                {cat.icon}
+                <span>{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
 
         {/* PRODUCT GRID */}
-        <main className="flex-1">
-           {/* แสดง Filter เฉพาะเมื่อมีการเลือก Category */}
-           <div className="mb-4">
-              <CategoryFilter />
-           </div>
+        <main>
+          <div className="mb-6">
+             <CategoryFilter />
+          </div>
 
-           <div className="flex items-baseline justify-between mb-8 border-b border-neutral-100 pb-4">
-              <h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
-                 {currentCategory === 'ALL' ? 'Selected for You' : CATEGORIES.find(c => c.id === currentCategory)?.name}
-              </h2>
-              <span className="text-neutral-400 text-sm font-medium">{products.length} Products</span>
-           </div>
+          <div className="flex items-baseline justify-between mb-8 border-b border-neutral-100 pb-4">
+            <h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
+               {currentCategory === 'ALL' ? 'Selected for You' : CATEGORIES.find(c => c.id === currentCategory)?.name}
+            </h2>
+            <span className="text-neutral-400 text-sm font-medium">{products.length} Products</span>
+          </div>
 
-           {products.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+          {products.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
               {products.map((product) => (
-                <ProductCard 
-                  key={product.id} 
+                <ProductCard
+                  key={product.id}
                   product={product}
-                  isFavorite={favoriteIds.includes(product.id)} 
+                  isFavorite={favoriteIds.includes(product.id)}
                 />
               ))}
             </div>
-           ) : (
-             <div className="flex flex-col items-center justify-center py-32 text-neutral-300">
-                <Box size={64} className="mb-4 opacity-20" />
-                <p className="text-neutral-400">No products found matching your filters.</p>
-                <Link href="/" className="mt-4 text-black text-sm font-bold border-b border-black hover:opacity-70">Clear Filters</Link>
-             </div>
-           )}
+          ) : (
+            <div className="flex flex-col items-center justify-center py-32 text-neutral-300">
+               <Box size={64} className="mb-4 opacity-20" />
+               <p className="text-neutral-400">No products found matching your filters.</p>
+               <Link href="/" className="mt-4 text-black text-sm font-bold border-b border-black hover:opacity-70">Clear Filters</Link>
+            </div>
+          )}
         </main>
       </div>
     </div>

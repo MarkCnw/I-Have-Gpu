@@ -1,51 +1,70 @@
 // components/AddToCartSection.tsx
 'use client'
 
-import { useCartStore } from '@/app/store/useCartStore'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { ShoppingCart, Zap } from 'lucide-react'
+import toast from 'react-hot-toast'
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function AddToCartSection({ product }: { product: any }) {
-  const { addToCart } = useCartStore()
-  const router = useRouter()
-  const [isAdded, setIsAdded] = useState(false)
+  const [quantity, setQuantity] = useState(1)
 
   const handleAddToCart = () => {
-    addToCart(product)
-    setIsAdded(true)
-    setTimeout(() => setIsAdded(false), 2000) // Reset ปุ่มหลัง 2 วิ
+    try {
+      // 1. ดึงตะกร้าเดิมมา
+      const currentCart = JSON.parse(localStorage.getItem('cart') || '[]')
+
+      // 2. สร้างสินค้าชิ้นใหม่ที่จะเพิ่ม
+      const newItem = {
+        ...product,
+        cartId: `${product.id}-${Date.now()}`, // Unique ID สำหรับตะกร้า
+        quantity: quantity,
+        addedAt: new Date().toISOString()
+      }
+
+      // 3. บันทึกลง LocalStorage
+      const updatedCart = [...currentCart, newItem]
+      localStorage.setItem('cart', JSON.stringify(updatedCart))
+
+      // 🔥 4. ส่งสัญญาณให้ NavbarCart รู้ว่ามีของใหม่มาแล้ว! (สำคัญ)
+      window.dispatchEvent(new Event('cart-updated'))
+
+      toast.success('เพิ่มสินค้าลงตะกร้าเรียบร้อย')
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาดในการหยิบใส่ตะกร้า')
+    }
   }
 
   const handleBuyNow = () => {
-    addToCart(product)
-    router.push('/cart') // ไปหน้าตะกร้าทันที
+    handleAddToCart()
+    window.location.href = '/cart'
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex gap-4">
-        <button 
+    <div className="flex flex-col gap-4">
+      {/* Quantity Selector (ถ้ามี) หรือจะข้ามไปปุ่มเลยก็ได้ */}
+      
+      <div className="grid grid-cols-2 gap-4 mt-4">
+        <button
           onClick={handleAddToCart}
-          className={`flex-1 py-3 rounded-lg font-bold border-2 transition
-            ${isAdded 
-              ? 'border-green-500 text-green-500 bg-green-50' 
-              : 'border-slate-900 text-slate-900 hover:bg-slate-50'
-            }
-          `}
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border-2 border-neutral-900 text-neutral-900 font-bold hover:bg-neutral-50 transition-all active:scale-95"
         >
-          {isAdded ? '✔ ใส่ตะกร้าแล้ว' : 'ใส่ตะกร้า'}
+          <ShoppingCart size={20} />
+          ใส่ตะกร้า
         </button>
-        
-        <button 
+
+        <button
           onClick={handleBuyNow}
-          className="flex-1 py-3 rounded-lg font-bold bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-600/30 transition"
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 active:scale-95"
         >
-          ซื้อเลย ⚡
+          ซื้อเลย <Zap size={18} fill="currentColor" />
         </button>
       </div>
-      <p className="text-xs text-slate-400 text-center mt-2">
-        📦 จัดส่งฟรีทั่วไทย เมื่อช้อปครบ 5,000.-
+      
+      <p className="text-xs text-neutral-400 text-center flex items-center justify-center gap-1 mt-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+        จัดส่งฟรีทั่วไทย เมื่อช้อปครบ 5,000.-
       </p>
     </div>
   )

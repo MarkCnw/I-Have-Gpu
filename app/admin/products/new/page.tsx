@@ -1,266 +1,358 @@
-// app/admin/products/new/page.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, Save, ArrowLeft, Loader2, Package } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { CATEGORY_SPECS } from '@/lib/spec-config'
-import { toast } from 'react-hot-toast'
+import { ChevronLeft, Upload, Loader2, Save, X, Plus } from 'lucide-react' // เพิ่ม X, Plus
+import toast from 'react-hot-toast'
 
-const CATEGORIES = [
-  'CPU', 'MOTHERBOARD', 'RAM', 'GPU', 'STORAGE', 'PSU', 'CASE', 'COOLER', 'MONITOR',
-  'LAPTOP', 'MOUSE', 'KEYBOARD', 'HEADSET', 'CHAIR', 'ACCESSORY'
-]
+// ✅ กำหนด Template ของสเปคสินค้าแต่ละหมวดหมู่ (เหมือนเดิม)
+const SPECS_TEMPLATES: Record<string, Record<string, string>> = {
+  CPU: { socket: '', core_thread: '', base_clock: '', boost_clock: '', tdp: '' },
+  MOTHERBOARD: { socket: '', chipset: '', form_factor: '', memory_slots: '', max_memory: '' },
+  GPU: { chipset: '', memory_size: '', memory_type: '', boost_clock: '', length: '' },
+  RAM: { memory_type: '', capacity: '', speed: '', latency: '', voltage: '' },
+  STORAGE: { type: '', capacity: '', interface: '', read_speed: '', write_speed: '' },
+  PSU: { wattage: '', efficiency: '', modular: '', form_factor: '' },
+  CASE: { form_factor: '', side_panel: '', max_gpu_length: '', dimensions: '' },
+  COOLER: { type: '', socket_support: '', fan_size: '', noise_level: '' },
+  MONITOR: { screen_size: '', resolution: '', panel_type: '', refresh_rate: '', response_time: '' },
+  LAPTOP: { cpu: '', gpu: '', ram: '', storage: '', screen: '', weight: '' },
+  MOUSE: { sensor: '', dpi: '', buttons: '', connection: '', weight: '' },
+  KEYBOARD: { switch_type: '', layout: '', connection: '', lighting: '' },
+  HEADSET: { driver_size: '', connection: '', frequency_response: '', microphone: '' },
+  CHAIR: { material: '', max_weight: '', recline_angle: '', armrest: '' },
+}
 
 export default function NewProductPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [imageUrlInput, setImageUrlInput] = useState('') // state สำหรับช่องกรอก URL
 
-  // --- State: Basic Info ---
-  const [basicInfo, setBasicInfo] = useState({
+  const [formData, setFormData] = useState({
     name: '',
+    description: '',
     price: '',
     stock: '',
     category: '', 
-    description: ''
+    images: [] as string[], // ✅ เปลี่ยนจาก image: '' เป็น array
+    specs: {} as Record<string, string>
   })
 
-  const [imageUrl, setImageUrl] = useState('')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [specs, setSpecs] = useState<Record<string, any>>({})
+  const handleCategoryChange = (category: string) => {
+    setFormData(prev => ({
+      ...prev,
+      category,
+      specs: SPECS_TEMPLATES[category] ? { ...SPECS_TEMPLATES[category] } : {}
+    }))
+  }
 
-  useEffect(() => {
-    setSpecs({})
-  }, [basicInfo.category])
+  const handleSpecChange = (key: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specs: { ...prev.specs, [key]: value }
+    }))
+  }
 
+  // ✅ รองรับการอัปโหลดหลายรูปพร้อมกัน
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+    if (!e.target.files?.length) return
+    
     setUploading(true)
-    const formData = new FormData()
-    formData.append('file', file)
-
+    const files = Array.from(e.target.files)
+    
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (data.success) {
-        setImageUrl(data.url)
-        toast.success('อัปโหลดรูปสำเร็จ')
-      } else {
-        toast.error('อัปโหลดไม่สำเร็จ')
-      }
+      // ใช้ Promise.all เพื่ออัปโหลดหลายไฟล์พร้อมกัน
+      const uploadPromises = files.map(async (file) => {
+        const data = new FormData()
+        data.append('file', file)
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: data
+        })
+        if (!res.ok) throw new Error('Upload failed')
+        const { url } = await res.json()
+        return url
+      })
+
+      const newImages = await Promise.all(uploadPromises)
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        images: [...prev.images, ...newImages] // ต่อท้ายรูปเดิม
+      }))
+      
+      toast.success(`อัปโหลด ${newImages.length} รูปเรียบร้อย`)
     } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการอัปโหลด')
+      toast.error('อัปโหลดรูปภาพไม่สำเร็จ')
     } finally {
       setUploading(false)
+      // Reset input value เพื่อให้เลือกรูปเดิมซ้ำได้ถ้าต้องการ
+      e.target.value = ''
     }
+  }
+
+  // ✅ ฟังก์ชันเพิ่มรูปจาก URL
+  const handleAddUrl = () => {
+    if (!imageUrlInput.trim()) return
+    setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, imageUrlInput.trim()]
+    }))
+    setImageUrlInput('')
+  }
+
+  // ✅ ฟังก์ชันลบรูป
+  const handleRemoveImage = (indexToRemove: number) => {
+    setFormData(prev => ({
+        ...prev,
+        images: prev.images.filter((_, index) => index !== indexToRemove)
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!basicInfo.category) return toast.error('กรุณาเลือกหมวดหมู่')
-    if (!imageUrl) return toast.error('กรุณาอัปโหลดรูปสินค้า')
+    if (!formData.category) return toast.error('กรุณาเลือกหมวดหมู่สินค้า')
+    if (formData.images.length === 0) return toast.error('กรุณาเพิ่มรูปสินค้าอย่างน้อย 1 รูป')
 
     setLoading(true)
     try {
-      const payload = {
-        ...basicInfo,
-        price: Number(basicInfo.price),
-        stock: Number(basicInfo.stock),
-        image: imageUrl,
-        specs: specs 
-      }
-
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          ...formData,
+          // ส่งไปทั้ง image (รูปแรกเป็นปก) และ images (รูปทั้งหมด) เพื่อรองรับระบบเก่าและใหม่
+          image: formData.images[0], 
+          images: formData.images,
+          price: Number(formData.price),
+          stock: Number(formData.stock)
+        })
       })
 
-      if (res.ok) {
-        toast.success('เพิ่มสินค้าสำเร็จ! 🎉')
-        router.push('/admin/products')
-      } else {
-        const err = await res.json()
-        toast.error(`Error: ${err.message}`)
-      }
+      if (!res.ok) throw new Error('Failed to create')
+      
+      toast.success('เพิ่มสินค้าเรียบร้อย')
+      router.push('/admin/products')
+      router.refresh()
     } catch (error) {
-      toast.error('เกิดข้อผิดพลาดบางอย่าง')
+      toast.error('เกิดข้อผิดพลาดในการเพิ่มสินค้า')
     } finally {
       setLoading(false)
     }
   }
-
-  const currentSpecFields = CATEGORY_SPECS[basicInfo.category] || []
 
   return (
     <div className="max-w-4xl mx-auto pb-20">
       
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/admin/products" className="p-2 hover:bg-neutral-100 rounded-full transition">
-          <ArrowLeft size={20} />
+        <Link 
+          href="/admin/products" 
+          className="p-2 hover:bg-neutral-100 rounded-full transition-colors text-neutral-500"
+        >
+          <ChevronLeft size={24} />
         </Link>
-        <h1 className="text-2xl font-bold text-slate-800">เพิ่มสินค้าใหม่</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900">เพิ่มสินค้าใหม่</h1>
+          <p className="text-neutral-500 text-sm">กรอกข้อมูลสินค้าให้ครบถ้วนเพื่อลงขาย</p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         
-        {/* === ข้อมูลพื้นฐาน === */}
-        <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
-            <Package size={20} className="text-blue-600" /> ข้อมูลพื้นฐาน
-          </h2>
+        {/* 1. ข้อมูลพื้นฐาน */}
+        <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
+          <h2 className="font-bold text-lg border-b pb-4">ข้อมูลทั่วไป</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-bold mb-2 text-slate-600">ชื่อสินค้า</label>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-neutral-700">ชื่อสินค้า <span className="text-red-500">*</span></label>
               <input 
+                type="text" 
                 required
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none"
-                placeholder="เช่น Gigabyte RTX 4060 Eagle OC"
-                value={basicInfo.name}
-                onChange={e => setBasicInfo({...basicInfo, name: e.target.value})}
+                className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-neutral-900 focus:border-black focus:ring-0 outline-none transition-all"
+                placeholder="เช่น Intel Core i9-14900K"
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-bold mb-2 text-slate-600">หมวดหมู่</label>
-              <select 
-                required
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none bg-white"
-                value={basicInfo.category}
-                onChange={e => setBasicInfo({...basicInfo, category: e.target.value})}
-              >
-                <option value="">-- เลือกหมวดหมู่ --</option>
-                {CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+            <div className="space-y-2">
+               <label className="text-sm font-bold text-neutral-700">หมวดหมู่ <span className="text-red-500">*</span></label>
+               <div className="relative">
+                  <select 
+                    className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-neutral-900 focus:border-black outline-none appearance-none cursor-pointer"
+                    value={formData.category}
+                    onChange={e => handleCategoryChange(e.target.value)}
+                  >
+                    <option value="">-- เลือกหมวดหมู่ --</option>
+                    {Object.keys(SPECS_TEMPLATES).map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-3.5 pointer-events-none text-xs text-neutral-500">▼</div>
+               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold mb-2 text-slate-600">ราคา (บาท)</label>
-                <input 
-                  required type="number" min="0"
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none"
-                  value={basicInfo.price}
-                  onChange={e => setBasicInfo({...basicInfo, price: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold mb-2 text-slate-600">จำนวน (สต็อก)</label>
-                <input 
-                  required type="number" min="0"
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none"
-                  value={basicInfo.stock}
-                  onChange={e => setBasicInfo({...basicInfo, stock: e.target.value})}
-                />
-              </div>
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-neutral-700">รายละเอียดสินค้า</label>
+            <textarea 
+              rows={4}
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-neutral-900 focus:border-black focus:ring-0 outline-none transition-all resize-none"
+              placeholder="รายละเอียดเพิ่มเติมของสินค้า..."
+              value={formData.description}
+              onChange={e => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-bold mb-2 text-slate-600">รายละเอียด</label>
-              <textarea 
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-black/10 outline-none h-24"
-                value={basicInfo.description}
-                onChange={e => setBasicInfo({...basicInfo, description: e.target.value})}
-                placeholder="รายละเอียดเพิ่มเติมของสินค้า..."
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-6">
+             <div className="space-y-2">
+                <label className="text-sm font-bold text-neutral-700">ราคา (บาท) <span className="text-red-500">*</span></label>
+                <input 
+                  type="number" 
+                  required
+                  min="0"
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-neutral-900 focus:border-black outline-none"
+                  placeholder="0.00"
+                  value={formData.price}
+                  onChange={e => setFormData({...formData, price: e.target.value})}
+                />
+             </div>
+             <div className="space-y-2">
+                <label className="text-sm font-bold text-neutral-700">จำนวน (สต็อก) <span className="text-red-500">*</span></label>
+                <input 
+                  type="number" 
+                  required
+                  min="0"
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-neutral-900 focus:border-black outline-none"
+                  placeholder="0"
+                  value={formData.stock}
+                  onChange={e => setFormData({...formData, stock: e.target.value})}
+                />
+             </div>
           </div>
         </div>
 
-        {/* === อัปโหลดรูป === */}
-        <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
-            <Upload size={20} className="text-purple-600" /> รูปภาพสินค้า
-          </h2>
-          
-          <div className="flex items-start gap-6">
-            <div className="w-40 h-40 bg-neutral-100 rounded-lg border-2 border-dashed border-neutral-300 flex items-center justify-center relative overflow-hidden">
-              {uploading ? (
-                <Loader2 className="animate-spin text-neutral-400" />
-              ) : imageUrl ? (
-                <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
-              ) : (
-                <span className="text-xs text-neutral-400">ตัวอย่างรูป</span>
-              )}
-            </div>
-            
-            <div className="flex-1">
-              <label className="block mb-2 text-sm text-neutral-600">อัปโหลดไฟล์ (แนะนำสัดส่วน 1:1 หรือ PNG พื้นใส)</label>
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="block w-full text-sm text-slate-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-full file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-black file:text-white
-                  hover:file:bg-neutral-800
-                  cursor-pointer
-                "
-              />
-              {imageUrl && (
-                <p className="text-xs text-green-600 mt-2">✓ อัปโหลดสำเร็จแล้ว</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* === สเปคสินค้า (Dynamic) === */}
-        {basicInfo.category && (
-          <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm animate-in fade-in slide-in-from-bottom-4">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800">
-                <Save size={20} className="text-emerald-600" /> สเปคสินค้า: <span className="text-black">{basicInfo.category}</span>
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {currentSpecFields.map((field) => (
-                <div key={field.key}>
-                  <label className="block text-sm font-bold mb-2 text-neutral-700">
-                    {field.label} {field.suffix && <span className="text-xs font-normal text-neutral-400">({field.suffix})</span>}
+        {/* 2. สเปคสินค้า */}
+        {formData.category && (
+          <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6 animate-in fade-in slide-in-from-bottom-4">
+            <h2 className="font-bold text-lg border-b pb-4">คุณสมบัติเฉพาะ ({formData.category})</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {Object.keys(SPECS_TEMPLATES[formData.category]).map((key) => (
+                <div key={key} className="space-y-2">
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                    {key.replace('_', ' ')}
                   </label>
-                  
-                  {field.type === 'select' ? (
-                    <select
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-emerald-500/20 outline-none bg-neutral-50"
-                      value={specs[field.key] || ''}
-                      onChange={(e) => setSpecs({ ...specs, [field.key]: e.target.value })}
-                    >
-                      <option value="">เลือก...</option>
-                      {field.options?.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type={field.type === 'number' ? 'number' : 'text'}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-emerald-500/20 outline-none bg-neutral-50"
-                      placeholder={field.placeholder || ''}
-                      value={specs[field.key] || ''}
-                      onChange={(e) => setSpecs({ ...specs, [field.key]: e.target.value })}
-                    />
-                  )}
+                  <input 
+                    type="text"
+                    className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2.5 text-sm focus:border-black outline-none"
+                    placeholder={`ระบุ ${key}`}
+                    value={formData.specs[key] || ''}
+                    onChange={e => handleSpecChange(key, e.target.value)}
+                  />
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <div className="flex justify-end pt-4">
-          <button
+        {/* 3. รูปภาพสินค้า (Multiple Images) */}
+        <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
+          <div className="flex justify-between items-center border-b pb-4">
+            <h2 className="font-bold text-lg">รูปภาพสินค้า ({formData.images.length})</h2>
+            <span className="text-xs text-neutral-400">รูปแรกจะเป็นรูปปกสินค้า</span>
+          </div>
+          
+          {/* Gallery Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             {/* Upload Button Block */}
+             <div className="aspect-square bg-neutral-50 border-2 border-dashed border-neutral-300 rounded-xl flex flex-col items-center justify-center relative hover:bg-neutral-100 transition-colors cursor-pointer group">
+                {uploading ? (
+                    <Loader2 className="animate-spin text-neutral-400" />
+                ) : (
+                    <>
+                        <Upload className="text-neutral-400 mb-2 group-hover:text-black transition-colors" />
+                        <span className="text-xs text-neutral-500 font-medium">อัปโหลดรูป</span>
+                    </>
+                )}
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  multiple // ✅ อนุญาตให้เลือกหลายไฟล์
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                />
+             </div>
+
+             {/* Images List */}
+             {formData.images.map((img, index) => (
+                <div key={index} className="aspect-square relative rounded-xl overflow-hidden border border-neutral-200 group">
+                    <Image src={img} alt={`Product ${index}`} fill className="object-cover" />
+                    
+                    {/* Badge รูปปก */}
+                    {index === 0 && (
+                        <div className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+                            รูปปก
+                        </div>
+                    )}
+
+                    {/* Delete Button */}
+                    <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute top-2 right-2 p-1.5 bg-white/80 hover:bg-red-500 hover:text-white text-neutral-600 rounded-full shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
+             ))}
+          </div>
+
+          {/* URL Input */}
+          <div className="flex gap-2 items-end pt-2 border-t border-neutral-100 mt-2">
+             <div className="flex-1 space-y-2">
+                <label className="text-sm font-bold text-neutral-700">เพิ่มรูปจากลิงก์</label>
+                <input 
+                  type="text"
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-neutral-900 focus:border-black outline-none text-sm"
+                  placeholder="https://example.com/image.png"
+                  value={imageUrlInput}
+                  onChange={e => setImageUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
+                />
+             </div>
+             <button 
+                type="button"
+                onClick={handleAddUrl}
+                className="bg-neutral-900 text-white p-3 rounded-lg hover:bg-black transition-colors mb-[1px]"
+             >
+                <Plus size={20} />
+             </button>
+          </div>
+          
+          <p className="text-xs text-neutral-400 leading-relaxed">
+            รองรับไฟล์ JPG, PNG, WEBP ขนาดไม่เกิน 5MB ต่อรูป <br/>
+            สามารถลากวางรูปภาพ หรือเลือกทีละหลายรูปได้
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-4 pt-4">
+          <Link 
+            href="/admin/products"
+            className="px-6 py-3 rounded-lg border border-neutral-200 text-neutral-600 font-bold hover:bg-neutral-50 transition-colors"
+          >
+            ยกเลิก
+          </Link>
+          <button 
             type="submit"
-            disabled={loading}
-            className="bg-black text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-neutral-800 transition shadow-xl shadow-black/10 flex items-center gap-2 disabled:opacity-50"
+            disabled={loading || uploading}
+            className="px-8 py-3 rounded-lg bg-black text-white font-bold hover:bg-neutral-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? <Loader2 className="animate-spin" /> : <Save size={20} />}
             บันทึกสินค้า

@@ -9,22 +9,21 @@ export async function DELETE(
 ) {
   try {
     const session = await auth()
-
-    // 🔒 SECURITY CHECK: ต้องเป็น Admin เท่านั้น
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!session || (session.user as any)?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Access Denied: Admins only' }, { status: 403 })
+      return NextResponse.json({ error: 'Access Denied' }, { status: 403 })
     }
 
     const { id } = await params
 
-    await prisma.product.delete({
-      where: { id }
+    // ✅ เปลี่ยนเป็น Update เพื่อซ่อนสินค้า (Soft Delete)
+    const product = await prisma.product.update({
+      where: { id },
+      data: { isArchived: true }
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, product })
   } catch (error) {
-    // กรณีลบไม่ได้ (เช่น มีคนซื้อไปแล้ว ติด Relation ใน OrderItems)
-    return NextResponse.json({ error: 'Cannot delete product (it might be in an order)' }, { status: 400 })
+    return NextResponse.json({ error: 'Error deleting product' }, { status: 500 })
   }
 }

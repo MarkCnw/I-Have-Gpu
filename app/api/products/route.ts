@@ -3,11 +3,14 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
-// ✅ 1. เพิ่มฟังก์ชัน GET เพื่อให้หน้า Admin ดึงข้อมูลสินค้าได้
+// ✅ 1. แก้ไขฟังก์ชัน GET: เพิ่มเงื่อนไขกรองสินค้าที่ลบแล้ว (isArchived: false)
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
-      orderBy: { createdAt: 'desc' } // เรียงสินค้าใหม่สุดขึ้นก่อน
+      where: {
+        isArchived: false // 👈 สำคัญ: เพิ่มบรรทัดนี้ เพื่อซ่อนสินค้าที่ลบแล้วในหน้า Admin
+      },
+      orderBy: { createdAt: 'desc' }
     })
     return NextResponse.json(products)
   } catch (error) {
@@ -15,7 +18,7 @@ export async function GET() {
   }
 }
 
-// ✅ 2. ฟังก์ชัน POST เดิม (สำหรับการเพิ่มสินค้า)
+// ✅ 2. ฟังก์ชัน POST (คงเดิมไว้ ไม่ต้องแก้)
 export async function POST(request: Request) {
   try {
     const session = await auth()

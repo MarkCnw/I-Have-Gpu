@@ -1,17 +1,22 @@
 // app/products/[id]/page.tsx
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import FavoriteButton from '@/components/FavoriteButton'
 import AddToCartSection from '@/components/AddToCartSection'
-import ReviewForm from '@/components/ReviewForm' // 👈 1. Import ฟอร์มรีวิว
-import { ChevronRight, CheckCircle, XCircle, AlertCircle, Star, User } from 'lucide-react'
+import ReviewForm from '@/components/ReviewForm'
+import ProductGallery from '@/components/ProductGallery' // ✅ Import Gallery ที่สร้างใหม่
+import { 
+  ChevronRight, AlertCircle, Star, User, 
+  ShieldCheck, Truck, RotateCcw, Package 
+} from 'lucide-react'
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const session = await auth()
 
-  // ดึงข้อมูลสินค้า + รีวิว
+  // 1. ดึงข้อมูลสินค้า + รีวิว
   const product = await prisma.product.findUnique({
     where: { id },
     include: {
@@ -22,21 +27,43 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }
   })
 
+  // กรณีไม่พบสินค้า
   if (!product) return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-neutral-500">
-      <AlertCircle size={48} className="text-red-500 mb-4" />
-      <h1 className="text-xl font-bold text-neutral-800">ไม่พบสินค้า</h1>
-      <Link href="/" className="mt-4 text-black border-b border-black hover:opacity-50">กลับหน้าแรก</Link>
+    <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 text-neutral-500">
+      <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+        <AlertCircle size={40} className="text-red-500" />
+      </div>
+      <h1 className="text-2xl font-bold text-neutral-900 mb-2">ไม่พบสินค้า</h1>
+      <p className="text-neutral-500 mb-8">สินค้าที่คุณค้นหาอาจไม่มีอยู่จริงหรือถูกลบออกไปแล้ว</p>
+      <Link href="/" className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-neutral-800 transition-all font-medium">
+        กลับไปหน้าแรก
+      </Link>
     </div>
   )
 
-  // คำนวณคะแนน
+  // 2. 🔥 ดึงสินค้าที่เกี่ยวข้อง (Related Products)
+  const relatedProducts = await prisma.product.findMany({
+    where: {
+      category: product.category, // หมวดหมู่เดียวกัน
+      id: { not: product.id }     // ไม่เอาสินค้าปัจจุบัน
+    },
+    take: 4 // แสดงสูงสุด 4 ชิ้น
+  })
+
+  // 3. จัดการรูปภาพ (รองรับทั้งระบบเก่าที่มี 1 รูป และระบบใหม่ที่มีหลายรูป)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const images = (product as any).images && (product as any).images.length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? (product as any).images
+    : [product.image || '/placeholder.png']
+
+  // คำนวณคะแนนรีวิว
   const totalReviews = product.reviews.length
   const averageRating = totalReviews > 0
     ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
     : 0
 
-  // เช็ค Favorite
+  // เช็คสถานะ Favorite
   let isFavorite = false
   if (session?.user?.email) {
     const user = await prisma.user.findUnique({
@@ -47,128 +74,260 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] p-4 md:p-8 pb-32">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Breadcrumb */}
-        <div className="text-sm text-slate-500 mb-4 flex items-center gap-2">
-          <Link href="/" className="hover:text-black">หน้าแรก</Link>
-          <ChevronRight size={14} />
-          <span className="text-slate-800 font-medium truncate">{product.name}</span>
+    <div className="min-h-screen bg-[#FDFDFD] font-sans text-neutral-900 pb-24">
+      
+      {/* ================= BREADCRUMB ================= */}
+      <div className="border-b border-neutral-100 bg-white">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center text-sm text-neutral-500">
+          <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+          <ChevronRight size={14} className="mx-2 text-neutral-300" />
+          <Link href={`/?category=${product.category}`} className="hover:text-black transition-colors capitalize">
+            {product.category}
+          </Link>
+          <ChevronRight size={14} className="mx-2 text-neutral-300" />
+          <span className="text-neutral-900 font-medium truncate max-w-[200px] md:max-w-md">
+            {product.name}
+          </span>
         </div>
+      </div>
 
-        {/* ข้อมูลสินค้าหลัก */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2">
-            
-            <div className="p-8 md:p-12 flex items-center justify-center bg-white border-r border-slate-50 relative">
-              <div className="absolute top-6 right-6 z-10">
-                <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
-              </div>
-              <img src={product.image || ''} alt={product.name} className="w-full max-h-[450px] object-contain hover:scale-105 transition duration-700" />
-            </div>
+      <div className="max-w-7xl mx-auto px-6 mt-8 md:mt-12">
+        
+        {/* ================= PRODUCT HERO SECTION ================= */}
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-20 mb-20">
+          
+          {/* ซ้าย: รูปสินค้า (Gallery) */}
+          <div className="relative">
+             {/* ปุ่ม Favorite (วางซ้อนทับ Gallery) */}
+             <div className="absolute top-5 right-5 z-20 pointer-events-none"> {/* pointer-events-none เพื่อไม่ให้บังการคลิกรูป แต่ตัวปุ่มต้องเปิด pointer-events-auto */}
+                 <div className="bg-white rounded-full p-2.5 shadow-lg border border-neutral-100 hover:scale-110 transition-transform cursor-pointer pointer-events-auto">
+                    <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
+                 </div>
+             </div>
+             
+             {/* ✅ เรียกใช้ Gallery Component */}
+             <ProductGallery images={images} />
+          </div>
 
-            <div className="p-8 md:p-10 flex flex-col justify-center">
-              <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full w-fit mb-4 border border-slate-200">
+          {/* ขวา: ข้อมูลสินค้า */}
+          <div className="flex flex-col">
+            <div className="mb-6">
+              <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-bold rounded-full uppercase tracking-wider mb-4">
                 {product.category}
               </span>
+
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-900 leading-tight mb-4">
+                {product.name}
+              </h1>
               
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 leading-tight">{product.name}</h1>
-
-              <div className="flex items-center gap-2 mb-6">
-                <div className="flex text-yellow-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={20} fill={i < Math.round(averageRating) ? "currentColor" : "none"} className={i < Math.round(averageRating) ? "" : "text-slate-200"} />
-                  ))}
-                </div>
-                <span className="text-sm font-medium text-slate-500 underline decoration-slate-300 underline-offset-4 cursor-pointer">
-                  {totalReviews} รีวิว
-                </span>
-              </div>
-
-              <div className="text-sm text-slate-500 mb-8 space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <p>รหัสสินค้า: <span className="font-mono text-slate-700">{product.id.split('-')[0]}</span></p>
-                <div className="flex items-center gap-2">
-                  <span>สถานะ:</span>
-                  {product.stock > 0 ? (
-                    <span className="text-green-600 flex items-center gap-1.5 font-bold bg-green-50 px-2 py-0.5 rounded-full border border-green-100"><CheckCircle size={14} /> มีสินค้าพร้อมส่ง</span>
-                  ) : (
-                    <span className="text-red-600 flex items-center gap-1.5 font-bold bg-red-50 px-2 py-0.5 rounded-full border border-red-100"><XCircle size={14} /> สินค้าหมดชั่วคราว</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="text-5xl font-bold text-black mb-8 tracking-tight">฿{Number(product.price).toLocaleString()}</div>
-              <AddToCartSection product={{...product, price: Number(product.price)}} />
-
-              <div className="mt-10 pt-8 border-t border-slate-100">
-                <h3 className="font-bold text-lg mb-4 text-slate-800">Specification Highlights</h3>
-                <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
-                  {product.specs && Object.entries(product.specs as object).slice(0, 6).map(([key, value]) => (
-                    <div key={key} className="flex flex-col">
-                      <span className="text-slate-400 capitalize text-xs mb-1">{key}</span>
-                      <span className="font-medium text-slate-800">{String(value)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ส่วนรีวิว (Reviews Section) */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 md:p-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <Star className="text-yellow-400" fill="currentColor" /> 
-              รีวิวจากลูกค้า
-              <span className="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-1 rounded-full">{totalReviews}</span>
-            </h2>
-            
-            {/* 👇 2. ใส่ปุ่ม ReviewForm ตรงนี้ */}
-            <ReviewForm productId={product.id} /> 
-          </div>
-
-          {totalReviews === 0 ? (
-            <div className="text-center py-16 bg-slate-50 rounded-xl border border-slate-100 border-dashed">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star size={32} className="text-slate-300" />
-              </div>
-              <p className="text-lg text-slate-600 font-medium mb-1">ยังไม่มีรีวิวสำหรับสินค้านี้</p>
-              <p className="text-slate-400 text-sm">เป็นเจ้าของสินค้านี้และเขียนรีวิวเป็นคนแรกเลย!</p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {product.reviews.map((review) => (
-                <div key={review.id} className="border-b border-slate-100 pb-8 last:border-0 last:pb-0">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 border border-slate-200 flex-shrink-0 overflow-hidden">
-                      {review.user.image ? (
-                        <img src={review.user.image} className="w-full h-full object-cover" />
-                      ) : (
-                        <User size={24} />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="font-bold text-slate-900">{review.user.name || 'ลูกค้าทั่วไป'}</p>
-                        <span className="text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString('th-TH')}</span>
-                      </div>
-                      <div className="flex text-yellow-400 text-xs mb-3">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} className={i < review.rating ? "" : "text-slate-200"} />
-                        ))}
-                      </div>
-                      <p className="text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl rounded-tl-none inline-block">
-                        {review.comment || "ไม่ได้ระบุความคิดเห็น"}
-                      </p>
-                    </div>
+              {/* คะแนนและรหัสสินค้า */}
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-1">
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} fill={i < Math.round(averageRating) ? "currentColor" : "none"} className={i < Math.round(averageRating) ? "" : "text-neutral-200"} />
+                    ))}
                   </div>
+                  <span className="text-neutral-500 font-medium ml-1">({totalReviews} รีวิว)</span>
                 </div>
-              ))}
+                <div className="w-1 h-1 bg-neutral-300 rounded-full"></div>
+                <span className="text-neutral-400">รหัสสินค้า: {product.id.split('-')[0].toUpperCase()}</span>
+              </div>
             </div>
-          )}
+
+            {/* ราคาและสต็อก */}
+            <div className="mb-8 p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+               <div className="flex items-end gap-3 mb-2">
+                 <span className="text-4xl font-bold text-neutral-900">฿{Number(product.price).toLocaleString()}</span>
+               </div>
+
+               <div className="flex items-center gap-2 mb-6 text-sm">
+                  {product.stock > 0 ? (
+                    <span className="flex items-center gap-1.5 text-green-600 font-bold">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> มีสินค้า
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-red-600 font-bold">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div> สินค้าหมดชั่วคราว
+                    </span>
+                  )}
+                  <span className="text-neutral-400 font-medium">|</span>
+                  <span className="text-neutral-500">พร้อมจัดส่งภายใน 24 ชม.</span>
+               </div>
+
+               <AddToCartSection product={{...product, price: Number(product.price)}} />
+            </div>
+
+            {/* ความน่าเชื่อถือ */}
+            <div className="grid grid-cols-2 gap-4 text-sm text-neutral-600">
+               <div className="flex items-start gap-3">
+                 <ShieldCheck className="text-neutral-900 shrink-0" size={20} />
+                 <div>
+                   <span className="font-bold text-neutral-900 block">รับประกันศูนย์ไทย</span>
+                   สินค้าของแท้ 100%
+                 </div>
+               </div>
+               <div className="flex items-start gap-3">
+                 <Truck className="text-neutral-900 shrink-0" size={20} />
+                 <div>
+                   <span className="font-bold text-neutral-900 block">จัดส่งรวดเร็ว</span>
+                   ส่งด่วนทั่วประเทศ
+                 </div>
+               </div>
+               <div className="flex items-start gap-3">
+                 <RotateCcw className="text-neutral-900 shrink-0" size={20} />
+                 <div>
+                   <span className="font-bold text-neutral-900 block">เปลี่ยนคืนใน 7 วัน</span>
+                   หากพบปัญหาจากการผลิต
+                 </div>
+               </div>
+               <div className="flex items-start gap-3">
+                 <Package className="text-neutral-900 shrink-0" size={20} />
+                 <div>
+                   <span className="font-bold text-neutral-900 block">แพ็คแน่นหนา</span>
+                   รับประกันความปลอดภัย
+                 </div>
+               </div>
+            </div>
+          </div>
         </div>
+
+        {/* ================= รายละเอียด & สเปค ================= */}
+        <div className="grid lg:grid-cols-3 gap-12 mb-20">
+          <div className="lg:col-span-2 space-y-12">
+            <section>
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span className="w-1 h-8 bg-black rounded-full"></span> รายละเอียดสินค้า
+              </h3>
+              <div className="prose prose-neutral max-w-none text-neutral-600 leading-relaxed bg-white p-8 rounded-2xl border border-neutral-100">
+                 <p>{product.description || "ไม่มีรายละเอียดสำหรับสินค้านี้"}</p>
+              </div>
+            </section>
+
+            <section>
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span className="w-1 h-8 bg-black rounded-full"></span> ข้อมูลจำเพาะ (Specifications)
+              </h3>
+              <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+                {product.specs && Object.keys(product.specs).length > 0 ? (
+                  <table className="w-full text-left text-sm">
+                    <tbody className="divide-y divide-neutral-100">
+                      {Object.entries(product.specs as object).map(([key, value], index) => (
+                        <tr key={key} className={index % 2 === 0 ? "bg-neutral-50/50" : "bg-white"}>
+                          <td className="py-4 px-6 font-medium text-neutral-900 w-1/3 capitalize">
+                            {key.replace(/_/g, ' ')}
+                          </td>
+                          <td className="py-4 px-6 text-neutral-600">
+                            {String(value)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="p-8 text-center text-neutral-400 italic">ไม่มีข้อมูลจำเพาะสำหรับสินค้านี้</div>
+                )}
+              </div>
+            </section>
+
+            <section id="reviews">
+               <div className="flex items-center justify-between mb-8">
+                 <h3 className="text-2xl font-bold flex items-center gap-2">
+                   <span className="w-1 h-8 bg-black rounded-full"></span> รีวิวจากลูกค้า
+                 </h3>
+                 <ReviewForm productId={product.id} />
+               </div>
+
+               <div className="space-y-6">
+                 {totalReviews === 0 ? (
+                    <div className="bg-neutral-50 rounded-2xl p-12 text-center border border-dashed border-neutral-200">
+                       <Star size={40} className="text-neutral-300 mx-auto mb-4" />
+                       <h4 className="font-bold text-neutral-900 mb-1">ยังไม่มีรีวิว</h4>
+                       <p className="text-neutral-500 text-sm">ร่วมแบ่งปันประสบการณ์การใช้งานเป็นคนแรก</p>
+                    </div>
+                 ) : (
+                    product.reviews.map((review) => (
+                      <div key={review.id} className="bg-white p-6 rounded-2xl border border-neutral-100">
+                         <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                               <div className="w-10 h-10 bg-neutral-100 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200">
+                                  {review.user.image ? (
+                                    <img src={review.user.image} alt={review.user.name || 'User'} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <User size={20} className="text-neutral-400" />
+                                  )}
+                               </div>
+                               <div>
+                                  <h5 className="font-bold text-neutral-900 text-sm">{review.user.name || 'ผู้ใช้งานทั่วไป'}</h5>
+                                  <div className="flex text-yellow-400 text-xs">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star key={i} size={12} fill={i < review.rating ? "currentColor" : "none"} className={i < review.rating ? "" : "text-neutral-200"} />
+                                    ))}
+                                  </div>
+                               </div>
+                            </div>
+                            <span className="text-xs text-neutral-400">{new Date(review.createdAt).toLocaleDateString('th-TH')}</span>
+                         </div>
+                         <p className="text-neutral-600 text-sm leading-relaxed">
+                           {review.comment || <span className="italic text-neutral-400">ไม่ได้ระบุความคิดเห็น</span>}
+                         </p>
+                      </div>
+                    ))
+                 )}
+               </div>
+            </section>
+          </div>
+
+          <div className="hidden lg:block space-y-8">
+             <div className="sticky top-24 p-6 bg-neutral-900 text-white rounded-2xl bg-[url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80')] bg-cover bg-center bg-blend-overlay bg-opacity-90">
+                <h4 className="text-xl font-bold mb-2">ต้องการคำปรึกษา?</h4>
+                <p className="text-neutral-300 text-sm mb-6 leading-relaxed">
+                  ไม่แน่ใจว่าอุปกรณ์นี้ใส่กับเครื่องของคุณได้ไหม? ผู้เชี่ยวชาญของเราพร้อมช่วยคุณจัดสเปคที่ลงตัวที่สุด
+                </p>
+                <Link href="/contact" className="block w-full py-3 bg-white text-black font-bold text-center rounded-lg hover:bg-neutral-200 transition-colors">
+                  ติดต่อเรา
+                </Link>
+             </div>
+          </div>
+        </div>
+
+        {/* ================= 🔥 RELATED PRODUCTS (สินค้าที่เกี่ยวข้อง) ================= */}
+        {relatedProducts.length > 0 && (
+            <div className="border-t border-neutral-100 pt-16">
+                <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-2xl font-bold flex items-center gap-2">
+                        <span className="w-1 h-8 bg-black rounded-full"></span> สินค้าที่เกี่ยวข้อง
+                    </h3>
+                    <Link href={`/?category=${product.category}`} className="text-sm font-bold border-b border-black hover:opacity-60 transition-opacity">
+                        ดูทั้งหมด
+                    </Link>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {relatedProducts.map((related) => (
+                        <Link key={related.id} href={`/products/${related.id}`} className="group bg-white border border-neutral-100 rounded-2xl p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <div className="aspect-square relative bg-neutral-50 rounded-xl mb-4 overflow-hidden">
+                                <Image 
+                                    src={related.image || '/placeholder.png'} 
+                                    alt={related.name} 
+                                    fill 
+                                    className="object-contain p-4 mix-blend-multiply group-hover:scale-105 transition-transform"
+                                />
+                            </div>
+                            <span className="text-[10px] font-bold text-neutral-400 bg-neutral-50 px-2 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
+                                {related.category}
+                            </span>
+                            <h4 className="font-bold text-neutral-900 text-sm mb-2 line-clamp-2 h-10 group-hover:text-neutral-600 transition-colors">
+                                {related.name}
+                            </h4>
+                            <div className="flex items-center justify-between">
+                                <span className="font-bold text-neutral-900">฿{Number(related.price).toLocaleString()}</span>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+        )}
 
       </div>
     </div>

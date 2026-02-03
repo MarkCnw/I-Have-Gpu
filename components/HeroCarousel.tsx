@@ -10,26 +10,26 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 const SLIDES = [
   {
     id: 1,
-    title: "RTX 4090 SUPRIM LIQUID",
-    subtitle: "The ultimate platform for gamers and creators. Beyond fast.",
-    // รูปการ์ดจอ/คอมเกมมิ่งดุๆ
-    image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=2574",
-    color: "bg-black" 
+    // 1. หัวข้อหลัก (Title)
+    title: "Welcome to iHAVEGPU", 
+    // 2. คำบรรยายรอง (Subtitle)
+    subtitle: "Discover the best PC components and gaming gears for your ultimate setup.",
+    // 3. รูปภาพ (Image URL) - แนะนำขนาด 1920x700
+    image: "https://images.unsplash.com/photo-1708481480603-b47ea65c80b6?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   },
   {
     id: 2,
-    title: "Dream Desk Setup",
-    subtitle: "Minimalist workspace designed for focus and productivity.",
-    // รูปโต๊ะคอมคลีนๆ แสงสวยๆ
-    image: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=2670", 
+    title: "High Performance",
+    subtitle: "Experience the power of next-gen graphics cards and processors.",
+    image: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=2542&auto=format&fit=crop", 
     color: "bg-neutral-900"
   },
   {
     id: 3,
-    title: "Next-Gen Laptops",
-    subtitle: "Power meets portability. Work anywhere, play everywhere.",
+    title: "Unleash The Beast",
+    subtitle: "Dominate every game with our extreme performance custom builds.",
     // รูปแล็ปท็อปเท่ๆ
-    image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=2668", 
+    image: "https://images.unsplash.com/photo-1597840900616-664e930c29df?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", 
     color: "bg-emerald-950"
   }
 ]

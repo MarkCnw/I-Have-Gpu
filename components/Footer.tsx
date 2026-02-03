@@ -1,5 +1,6 @@
 // components/Footer.tsx
 import Link from 'next/link'
+import Image from 'next/image' // Import Image component
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react'
 
 export default function Footer() {
@@ -11,11 +12,15 @@ export default function Footer() {
           
           {/* 1. Brand Info */}
           <div>
-            <Link href="/" className="inline-flex items-center gap-2 mb-6 group">
-               <div className="w-8 h-8 bg-white text-black flex items-center justify-center rounded-lg font-bold italic text-lg">i</div>
-               <h2 className="text-xl font-bold tracking-tight text-white">
-                 iHAVE<span className="font-normal text-neutral-500">GPU</span>
-               </h2>
+            <Link href="/" className="inline-block mb-6">
+               {/* ✅ ใช้ Image component แทนข้อความ */}
+               <Image 
+                 src="/logo.svg" 
+                 alt="iHAVEGPU Logo" 
+                 width={160} 
+                 height={40} 
+                 className="h-10 w-auto object-contain brightness-0 invert" // brightness-0 invert เพื่อเปลี่ยนสี logo เป็นสีขาว (ถ้า svg เดิมเป็นสีดำ)
+               />
             </Link>
             <p className="text-sm leading-relaxed mb-6">
               ร้านอุปกรณ์คอมพิวเตอร์ระดับ Hi-End สำหรับ Gamers และ Creators 
@@ -45,10 +50,10 @@ export default function Footer() {
             <h3 className="text-white font-bold mb-6">Support</h3>
             <ul className="space-y-4 text-sm">
               <li><Link href="/orders" className="hover:text-white transition">Order Status</Link></li>
-              <li><Link href="/locations" className="hover:text-white transition">Warranty & Returns</Link></li>
-              <li><Link href="/locations" className="hover:text-white transition">Shipping Info</Link></li>
-              <li><Link href="/locations" className="hover:text-white transition">FAQ</Link></li>
-              <li><Link href="/locations" className="hover:text-white transition">Contact Us</Link></li>
+              <li><Link href="/warranty" className="hover:text-white transition">Warranty & Returns</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition">Shipping Info</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition">FAQ</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition">Contact Us</Link></li>
             </ul>
           </div>
 
