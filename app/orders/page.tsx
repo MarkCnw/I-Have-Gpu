@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Package, Upload, QrCode, X, Copy, Truck, ExternalLink, Loader2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
+import Image from 'next/image' // ✅ เพิ่ม import Image
 
 // 🔥 ตัวแปลงภาษา (ฝั่ง User)
 const STATUS_LABEL_TH: Record<string, string> = {
@@ -124,13 +125,13 @@ export default function OrdersPage() {
                   {order.items.map((item: any) => (
                     <div key={item.id} className="flex justify-between items-center text-sm mb-3 last:mb-0">
                       <div className="flex items-center gap-3">
-                         <div className="w-12 h-12 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden border border-slate-200">
+                          <div className="w-12 h-12 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden border border-slate-200">
                             {item.product?.image && <img src={item.product.image} className="w-full h-full object-cover mix-blend-multiply" />}
-                         </div>
-                         <div>
+                          </div>
+                          <div>
                             <span className="font-bold text-slate-800 line-clamp-1">{item.product?.name}</span>
                             <span className="text-slate-500 text-xs">จำนวน: {item.quantity} ชิ้น</span>
-                         </div>
+                          </div>
                       </div>
                       <span className="font-mono font-bold text-slate-600">฿{(item.price * item.quantity).toLocaleString()}</span>
                     </div>
@@ -208,14 +209,17 @@ export default function OrdersPage() {
             
             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-6 text-center">
               <div className="bg-white p-4 inline-block rounded-xl shadow-sm border border-slate-100 mb-4">
-                 <img 
-                   src={`https://promptpay.io/0123456789/${Number(selectedOrder.total)}.png`} 
-                   alt="PromptPay QR" 
-                   className="w-48 h-48 object-contain mix-blend-multiply"
+                 {/* ✅ แก้ไข: ใช้รูปภาพ qrcode.png จาก public folder */}
+                 <Image 
+                   src="/qrcodee.png" 
+                   alt="Payment QR Code" 
+                   width={192}
+                   height={192}
+                   className="object-contain"
                  />
               </div>
               <p className="text-sm text-slate-500 font-bold">สแกน QR เพื่อโอนเงิน</p>
-              <p className="text-xs text-slate-400 mt-1">ธ.กสิกรไทย • บจก. ไอแฮฟจีพียู</p>
+              <p className="text-xs text-slate-400 mt-1">ธ.ออมสิน • บจก. ไอแฮฟจีพียู</p>
               <div className="my-4 border-t border-dashed border-slate-300"></div>
               <div className="flex justify-between items-end px-4">
                   <span className="text-sm text-slate-500 font-bold">ยอดที่ต้องโอน</span>

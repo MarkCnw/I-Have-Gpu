@@ -4,6 +4,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image' // ✅ เพิ่ม import Image
 import { CheckCircle, Copy, FileText, CreditCard, Home } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
@@ -75,11 +76,14 @@ function OrderSuccessContent() {
             <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center mb-6">
               <p className="text-sm text-slate-500 mb-2">สแกน QR Code เพื่อชำระเงิน</p>
               <div className="bg-white p-4 inline-block rounded-lg shadow-sm mb-4">
-                 {/* สร้าง QR PromptPay อัตโนมัติด้วยยอดเงินจริง */}
-                 <img 
-                   src={`https://promptpay.io/0812345678/${order.total}.png`} 
-                   alt="PromptPay QR" 
-                   className="w-48 h-48 object-contain"
+                 {/* ✅ แก้ไข: ใช้รูปภาพ qrcode.png แทนการ generate อัตโนมัติ */}
+                 <Image 
+                   src="/qrcode.png" 
+                   alt="Payment QR Code" 
+                   width={192}
+                   height={192}
+                   className="object-contain"
+                   priority
                  />
               </div>
               <div className="text-2xl font-bold text-emerald-600">฿{Number(order.total).toLocaleString()}</div>

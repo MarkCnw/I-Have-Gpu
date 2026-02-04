@@ -2,10 +2,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Eye, Check, X, Truck, ExternalLink, Copy } from 'lucide-react'
+import { Search, Eye, Check, X, Truck, ExternalLink, Copy, MapPin, Phone, Package } from 'lucide-react' // 👈 เพิ่ม icon
 import { toast } from 'react-hot-toast'
 import ConfirmModal from '@/components/ConfirmModal'
 import InputModal from '@/components/InputModal'
+import Image from 'next/image' // 👈 เพิ่ม Image
 
 // 🔥 ตัวแปลงภาษา: สถานะออเดอร์ (ใช้ทั้งใน Filter และในตาราง)
 const STATUS_LABEL: Record<string, string> = {
@@ -22,7 +23,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default function AdminOrdersPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([])
-  const [filter, setFilter] = useState('ALL') // Logic ยังใช้ภาษาอังกฤษ (ALL, PAID, ...)
+  const [filter, setFilter] = useState('ALL')
 
   // State สำหรับ Confirm Modal
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
@@ -38,6 +39,10 @@ export default function AdminOrdersPage() {
   const [isCarrierModalOpen, setIsCarrierModalOpen] = useState(false)
   const [trackingLoading, setTrackingLoading] = useState(false)
 
+  // 🔥 State สำหรับ Modal ดูรายละเอียด (เพิ่มใหม่)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+
   const fetchOrders = async () => {
     const res = await fetch('/api/orders', { cache: 'no-store' })
     const data = await res.json()
@@ -48,13 +53,13 @@ export default function AdminOrdersPage() {
     fetchOrders()
   }, [])
 
-  // ฟังก์ชันเปิด Confirm Modal สำหรับเปลี่ยนสถานะ
+  // ฟังก์ชันเปิด Confirm Modal สำหรับเปลี่ยนสถานะ (คงเดิม)
   const openStatusConfirm = (id: string, status: string) => {
     setConfirmData({ id, status })
     setIsConfirmOpen(true)
   }
 
-  // ฟังก์ชันยืนยันเปลี่ยนสถานะ
+  // ฟังก์ชันยืนยันเปลี่ยนสถานะ (คงเดิม)
   const confirmStatusChange = async () => {
     if (!confirmData) return
     
@@ -77,21 +82,21 @@ export default function AdminOrdersPage() {
     }
   }
 
-  // ฟังก์ชันเปิด Modal กรอกเลขพัสดุ
+  // ฟังก์ชันเปิด Modal กรอกเลขพัสดุ (คงเดิม)
   const openTrackingModal = (id: string) => {
     setTrackingOrderId(id)
     setTrackingNumber('')
     setIsTrackingModalOpen(true)
   }
 
-  // ฟังก์ชันรับเลขพัสดุแล้วเปิด Modal ถามชื่อขนส่ง
+  // ฟังก์ชันรับเลขพัสดุแล้วเปิด Modal ถามชื่อขนส่ง (คงเดิม)
   const handleTrackingSubmit = (value: string) => {
     setTrackingNumber(value)
     setIsTrackingModalOpen(false)
     setIsCarrierModalOpen(true)
   }
 
-  // ฟังก์ชันบันทึกเลขพัสดุและชื่อขนส่ง
+  // ฟังก์ชันบันทึกเลขพัสดุและชื่อขนส่ง (คงเดิม)
   const handleCarrierSubmit = async (carrier: string) => {
     if (!trackingOrderId || !trackingNumber) return
     
@@ -120,7 +125,7 @@ export default function AdminOrdersPage() {
     }
   }
 
-  // กรองข้อมูล
+  // กรองข้อมูล (คงเดิม)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredOrders = filter === 'ALL' ? orders : orders.filter((o: any) => o.status === filter)
 
@@ -129,7 +134,7 @@ export default function AdminOrdersPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-slate-800">จัดการคำสั่งซื้อ (Orders)</h1>
         
-        {/* Filter Tabs (แสดงภาษาไทย) */}
+        {/* Filter Tabs (คงเดิม) */}
         <div className="flex bg-white p-1 rounded-lg border border-slate-200">
           {['ALL', 'VERIFYING', 'PAID', 'SHIPPED'].map(f => (
             <button
@@ -137,7 +142,7 @@ export default function AdminOrdersPage() {
               onClick={() => setFilter(f)}
               className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${filter === f ? 'bg-black text-white' : 'text-slate-500 hover:bg-slate-50'}`}
             >
-              {STATUS_LABEL[f]} {/* แสดงชื่อไทย */}
+              {STATUS_LABEL[f]}
               {f === 'VERIFYING' && orders.filter((o: any) => o.status === 'VERIFYING').length > 0 && <span className="ml-1 text-red-400">●</span>}
             </button>
           ))}
@@ -168,7 +173,6 @@ export default function AdminOrdersPage() {
                 </td>
                 <td className="p-4 font-bold text-emerald-600">฿{Number(order.total).toLocaleString()}</td>
                 
-                {/* 🔥 แก้ไขตรงนี้: Badge สถานะแสดงภาษาไทย */}
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded text-[10px] font-bold 
                     ${order.status === 'VERIFYING' ? 'bg-yellow-100 text-yellow-700' : 
@@ -203,6 +207,15 @@ export default function AdminOrdersPage() {
 
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
+                    {/* ปุ่มดูรายละเอียด (เพิ่มใหม่) */}
+                    <button 
+                      onClick={() => setSelectedOrder(order)} 
+                      className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-slate-200 text-xs font-bold"
+                      title="ดูรายละเอียดที่อยู่และสินค้า"
+                    >
+                      <Eye size={14} /> รายละเอียด
+                    </button>
+
                     {order.status === 'VERIFYING' && (
                       <>
                         <button onClick={() => openStatusConfirm(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700 text-xs font-bold">
@@ -233,7 +246,7 @@ export default function AdminOrdersPage() {
         </table>
       </div>
 
-      {/* Modal ยืนยันเปลี่ยนสถานะ */}
+      {/* Modal ยืนยันเปลี่ยนสถานะ (คงเดิม) */}
       <ConfirmModal
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
@@ -245,7 +258,7 @@ export default function AdminOrdersPage() {
         variant={confirmData?.status === 'PENDING' ? 'danger' : 'info'}
       />
 
-      {/* Modal กรอกเลขพัสดุ */}
+      {/* Modal กรอกเลขพัสดุ (คงเดิม) */}
       <InputModal
         isOpen={isTrackingModalOpen}
         onClose={() => setIsTrackingModalOpen(false)}
@@ -255,7 +268,7 @@ export default function AdminOrdersPage() {
         confirmText="ถัดไป"
       />
 
-      {/* Modal กรอกชื่อขนส่ง */}
+      {/* Modal กรอกชื่อขนส่ง (คงเดิม) */}
       <InputModal
         isOpen={isCarrierModalOpen}
         onClose={() => setIsCarrierModalOpen(false)}
@@ -266,6 +279,83 @@ export default function AdminOrdersPage() {
         confirmText="บันทึก"
         loading={trackingLoading}
       />
+
+      {/* 🔥 Modal แสดงรายละเอียด (ที่อยู่ + สินค้า) - เพิ่มใหม่ส่วนนี้ */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            
+            {/* Header */}
+            <div className="p-6 border-b border-neutral-100 flex justify-between items-center bg-neutral-50">
+              <div>
+                <h3 className="font-bold text-lg text-slate-800">รายละเอียดคำสั่งซื้อ</h3>
+                <p className="text-xs text-slate-500 font-mono">ID: {selectedOrder.id}</p>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-neutral-200 rounded-full text-slate-500">✕</button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              
+              {/* 1. ข้อมูลจัดส่ง */}
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                <h4 className="font-bold text-sm flex items-center gap-2 text-slate-700"><MapPin size={16}/> ที่อยู่จัดส่ง</h4>
+                <div className="text-sm text-slate-600 pl-6 space-y-1">
+                  <p className="text-lg font-bold text-black">{selectedOrder.shippingName}</p>
+                  <p>{selectedOrder.shippingAddress}</p>
+                  <p className="text-slate-500">{selectedOrder.shippingZipcode}</p>
+                  <div className="flex items-center gap-2 mt-2 text-black font-medium">
+                    <Phone size={14}/> {selectedOrder.shippingPhone}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. รายการสินค้า */}
+              <div>
+                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-700"><Package size={16}/> รายการสินค้า</h4>
+                <div className="space-y-3">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {selectedOrder.items?.map((item: any, idx: number) => (
+                    <div key={idx} className="flex gap-4 p-3 border border-slate-100 rounded-lg bg-white">
+                      <div className="w-12 h-12 bg-slate-50 rounded-md flex items-center justify-center relative overflow-hidden">
+                        {item.product?.image ? (
+                           <Image src={item.product.image} alt={item.product.name} fill className="object-contain mix-blend-multiply p-1" />
+                        ) : (
+                           <div className="text-xs text-slate-300">No Img</div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-sm line-clamp-1 text-slate-800">{item.product?.name}</p>
+                        <div className="flex justify-between text-xs text-slate-500 mt-1">
+                          <span>จำนวน: x{item.quantity}</span>
+                          <span>฿{Number(item.price).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. ใบกำกับภาษี (ถ้ามี) */}
+              {selectedOrder.taxId && (
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm">
+                  <h4 className="font-bold text-blue-800 mb-2">ขอใบกำกับภาษี</h4>
+                  <p><strong>ชื่อ:</strong> {selectedOrder.taxName}</p>
+                  <p><strong>เลขภาษี:</strong> {selectedOrder.taxId}</p>
+                  <p><strong>ที่อยู่:</strong> {selectedOrder.taxAddress}</p>
+                </div>
+              )}
+
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50 text-right">
+               <span className="text-slate-500 text-sm mr-2">ยอดสุทธิ</span>
+               <span className="text-xl font-bold text-slate-900">฿{Number(selectedOrder.total).toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

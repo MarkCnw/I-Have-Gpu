@@ -104,7 +104,7 @@ export default function CartPage() {
 
   // คำนวณยอดเงิน
   const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0)
-  const shipping = subtotal > 5000 ? 0 : 100
+  const shipping = 0
   const total = subtotal + shipping
 
   // ฟังก์ชัน Checkout

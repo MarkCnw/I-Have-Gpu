@@ -124,8 +124,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div className="grid grid-cols-2 gap-4 text-sm text-neutral-600">
                <div className="flex gap-3"><ShieldCheck size={20} className="text-black" /><div><span className="font-bold text-black block">ประกันศูนย์ไทย</span>ของแท้ 100%</div></div>
                <div className="flex gap-3"><Truck size={20} className="text-black" /><div><span className="font-bold text-black block">ส่งฟรีทั่วไทย</span>ถึงไว 1-2 วัน</div></div>
-               <div className="flex gap-3"><RotateCcw size={20} className="text-black" /><div><span className="font-bold text-black block">เปลี่ยนคืน 7 วัน</span>มีปัญหาเคลมได้</div></div>
-               <div className="flex gap-3"><Package size={20} className="text-black" /><div><span className="font-bold text-black block">แพ็คแน่นหนา</span>ปลอดภัยทุกชิ��น</div></div>
+               <div className="flex gap-3"><RotateCcw size={20} className="text-black" /><div><span className="font-bold text-black block">เปลี่ยนคืน 30 วัน</span>มีปัญหาเคลมได้</div></div>
+               <div className="flex gap-3"><Package size={20} className="text-black" /><div><span className="font-bold text-black block">แพ็คแน่นหนา</span>ปลอดภัยทุกชิ้น</div></div>
             </div>
           </div>
         </div>
