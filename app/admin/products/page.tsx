@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Edit, Trash2, Package } from 'lucide-react'
+import { Plus, Search, Edit, Package } from 'lucide-react'
 import Link from 'next/link'
 import DeleteProductBtn from '@/components/DeleteProductBtn'
 
@@ -79,9 +79,14 @@ export default function AdminProductsPage() {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-2">
-                    <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="แก้ไข">
+                    {/* ✅ แก้ไขตรงนี้: เปลี่ยนปุ่มเป็น Link ไปหน้าแก้ไข */}
+                    <Link 
+                      href={`/admin/products/${product.id}`}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center justify-center" 
+                      title="แก้ไข"
+                    >
                       <Edit size={18} />
-                    </button>
+                    </Link>
                     <DeleteProductBtn id={product.id} />
                   </div>
                 </td>

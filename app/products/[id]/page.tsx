@@ -1,6 +1,5 @@
 // app/products/[id]/page.tsx
 import Link from 'next/link'
-import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import FavoriteButton from '@/components/FavoriteButton'
@@ -11,6 +10,7 @@ import {
   ChevronRight, AlertCircle, Star, User, 
   ShieldCheck, Truck, RotateCcw, Package 
 } from 'lucide-react'
+import Image from 'next/image'
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -42,12 +42,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     where: {
       category: product.category,
       id: { not: product.id },
-      isArchived: false  // 🔥 เพิ่มบรรทัดนี้: กรองสินค้าที่ถูกลบออก
+      isArchived: false
     },
     take: 4
   })
 
-  // 3. 🔥 แก้ไขตรงนี้: เตรียมรูปภาพ (รองรับทั้งระบบเก่าและใหม่)
+  // 3. เตรียมรูปภาพ
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const productImages = (product as any).images as string[] | null | undefined
   const images: string[] = (productImages && productImages.length > 0)
@@ -83,13 +83,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="max-w-7xl mx-auto px-6 mt-8 md:mt-12">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20 mb-20">
           
-          {/* ✅ ส่วนแสดงรูปภาพ (ใช้ Gallery) */}
+          {/* ส่วนแสดงรูปภาพ */}
           <div className="relative">
-             <div className="absolute top-5 right-5 z-20 pointer-events-none">
-                 <div className="bg-white rounded-full p-2.5 shadow-lg border border-neutral-100 hover:scale-110 transition-transform cursor-pointer pointer-events-auto">
+             
+             {/* ✅ ปุ่ม Favorite (ขวาบน) */}
+             <div className="absolute top-5 right-5 z-20">
+                 <div className="bg-white rounded-full p-2.5 shadow-lg border border-neutral-100 hover:scale-110 transition-transform cursor-pointer">
                     <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
                  </div>
              </div>
+
              <ProductGallery images={images} />
           </div>
 
@@ -200,7 +203,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        {/* ✅ สินค้าแนะนำในหมวดหมู่เดียวกัน */}
+        {/* สินค้าแนะนำ */}
         {relatedProducts.length > 0 && (
             <div className="border-t border-neutral-100 pt-16 mb-16">
                 <h3 className="text-2xl font-bold mb-8 flex items-center gap-2">

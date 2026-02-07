@@ -3,15 +3,41 @@
 
 import Link from 'next/link'
 import FavoriteButton from './FavoriteButton' 
-import { Camera } from 'lucide-react' // 👈 Import
+import { Camera } from 'lucide-react'
+import { useCompareStore } from '@/app/store/useCompareStore' // ✅ Import Store
+import toast from 'react-hot-toast'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ProductCard({ product, isFavorite = false }: { product: any, isFavorite?: boolean }) {
+  const { addToCompare, removeFromCompare, compareList } = useCompareStore()
   
+  // เช็คว่าสินค้านี้อยู่ในรายการเปรียบเทียบหรือยัง
+  const isAdded = compareList.some(p => p.id === product.id)
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault() // ป้องกันไม่ให้กด Link ไปหน้า Product
+    e.stopPropagation()
+
+    if (isAdded) {
+      removeFromCompare(product.id)
+      toast.success('ลบออกจากรายการเปรียบเทียบ')
+    } else {
+      if (compareList.length >= 3) return toast.error('เปรียบเทียบได้สูงสุด 3 ชิ้น')
+      // เช็คหมวดหมู่
+      if (compareList.length > 0 && compareList[0].category !== product.category) {
+        return toast.error(`ต้องเป็นสินค้าหมวด ${compareList[0].category} เหมือนกัน`)
+      }
+      
+      addToCompare({ ...product, price: Number(product.price) })
+      toast.success('เพิ่มลงรายการเปรียบเทียบ')
+    }
+  }
+
   return (
     <Link href={`/products/${product.id}`} className="block group h-full">
       <div className="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col relative">
         
+        {/* ✅ ปุ่ม Favorite (มุมขวาบนเหมือนเดิม) */}
         <div className="absolute top-2 right-2 z-20" onClick={(e) => e.preventDefault()}>
            <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
         </div>
@@ -24,7 +50,6 @@ export default function ProductCard({ product, isFavorite = false }: { product: 
               className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
             />
           ) : (
-            /* เปลี่ยน Emoji เป็น Icon */
             <div className="text-neutral-300 flex flex-col items-center gap-2">
               <Camera size={40} />
               <span className="text-xs">No Image</span>
@@ -45,9 +70,18 @@ export default function ProductCard({ product, isFavorite = false }: { product: 
             <span className="text-lg font-bold text-red-600">
               ฿{Number(product.price).toLocaleString()}
             </span>
-            <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">
-              ดูรายละเอียด &gt;
-            </span>
+            
+            {/* ✅ เปลี่ยน "ดูรายละเอียด" เป็นปุ่ม "เปรียบเทียบ" แบบตัวหนังสือ */}
+            <button 
+              onClick={handleCompare}
+              className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors border ${
+                isAdded 
+                  ? 'bg-black text-white border-black' 
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-black hover:text-black'
+              }`}
+            >
+              {isAdded ? '✓ เทียบแล้ว' : 'เปรียบเทียบ'}
+            </button>
           </div>
         </div>
       </div>
