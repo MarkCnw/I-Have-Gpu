@@ -194,13 +194,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </section>
           </div>
           
-          <div className="hidden lg:block space-y-8">
-             <div className="sticky top-24 p-6 bg-neutral-900 text-white rounded-2xl">
-                <h4 className="text-xl font-bold mb-2">ต้องการคำปรึกษา?</h4>
-                <p className="text-sm text-neutral-300 mb-6">ทีมงานผู้เชี่ยวชาญพร้อมช่วยคุณจัดสเปค</p>
-                <Link href="/contact" className="block w-full py-3 bg-white text-black font-bold text-center rounded-lg hover:bg-neutral-200">ติดต่อเรา</Link>
-             </div>
-          </div>
+         
         </div>
 
         {/* สินค้าแนะนำ */}

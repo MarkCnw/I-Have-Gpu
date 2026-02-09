@@ -9,14 +9,15 @@ import HeroCarousel from '@/components/HeroCarousel'
 import StoreFeatures from '@/components/StoreFeatures'
 import BrandMarquee from '@/components/BrandMarquee'
 import CategoryFilter from '@/components/CategoryFilter'
-import NavbarCart from '@/components/NavbarCart' // ✅ 1. Import ตรงนี้
+import NavbarCart from '@/components/NavbarCart' 
 import { auth } from '@/auth'
 import { Prisma } from '@prisma/client'
 import {
   Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, Box,
   Fan, Monitor, Laptop, Mouse, Keyboard, Headphones, Armchair,
-  Sparkles, LayoutGrid, LogIn
+  Sparkles, LayoutGrid, LogIn, PlayCircle, ArrowUpRight 
 } from 'lucide-react'
+import { NEWS_DATA } from '@/lib/news-data' // ✅ Import ข้อมูลข่าว
 
 export const dynamic = 'force-dynamic'
 
@@ -52,16 +53,13 @@ export default async function Home({
 
   const andConditions: Prisma.ProductWhereInput[] = []
 
-  // กรองสินค้าที่ถูกลบ (Soft Delete)
   andConditions.push({ isArchived: false })
 
   if (q) {
     andConditions.push({ name: { contains: q, mode: 'insensitive' } })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (category && category !== 'ALL') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     andConditions.push({ category: category as any })
   }
 
@@ -88,7 +86,16 @@ export default async function Home({
   const rawProducts = await prisma.product.findMany({
     where: whereCondition,
     orderBy: { category: 'asc' },
-    
+  })
+
+  // ✅ ดึงข้อมูลสินค้าขายดี
+  const rawBestSellers = await prisma.product.findMany({
+    where: { 
+      isArchived: false,
+      category: { in: ['GPU', 'CPU'] as any }
+    },
+    take: 4,
+    orderBy: { price: 'desc' }
   })
 
   let favoriteIds: string[] = []
@@ -101,47 +108,28 @@ export default async function Home({
   }
 
   const products = rawProducts.map((p) => ({ ...p, price: Number(p.price) }))
+  const bestSellers = rawBestSellers.map((p) => ({ ...p, price: Number(p.price) }))
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-32">
 
       {/* ================= HEADER ================= */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
-        
-        {/* Top Row: Logo, Search, Actions */}
         <div className="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between gap-8">
-
-          {/* 1. LEFT: Logo */}
           <Link href="/" className="flex-shrink-0 group flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <Image
-              src="/logo.svg"
-              alt="iHAVEGPU Logo"
-              width={200}
-              height={60}
-              className="object-contain h-16 w-auto"
-              priority
-            />
+            <Image src="/logo.svg" alt="iHAVEGPU Logo" width={200} height={60} className="object-contain h-16 w-auto" priority />
           </Link>
-
-          {/* 2. CENTER: Search Bar */}
           <div className="hidden lg:block flex-1 max-w-2xl px-8">
              <SearchBar />
           </div>
-
-          {/* 3. RIGHT: User Actions */}
           <div className="flex items-center gap-4 flex-shrink-0">
              <div className="lg:hidden">
                 <SearchBar />
              </div>
-
-             {/* ✅ 2. แทนที่ Link เดิมด้วย NavbarCart */}
              <NavbarCart />
-
-             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
              {(user as any)?.role === 'ADMIN' && (
                  <Link href="/admin" className="text-[10px] font-bold bg-black text-white px-2 py-1 rounded hover:bg-neutral-800">ADMIN</Link>
              )}
-
              {user ? (
                 <ProfileDropdown user={user} />
              ) : (
@@ -151,8 +139,6 @@ export default async function Home({
              )}
           </div>
         </div>
-
-        {/* Secondary Navigation */}
         <div>
           <div className="max-w-[1400px] mx-auto px-4 h-12 flex items-center justify-end gap-10 text-sm font-bold text-neutral-500">
             <Link href="/" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">หน้าแรก</Link>
@@ -161,37 +147,33 @@ export default async function Home({
             <Link href="/about" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">เกี่ยวกับเรา</Link>
           </div>
         </div>
-
       </header>
 
-      {/* ================= HERO & FEATURES SECTION ================= */}
+      {/* ================= HERO & FEATURES ================= */}
       {!q && currentCategory === 'ALL' && !Object.keys(params).some(k => k.startsWith('spec_')) && (
         <>
           <HeroCarousel />
           <StoreFeatures />
           <BrandMarquee />
+          
+        
+          
         </>
       )}
 
       {/* ================= MAIN CONTENT ================= */}
       <div className="max-w-[1400px] mx-auto px-6 py-8">
-        
-        {/* Categories Bar */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-neutral-400 text-xs font-bold uppercase tracking-wider mb-3">
              <LayoutGrid size={14} /> Categories
           </div>
-          
           <div className="flex flex-wrap gap-3">
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/?category=${cat.id}`}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-medium transition-all
-                  ${currentCategory === cat.id
-                    ? 'bg-black text-white border-black shadow-lg'
-                    : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400 hover:text-black'
-                  }
+                  ${currentCategory === cat.id ? 'bg-black text-white border-black shadow-lg' : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400 hover:text-black'}
                 `}
               >
                 {cat.icon}
@@ -201,7 +183,6 @@ export default async function Home({
           </div>
         </div>
 
-        {/* PRODUCT GRID */}
         <main>
           <div className="mb-6">
              <CategoryFilter />
@@ -217,11 +198,7 @@ export default async function Home({
           {products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
               {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isFavorite={favoriteIds.includes(product.id)}
-                />
+                <ProductCard key={product.id} product={product} isFavorite={favoriteIds.includes(product.id)} />
               ))}
             </div>
           ) : (
@@ -232,6 +209,63 @@ export default async function Home({
             </div>
           )}
         </main>
+
+        {/* 📰 2. News & Reviews Section */}
+        {!q && currentCategory === 'ALL' && (
+          <section className="mt-24 border-t border-neutral-100 pt-16">
+            <h2 className="text-2xl font-bold mb-10 flex items-center gap-2">
+              <span className="w-1 h-8 bg-black rounded-full"></span> ข่าวสาร & รีวิวจากผู้เชี่ยวชาญ
+            </h2>
+            <div className="grid lg:grid-cols-2 gap-10">
+              
+              {/* Featured Video (ฝั่งซ้าย) */}
+              <div className="space-y-4">
+                <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl relative group cursor-pointer border border-neutral-100">
+                  <iframe 
+                    className="w-full h-full" 
+                    src="https://www.youtube.com/embed/h15-0I2JxOo" 
+                    title="YouTube video" 
+                    frameBorder="0" 
+                    allowFullScreen
+                  ></iframe>
+                </div>
+                <h3 className="text-xl font-bold">ศึกตัวท็อป GeForce RTX 5090 VS RTX 4090 บน AMD Ryzen 7 9800X3D แรงต่างกันขนาดไหน ? | iHAVECPU</h3>
+                <p className="text-neutral-500 text-sm">เจาะลึกผลทดสอบกราฟิกการ์ดสถาปัตยกรรม Blackwell รุ่นล่าสุดปี 2025 และการดึงประสิทธิภาพสูงสุดด้วย CPU X3D</p>
+              </div>
+
+              {/* Articles (ฝั่งขวา - ใช้ข้อมูลจาก lib/news-data.ts) */}
+              <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"> 
+                {NEWS_DATA.map((post) => (
+                  <Link 
+                    key={post.id} 
+                    href={`/news/${post.id}`} 
+                    className="flex gap-5 group cursor-pointer p-2 rounded-2xl hover:bg-neutral-50 transition"
+                  >
+                    <div className="relative w-32 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-neutral-100">
+                      <Image 
+                        src={post.img} 
+                        alt={post.title} 
+                        fill 
+                        className="object-cover group-hover:scale-110 transition duration-500" 
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <h4 className="font-bold text-neutral-800 line-clamp-1 group-hover:text-red-600 transition-colors">
+                        {post.title}
+                      </h4>
+                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                        {post.desc}
+                      </p>
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 mt-2 uppercase tracking-widest">
+                        Read more <ArrowUpRight size={12} />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )
