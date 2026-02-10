@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.33.0",
@@ -22,6 +23,7 @@
     "react-fast-marquee": "^1.6.5",
     "react-hot-toast": "^2.6.0",
     "recharts": "^3.7.0",
+    "tailwind-merge": "^3.4.0",
     "uuid": "^13.0.0",
     "zustand": "^5.0.10"
   },

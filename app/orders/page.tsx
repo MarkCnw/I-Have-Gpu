@@ -2,10 +2,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Package, Upload, QrCode, X, Copy, Truck, ExternalLink, Loader2 } from 'lucide-react'
+import { Package, Upload, QrCode, X, Copy, Truck, ExternalLink, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
-import Image from 'next/image' // ✅ เพิ่ม import Image
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 // 🔥 ตัวแปลงภาษา (ฝั่ง User)
 const STATUS_LABEL_TH: Record<string, string> = {
@@ -24,7 +25,39 @@ const STATUS_LABEL_TH: Record<string, string> = {
   completed: 'สำเร็จ'
 }
 
+// ✅ ส่วนที่เพิ่ม: Component สำหรับ Skeleton Loading ของการ์ดคำสั่งซื้อ
+const OrderSkeleton = () => (
+  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-pulse">
+    <div className="bg-slate-50/50 p-4 border-b border-slate-100 flex justify-between items-center">
+      <div className="space-y-2">
+        <div className="h-3 w-16 bg-slate-200 rounded"></div>
+        <div className="h-4 w-32 bg-slate-200 rounded"></div>
+      </div>
+      <div className="h-6 w-24 bg-slate-200 rounded-full"></div>
+    </div>
+    <div className="p-5 space-y-4">
+      <div className="flex gap-3">
+        <div className="w-12 h-12 bg-slate-200 rounded-lg flex-shrink-0"></div>
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-3/4 bg-slate-200 rounded"></div>
+          <div className="h-3 w-1/4 bg-slate-200 rounded"></div>
+        </div>
+        <div className="h-4 w-20 bg-slate-200 rounded"></div>
+      </div>
+      <div className="border-t border-slate-100 my-4"></div>
+      <div className="flex justify-between items-center">
+        <div className="space-y-2">
+           <div className="h-3 w-16 bg-slate-200 rounded"></div>
+           <div className="h-6 w-28 bg-slate-200 rounded"></div>
+        </div>
+        <div className="h-10 w-32 bg-slate-200 rounded-xl"></div>
+      </div>
+    </div>
+  </div>
+)
+
 export default function OrdersPage() {
+  const router = useRouter()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,23 +120,34 @@ export default function OrdersPage() {
     }
   }
 
-  if (loadingPage) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-slate-400" /></div>
-
   return (
     <div className="min-h-screen bg-[#F8F9FA] p-4 md:p-8 pb-32">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3 text-slate-900">
-          <Package className="text-black" /> คำสั่งซื้อของฉัน
-        </h1>
+        {/* ✅ เพิ่ม Breadcrumb Navigation ที่นี่ */}
+        <div className="flex items-center gap-2 text-sm text-neutral-500 mb-6">
+          <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+          <span className="text-neutral-300 text-xs font-bold">{'>'}</span>
+          <span className="text-neutral-900 font-medium">คำสั่งซื้อของฉัน</span>
+        </div>
+
+        <div className="flex items-center gap-4 mb-8">
+        
+          <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900">
+            <Package className="text-black" /> คำสั่งซื้อของฉัน
+          </h1>
+        </div>
 
         <div className="space-y-6">
-          {orders.length === 0 ? (
-             <div className="text-center py-20 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+          {/* ✅ ส่วนที่แก้ไข: แสดง Skeleton เมื่อกำลังโหลด */}
+          {loadingPage ? (
+              [...Array(3)].map((_, i) => <OrderSkeleton key={i} />)
+          ) : orders.length === 0 ? (
+              <div className="text-center py-20 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
                 ยังไม่มีคำสั่งซื้อ
-             </div>
+              </div>
           ) : (
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             orders.map((order: any) => (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              orders.map((order: any) => (
               <div key={order.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition hover:shadow-md">
                 
                 {/* Header Card */}
@@ -209,7 +253,6 @@ export default function OrdersPage() {
             
             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-6 text-center">
               <div className="bg-white p-4 inline-block rounded-xl shadow-sm border border-slate-100 mb-4">
-                 {/* ✅ แก้ไข: ใช้รูปภาพ qrcode.png จาก public folder */}
                  <Image 
                    src="/qrcodee.png" 
                    alt="Payment QR Code" 

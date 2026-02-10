@@ -44,6 +44,7 @@ export default async function ProfilePage() {
       price: Number(item.price),
       product: {
         ...item.product,
+        ...item.product,
         price: Number(item.product.price)
       }
     }))
@@ -66,14 +67,15 @@ export default async function ProfilePage() {
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-20">
       
-      {/* Navbar เล็กๆ สำหรับหน้า Profile */}
+      {/* Navbar เล็กๆ สำหรับหน้า Profile -> ปรับเป็น Breadcrumb Bar */}
       <div className="border-b border-neutral-100 bg-white sticky top-0 z-30 shadow-sm">
-        <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-sm font-bold flex items-center gap-2 hover:text-neutral-600 transition">
-            ← กลับไปหน้าหลัก
-          </Link>
-          <span className="font-bold text-lg">บัญชีของฉัน</span>
-          <div className="w-20"></div> {/* Spacer จัดกึ่งกลาง */}
+        <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center">
+           {/* ✅ Breadcrumb Navigation */}
+           <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+            <span className="text-neutral-300 text-xs font-bold">{'>'}</span>
+            <span className="text-neutral-900 font-medium">บัญชีของฉัน</span>
+           </div>
         </div>
       </div>
 

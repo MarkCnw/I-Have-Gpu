@@ -4,6 +4,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { User, Send, Loader2 } from 'lucide-react'
 
+// ✅ ส่วนที่เพิ่ม: Component สำหรับ Skeleton Loading ของรายการแชทใน Sidebar
+const SidebarSkeleton = () => (
+  <div className="p-4 border-b border-slate-100 animate-pulse">
+    <div className="flex justify-between items-start mb-2">
+      <div className="h-4 w-32 bg-slate-200 rounded" />
+      <div className="h-3 w-10 bg-slate-200 rounded" />
+    </div>
+    <div className="h-3 w-48 bg-slate-200 rounded" />
+  </div>
+)
+
 export default function AdminChatPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [rooms, setRooms] = useState<any[]>([])
@@ -12,6 +23,7 @@ export default function AdminChatPage() {
   const [messages, setMessages] = useState<any[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [isLoadingRooms, setIsLoadingRooms] = useState(true) // ✅ ส่วนที่เพิ่ม: state สำหรับตรวจสอบการโหลดห้องแชท
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Fetch Rooms
@@ -22,6 +34,8 @@ export default function AdminChatPage() {
       if (Array.isArray(data)) setRooms(data)
     } catch (error) {
       console.error("Failed to fetch rooms")
+    } finally {
+      setIsLoadingRooms(false) // ✅ ส่วนที่เพิ่ม: โหลดเสร็จสิ้น
     }
   }
 
@@ -83,23 +97,28 @@ export default function AdminChatPage() {
            <User className="text-slate-500" /> แชทลูกค้า ({rooms.length})
         </div>
         <div className="overflow-y-auto flex-1">
-          {rooms.map(room => (
-            <div 
-              key={room.id} 
-              onClick={() => setSelectedRoomId(room.id)}
-              className={`p-4 border-b border-slate-100 cursor-pointer hover:bg-white transition ${selectedRoomId === room.id ? 'bg-white border-l-4 border-l-black shadow-sm' : ''}`}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <span className="font-bold text-sm truncate">{room.user.name || room.user.email}</span>
-                <span className="text-[10px] text-slate-400">
-                  {new Date(room.updatedAt).toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}
-                </span>
+          {/* ✅ ส่วนที่แก้ไข: แสดง Skeleton เมื่อกำลังโหลดห้องแชท */}
+          {isLoadingRooms ? (
+            [...Array(6)].map((_, i) => <SidebarSkeleton key={i} />)
+          ) : (
+            rooms.map(room => (
+              <div 
+                key={room.id} 
+                onClick={() => setSelectedRoomId(room.id)}
+                className={`p-4 border-b border-slate-100 cursor-pointer hover:bg-white transition ${selectedRoomId === room.id ? 'bg-white border-l-4 border-l-black shadow-sm' : ''}`}
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <span className="font-bold text-sm truncate">{room.user.name || room.user.email}</span>
+                  <span className="text-[10px] text-slate-400">
+                    {new Date(room.updatedAt).toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 truncate">
+                  {room.messages[0]?.message || '...'}
+                </p>
               </div>
-              <p className="text-xs text-slate-500 truncate">
-                {room.messages[0]?.message || '...'}
-              </p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -164,4 +183,4 @@ export default function AdminChatPage() {
       </div>
     </div>
   )
-}
+} 

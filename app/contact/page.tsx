@@ -1,5 +1,6 @@
 // app/contact/page.tsx
 import { MapPin, Phone, Mail, Clock, Facebook, MessageCircle, Send } from 'lucide-react'
+import Link from 'next/link' // ✅ เพิ่มการ import Link สำหรับ Breadcrumb
 
 export const metadata = {
   title: 'Contact Us | iHAVEGPU',
@@ -12,7 +13,15 @@ export default function ContactPage() {
       
       {/* ================= HEADER ================= */}
       <div className="bg-white border-b border-neutral-200">
-        <div className="max-w-6xl mx-auto px-6 py-16 md:py-20 text-center">
+        <div className="max-w-6xl mx-auto px-6 pt-8 pb-16 md:pb-20 text-center">
+            
+          {/* ✅ เพิ่มส่วน Breadcrumb Navigation ตรงนี้ */}
+          <div className="flex items-center gap-2 text-sm text-neutral-500 mb-8 justify-center md:justify-start">
+            <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+            <span className="text-neutral-300 text-xs font-bold">{'>'}</span>
+            <span className="text-neutral-900 font-medium">ติดต่อเรา</span>
+          </div>
+
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 rounded-full text-xs font-bold uppercase tracking-wider text-neutral-600 mb-6">
             <MessageCircle size={16} /> Get in Touch
           </div>

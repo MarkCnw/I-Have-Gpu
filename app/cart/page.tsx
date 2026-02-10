@@ -178,12 +178,22 @@ export default function CartPage() {
     <div className="min-h-screen bg-[#FDFDFD] pb-24 font-sans">
       <div className="bg-white border-b border-neutral-100 sticky top-0 z-10">
          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <ShoppingBag size={20} /> ตะกร้าสินค้า ({cart.length})
-            </h1>
-            <Link href="/" className="text-sm font-medium text-neutral-500 hover:text-black">
-               ซื้อสินค้าต่อ
-            </Link>
+            <div className="flex items-center gap-4">
+               {/* ✅ เพิ่ม Breadcrumb Navigation ตรงนี้ */}
+               <div className="flex items-center gap-2 text-sm text-neutral-500">
+                <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+                <span className="text-neutral-300 text-xs font-bold">{'>'}</span>
+                <span className="text-neutral-900 font-medium">ตะกร้าสินค้า</span>
+               </div>
+               
+               <div className="h-6 w-[1px] bg-neutral-200 hidden md:block"></div>
+
+               <h1 className="text-xl font-bold flex items-center gap-2">
+                 <ShoppingBag size={20} /> ตะกร้าสินค้า ({cart.length})
+               </h1>
+            </div>
+
+           
          </div>
       </div>
 
@@ -339,11 +349,11 @@ export default function CartPage() {
                     disabled={isCheckoutLoading}
                     className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-neutral-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                   {isCheckoutLoading ? (
+                    {isCheckoutLoading ? (
                         <>กำลังดำเนินการ...</>
-                   ) : (
+                    ) : (
                         <>ชำระเงิน <ArrowRight size={20} /></>
-                   )}
+                    )}
                 </button>
 
                 <div className="mt-6 flex items-center justify-center gap-2 text-neutral-400 text-xs">

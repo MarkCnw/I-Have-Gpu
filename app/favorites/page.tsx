@@ -3,14 +3,14 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import ProductCard from '@/components/ProductCard'
-import { Heart, HeartCrack, Lock, ArrowLeft, ShoppingBag } from 'lucide-react'
+import { Heart, HeartCrack, Lock, ShoppingBag } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 export default async function FavoritesPage() {
   const session = await auth()
   
-  // 1. กรณีไม่ได้ Login -> ดีไซน์แบบ Clean
+  // 1. กรณีไม่ได้ Login
   if (!session?.user?.email) {
     return (
       <div className="min-h-[70vh] bg-[#FDFDFD] flex flex-col items-center justify-center p-8 font-sans">
@@ -35,7 +35,7 @@ export default async function FavoritesPage() {
     include: {
       favorites: {
         include: { product: true },
-        orderBy: { createdAt: 'desc' } // เรียงจากใหม่ไปเก่า
+        orderBy: { createdAt: 'desc' }
       }
     }
   })
@@ -52,18 +52,25 @@ export default async function FavoritesPage() {
       {/* ================= HEADER ================= */}
       <div className="bg-white border-b border-neutral-100 sticky top-0 z-10">
          <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
-            <h1 className="text-2xl font-bold flex items-center gap-3">
-              <Heart className="text-red-500" fill="currentColor" /> My Wishlist
-              <span className="text-sm font-normal text-neutral-400 ml-2 bg-neutral-50 px-2 py-1 rounded-full">
-                {favProducts.length} items
-              </span>
-            </h1>
-            <Link 
-              href="/" 
-              className="text-sm font-medium text-neutral-500 hover:text-black flex items-center gap-2 transition-colors"
-            >
-               <ArrowLeft size={16} /> ซื้อสินค้าต่อ
-            </Link>
+            <div className="flex items-center gap-4">
+                {/* ✅ Breadcrumb Navigation: วางตำแหน่งซ้ายสุด */}
+                <div className="flex items-center gap-2 text-sm text-neutral-500">
+                    <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+                    <span className="text-neutral-300 text-xs font-bold">{'>'}</span>
+                    <span className="text-neutral-900 font-medium">สินค้าที่ถูกใจ</span>
+                </div>
+                
+                {/* Vertical Divider */}
+                <div className="h-6 w-[1px] bg-neutral-200 hidden md:block"></div>
+
+                {/* Page Title & Count */}
+                <h1 className="text-2xl font-bold flex items-center gap-3">
+                  <Heart className="text-red-500" fill="currentColor" /> My Wishlist
+                  <span className="text-sm font-normal text-neutral-400 ml-2 bg-neutral-50 px-2 py-1 rounded-full">
+                    {favProducts.length} items
+                  </span>
+                </h1>
+            </div>
          </div>
       </div>
 

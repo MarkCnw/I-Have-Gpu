@@ -18,10 +18,27 @@ const STATUS_LABEL: Record<string, string> = {
   COMPLETED: 'สำเร็จ'
 }
 
+// ✅ ส่วนที่เพิ่ม: Component สำหรับ Skeleton Loading ของแถวตารางคำสั่งซื้อ
+const TableRowSkeleton = () => (
+  <tr className="border-b border-slate-100">
+    <td className="p-4"><div className="h-5 w-20 bg-slate-200 rounded animate-pulse" /></td>
+    <td className="p-4">
+      <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-2" />
+      <div className="h-3 w-24 bg-slate-200 rounded animate-pulse" />
+    </td>
+    <td className="p-4"><div className="h-5 w-20 bg-slate-200 rounded animate-pulse" /></td>
+    <td className="p-4"><div className="h-6 w-24 bg-slate-200 rounded-full animate-pulse" /></td>
+    <td className="p-4"><div className="h-4 w-16 bg-slate-200 rounded animate-pulse" /></td>
+    <td className="p-4"><div className="h-4 w-24 bg-slate-200 rounded animate-pulse" /></td>
+    <td className="p-4 text-right"><div className="h-8 w-40 bg-slate-200 rounded-lg animate-pulse ml-auto" /></td>
+  </tr>
+)
+
 export default function AdminOrdersPage() {
   // ✅ แก้ไข: มั่นใจว่าเริ่มต้นด้วย Array ว่าง
   const [orders, setOrders] = useState<any[]>([])
   const [filter, setFilter] = useState('ALL')
+  const [isLoading, setIsLoading] = useState(true) // ✅ ส่วนที่เพิ่ม: state สำหรับตรวจสอบการโหลด
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [confirmData, setConfirmData] = useState<{ id: string; status: string } | null>(null)
@@ -37,6 +54,7 @@ export default function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
 
   const fetchOrders = async () => {
+    setIsLoading(true) // ✅ ส่วนที่เพิ่ม: เริ่มต้นโหลด
     try {
       const res = await fetch('/api/orders', { cache: 'no-store' })
       const data = await res.json()
@@ -51,6 +69,8 @@ export default function AdminOrdersPage() {
     } catch (error) {
       console.error('Fetch error:', error)
       setOrders([])
+    } finally {
+      setIsLoading(false) // ✅ ส่วนที่เพิ่ม: โหลดเสร็จสิ้น
     }
   }
 
@@ -159,7 +179,10 @@ export default function AdminOrdersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredOrders.length === 0 ? (
+            {/* ✅ ส่วนที่เพิ่ม: แสดง Skeleton เมื่อกำลังโหลด */}
+            {isLoading ? (
+              [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)
+            ) : filteredOrders.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-10 text-center text-slate-400">ไม่พบรายการคำสั่งซื้อ</td>
               </tr>

@@ -15,9 +15,10 @@ import { Prisma } from '@prisma/client'
 import {
   Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, Box,
   Fan, Monitor, Laptop, Mouse, Keyboard, Headphones, Armchair,
-  Sparkles, LayoutGrid, LogIn, PlayCircle, ArrowUpRight 
+  Sparkles, LayoutGrid, LogIn, ArrowUpRight 
 } from 'lucide-react'
-import { NEWS_DATA } from '@/lib/news-data' // ✅ Import ข้อมูลข่าว
+import { NEWS_DATA } from '@/lib/news-data'
+import { Suspense } from 'react' // ✅ เพิ่ม Suspense
 
 export const dynamic = 'force-dynamic'
 
@@ -39,20 +40,32 @@ const CATEGORIES = [
   { id: 'CHAIR', name: 'Furniture', icon: <Armchair size={18} /> },
 ]
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | undefined }>
-}) {
+// ✅ 1. สร้าง Skeleton สำหรับแสดงระหว่างรอผลลัพธ์การค้นหา
+function ProductGridSkeleton() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10 animate-pulse">
+      {[...Array(10)].map((_, i) => (
+        <div key={i} className="flex flex-col h-[400px]">
+          <div className="aspect-square bg-neutral-100 rounded-2xl mb-4" />
+          <div className="h-4 w-1/3 bg-neutral-100 rounded mb-2" />
+          <div className="h-6 w-3/4 bg-neutral-100 rounded mb-2" />
+          <div className="h-4 w-full bg-neutral-50 rounded mb-1" />
+          <div className="h-4 w-5/6 bg-neutral-50 rounded" />
+          <div className="mt-auto h-8 w-1/2 bg-neutral-100 rounded" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ✅ 2. แยกส่วนดึงข้อมูลสินค้าออกมาเป็น Component ย่อย
+async function ProductList({ searchParams }: { searchParams: any }) {
+  const { q, category } = searchParams
+  const currentCategory = category || 'ALL'
   const session = await auth()
   const user = session?.user
 
-  const params = await searchParams
-  const { q, category } = params
-  const currentCategory = category || 'ALL'
-
   const andConditions: Prisma.ProductWhereInput[] = []
-
   andConditions.push({ isArchived: false })
 
   if (q) {
@@ -63,39 +76,9 @@ export default async function Home({
     andConditions.push({ category: category as any })
   }
 
-  for (const key of Object.keys(params)) {
-    if (key.startsWith('spec_') && params[key]) {
-      const specKey = key.replace('spec_', '')
-      const specValue = params[key]
-
-      if (specValue) {
-        andConditions.push({
-          specs: {
-            path: [specKey],
-            equals: specValue
-          }
-        })
-      }
-    }
-  }
-
-  const whereCondition: Prisma.ProductWhereInput = {
-    AND: andConditions
-  }
-
   const rawProducts = await prisma.product.findMany({
-    where: whereCondition,
+    where: { AND: andConditions },
     orderBy: { category: 'asc' },
-  })
-
-  // ✅ ดึงข้อมูลสินค้าขายดี
-  const rawBestSellers = await prisma.product.findMany({
-    where: { 
-      isArchived: false,
-      category: { in: ['GPU', 'CPU'] as any }
-    },
-    take: 4,
-    orderBy: { price: 'desc' }
   })
 
   let favoriteIds: string[] = []
@@ -108,11 +91,39 @@ export default async function Home({
   }
 
   const products = rawProducts.map((p) => ({ ...p, price: Number(p.price) }))
-  const bestSellers = rawBestSellers.map((p) => ({ ...p, price: Number(p.price) }))
+
+  if (products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-neutral-300">
+         <Box size={64} className="mb-4 opacity-20" />
+         <p className="text-neutral-400">No products found matching your filters.</p>
+         <Link href="/" className="mt-4 text-black text-sm font-bold border-b border-black hover:opacity-70">Clear Filters</Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
+      {products.map((product) => (
+        <ProductCard key={product.id} product={product} isFavorite={favoriteIds.includes(product.id)} />
+      ))}
+    </div>
+  )
+}
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>
+}) {
+  const session = await auth()
+  const user = session?.user
+  const params = await searchParams
+  const { q, category } = params
+  const currentCategory = category || 'ALL'
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-32">
-
       {/* ================= HEADER ================= */}
       <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
         <div className="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between gap-8">
@@ -150,14 +161,11 @@ export default async function Home({
       </header>
 
       {/* ================= HERO & FEATURES ================= */}
-      {!q && currentCategory === 'ALL' && !Object.keys(params).some(k => k.startsWith('spec_')) && (
+      {!q && currentCategory === 'ALL' && (
         <>
           <HeroCarousel />
           <StoreFeatures />
           <BrandMarquee />
-          
-        
-          
         </>
       )}
 
@@ -190,24 +198,16 @@ export default async function Home({
 
           <div className="flex items-baseline justify-between mb-8 border-b border-neutral-100 pb-4">
             <h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
-               {currentCategory === 'ALL' ? 'Selected for You' : CATEGORIES.find(c => c.id === currentCategory)?.name}
+               {q ? `Search results for "${q}"` : (currentCategory === 'ALL' ? 'Selected for You' : CATEGORIES.find(c => c.id === currentCategory)?.name)}
             </h2>
-            <span className="text-neutral-400 text-sm font-medium">{products.length} Products</span>
+            <span className="text-neutral-400 text-sm font-medium">Products</span>
           </div>
 
-          {products.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} isFavorite={favoriteIds.includes(product.id)} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-32 text-neutral-300">
-               <Box size={64} className="mb-4 opacity-20" />
-               <p className="text-neutral-400">No products found matching your filters.</p>
-               <Link href="/" className="mt-4 text-black text-sm font-bold border-b border-black hover:opacity-70">Clear Filters</Link>
-            </div>
-          )}
+          {/* ✅ 3. ใช้ Suspense ครอบส่วนแสดงสินค้า โดยใช้ key เป็นค่าค้นหา */}
+          {/* วิธีนี้จะทำให้ Skeleton แสดงผลใหม่ทุกครั้งที่ค่า q หรือ category เปลี่ยน */}
+          <Suspense key={q + currentCategory} fallback={<ProductGridSkeleton />}>
+            <ProductList searchParams={params} />
+          </Suspense>
         </main>
 
         {/* 📰 2. News & Reviews Section */}
@@ -217,8 +217,6 @@ export default async function Home({
               <span className="w-1 h-8 bg-black rounded-full"></span> ข่าวสาร & รีวิวจากผู้เชี่ยวชาญ
             </h2>
             <div className="grid lg:grid-cols-2 gap-10">
-              
-              {/* Featured Video (ฝั่งซ้าย) */}
               <div className="space-y-4">
                 <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl relative group cursor-pointer border border-neutral-100">
                   <iframe 
@@ -233,7 +231,6 @@ export default async function Home({
                 <p className="text-neutral-500 text-sm">เจาะลึกผลทดสอบกราฟิกการ์ดสถาปัตยกรรม Blackwell รุ่นล่าสุดปี 2025 และการดึงประสิทธิภาพสูงสุดด้วย CPU X3D</p>
               </div>
 
-              {/* Articles (ฝั่งขวา - ใช้ข้อมูลจาก lib/news-data.ts) */}
               <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"> 
                 {NEWS_DATA.map((post) => (
                   <Link 

@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Store, DollarSign, MessageCircle } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, LogOut, Store, DollarSign, MessageCircle, ChevronRight } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +18,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'แชทลูกค้า (Chat)', href: '/admin/chat', icon: MessageCircle },
   ]
 
+  // ฟังก์ชันสร้าง Breadcrumb
+  const getBreadcrumbs = () => {
+    const pathSegments = pathname.split('/').filter(segment => segment !== '')
+    
+    // แปลง segment เป็นชื่อที่อ่านง่าย (Mapping)
+    const breadcrumbNameMap: Record<string, string> = {
+      admin: 'Admin',
+      finance: 'การเงิน',
+      products: 'สินค้า',
+      orders: 'คำสั่งซื้อ',
+      chat: 'แชทลูกค้า',
+      add: 'เพิ่มรายการ',
+      edit: 'แก้ไข'
+    }
+
+    return (
+      <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+        <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+        <ChevronRight size={14} className="text-slate-300" />
+        
+        {pathSegments.map((segment, index) => {
+          const href = `/${pathSegments.slice(0, index + 1).join('/')}`
+          const isLast = index === pathSegments.length - 1
+          const name = breadcrumbNameMap[segment] || segment // ถ้าไม่มีใน map ให้ใช้ชื่อเดิม
+
+          return (
+            <div key={href} className="flex items-center gap-2">
+              {isLast ? (
+                <span className="font-bold text-slate-900 capitalize">{name}</span>
+              ) : (
+                <>
+                  <Link href={href} className="hover:text-black transition-colors capitalize">
+                    {name}
+                  </Link>
+                  <ChevronRight size={14} className="text-slate-300" />
+                </>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* Sidebar */}
@@ -31,7 +75,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
-            const isActive = pathname === item.href
+            // เช็คว่า path ปัจจุบัน "เริ่มด้วย" href ของเมนูนี้หรือไม่ (เพื่อให้ submenu active ด้วย)
+            // แต่ยกเว้น Dashboard ที่ต้องตรงเป๊ะๆ
+            const isActive = item.href === '/admin' 
+              ? pathname === '/admin' 
+              : pathname.startsWith(item.href)
+
             return (
               <Link
                 key={item.href}
@@ -64,6 +113,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className="flex-1 md:ml-64 p-8">
+        {/* ✅ แสดง Breadcrumb ที่นี่ */}
+        {getBreadcrumbs()}
+        
         {children}
       </main>
     </div>

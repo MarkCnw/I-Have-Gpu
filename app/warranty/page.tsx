@@ -4,6 +4,7 @@ import {
   Cpu, CircuitBoard, Gamepad2, MemoryStick, HardDrive, Zap, 
   Monitor, Mouse, Keyboard, Headphones, Box, Fan, Star 
 } from 'lucide-react'
+import Link from 'next/link'
 
 export const metadata = {
   title: 'Warranty Policy | iHAVEGPU',
@@ -16,7 +17,15 @@ export default function WarrantyPage() {
       
       {/* ================= HEADER SECTION ================= */}
       <div className="bg-white border-b border-neutral-200">
-        <div className="max-w-6xl mx-auto px-6 py-16 md:py-24 text-center">
+        <div className="max-w-6xl mx-auto px-6 pt-8 pb-16 md:pb-24 text-center">
+            
+          {/* ✅ Breadcrumb Navigation ใช้เครื่องหมาย > */}
+          <div className="flex items-center gap-2 text-sm text-neutral-500 mb-8 justify-center md:justify-start">
+            <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+            <span className="text-neutral-300 text-xs font-bold">{'>'}</span>
+            <span className="text-neutral-900 font-medium">การรับประกัน</span>
+          </div>
+
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 rounded-full text-xs font-bold uppercase tracking-wider text-neutral-600 mb-6">
             <ShieldCheck size={16} /> Official Policy
           </div>
@@ -35,7 +44,6 @@ export default function WarrantyPage() {
 
         {/* 1. 7-Day Guarantee Banner */}
         <section className="bg-neutral-900 text-white rounded-2xl p-8 md:p-12 shadow-xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-          {/* Background Pattern */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
           
           <div className="flex-shrink-0 bg-white/10 p-5 rounded-xl border border-white/10">
@@ -45,8 +53,8 @@ export default function WarrantyPage() {
           <div className="flex-1 text-center md:text-left z-10">
             <h2 className="text-xl md:text-2xl font-bold mb-2">รับประกันเปลี่ยนสินค้าใหม่ภายใน 30 วัน (DOA)</h2>
             <p className="text-neutral-400 text-sm md:text-base font-light leading-relaxed">
-              หากพบปัญหาจากการผลิตหรือความเสียหายจากการขนส่ง ยินดีเปลี่ยนตัวใหม่ทันที <br className="hidden lg:block"/>
-              เพียงมีคลิปวิดีโอขณะแกะกล่องเพื่อยืนยันสิทธิ์
+               หากพบปัญหาจากการผลิตหรือความเสียหายจากการขนส่ง ยินดีเปลี่ยนตัวใหม่ทันที <br className="hidden lg:block"/>
+               เพียงมีคลิปวิดีโอขณะแกะกล่องเพื่อยืนยันสิทธิ์
             </p>
           </div>
           
@@ -92,7 +100,6 @@ export default function WarrantyPage() {
 
         {/* 3. Warranty Conditions (Table Layout) */}
         <section className="grid md:grid-cols-2 gap-8">
-           {/* Covered */}
            <div className="bg-white p-8 rounded-2xl border border-neutral-200 shadow-sm">
               <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-green-700">
                  <CheckCircle2 size={20} /> สิ่งที่อยู่ในเงื่อนไขการรับประกัน
@@ -107,7 +114,6 @@ export default function WarrantyPage() {
               </ul>
            </div>
 
-           {/* Not Covered */}
            <div className="bg-white p-8 rounded-2xl border border-neutral-200 shadow-sm">
               <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-red-600">
                  <XCircle size={20} /> สิ่งที่ไม่อยู่ในเงื่อนไข
@@ -127,7 +133,6 @@ export default function WarrantyPage() {
         <section>
           <h2 className="text-2xl font-bold mb-10 text-center">ขั้นตอนการส่งเคลมสินค้า</h2>
           <div className="relative">
-             {/* Line */}
              <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-neutral-200 -z-10 -translate-y-1/2"></div>
              
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -148,7 +153,6 @@ export default function WarrantyPage() {
           </div>
         </section>
 
-        {/* Footer Note */}
         <div className="text-center text-xs text-neutral-400 pb-8">
            <p>© 2024 iHAVEGPU All rights reserved. เงื่อนไขเป็นไปตามที่บริษัทกำหนด</p>
         </div>

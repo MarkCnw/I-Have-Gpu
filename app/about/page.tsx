@@ -20,34 +20,44 @@ export default function AboutPage() {
         {/* Background Decorative */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-neutral-50 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto px-6 py-24 md:py-32 relative z-10 text-center">
-           <div className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 rounded-full text-xs font-bold uppercase tracking-wider text-white mb-8 shadow-lg shadow-neutral-200">
-             <Award size={14} className="text-yellow-500" /> Since 2024
+        <div className="max-w-7xl mx-auto px-6 pt-8 pb-24 md:pb-32 relative z-10">
+            
+           {/* ✅ แก้ไข: วางไว้ซ้ายบนสุด และใช้สี neutral-500 ให้เป็นมาตรฐานเดียวกัน */}
+           <div className="flex items-center gap-2 text-sm text-neutral-500 mb-12 justify-start">
+            <Link href="/" className="hover:text-black transition-colors">หน้าแรก</Link>
+            <span className="text-neutral-300 text-xs font-bold">{'>'}</span>
+            <span className="text-neutral-900 font-medium">เกี่ยวกับเรา</span>
            </div>
-           <h1 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-neutral-900 leading-[1.1]">
-             Crafting Your <br />
-             <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-900 via-neutral-600 to-neutral-900">
-               Ultimate Machine
-             </span>
-           </h1>
-           <p className="text-lg md:text-2xl text-neutral-500 max-w-3xl mx-auto leading-relaxed font-light mb-12">
-             iHAVEGPU ไม่ใช่แค่ร้านขายอุปกรณ์คอมพิวเตอร์ แต่เราคือ "Artisan" <br className="hidden md:block" />
-             ผู้สร้างสรรค์งานศิลปะในรูปแบบของ High-End PC เพื่อเกมเมอร์และโปรเฟสชั่นแนล
-           </p>
-           
-           {/* Stats Grid */}
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto border-t border-neutral-100 pt-12">
-              {[
-                { label: "Custom Builds", value: "5,000+" },
-                { label: "Happy Clients", value: "98%" },
-                { label: "Warranty Years", value: "10 Years" },
-                { label: "Support", value: "24/7" },
-              ].map((stat, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-neutral-900 mb-1">{stat.value}</div>
-                  <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest">{stat.label}</div>
-                </div>
-              ))}
+
+           <div className="text-center"> 
+             <div className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 rounded-full text-xs font-bold uppercase tracking-wider text-white mb-8 shadow-lg shadow-neutral-200">
+               <Award size={14} className="text-yellow-500" /> Since 2024
+             </div>
+             <h1 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-neutral-900 leading-[1.1]">
+               Crafting Your <br />
+               <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-900 via-neutral-600 to-neutral-900">
+                 Ultimate Machine
+               </span>
+             </h1>
+             <p className="text-lg md:text-2xl text-neutral-500 max-w-3xl mx-auto leading-relaxed font-light mb-12">
+               iHAVEGPU ไม่ใช่แค่ร้านขายอุปกรณ์คอมพิวเตอร์ แต่เราคือ "Artisan" <br className="hidden md:block" />
+               ผู้สร้างสรรค์งานศิลปะในรูปแบบของ High-End PC เพื่อเกมเมอร์และโปรเฟสชั่นแนล
+             </p>
+             
+             {/* Stats Grid */}
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto border-t border-neutral-100 pt-12">
+                {[
+                  { label: "Custom Builds", value: "5,000+" },
+                  { label: "Happy Clients", value: "98%" },
+                  { label: "Warranty Years", value: "10 Years" },
+                  { label: "Support", value: "24/7" },
+                ].map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-3xl md:text-4xl font-bold text-neutral-900 mb-1">{stat.value}</div>
+                    <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest">{stat.label}</div>
+                  </div>
+                ))}
+             </div>
            </div>
         </div>
       </div>
@@ -56,41 +66,33 @@ export default function AboutPage() {
       <div className="max-w-7xl mx-auto px-6 mt-24">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="relative">
-             <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl relative z-10">
+              <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl relative z-10">
                 <Image 
                   src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=2574&auto=format&fit=crop"
                   alt="Our Workshop"
                   fill
                   className="object-cover"
                 />
-             </div>
-             {/* Decor element */}
-             <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl -z-10"></div>
-             <div className="absolute -top-10 -left-10 w-40 h-40 border-2 border-neutral-100 rounded-full -z-10"></div>
+              </div>
+              <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl -z-10"></div>
+              <div className="absolute -top-10 -left-10 w-40 h-40 border-2 border-neutral-100 rounded-full -z-10"></div>
           </div>
 
           <div className="space-y-8">
-             <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+              <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                From Passion to Profession: <br />
                <span className="text-neutral-400">The iHAVEGPU Story</span>
-             </h2>
-             <div className="space-y-6 text-neutral-600 text-lg font-light leading-relaxed">
-               <p>
-                 จุดเริ่มต้นของเราเกิดจากความหลงใหลในเทคโนโลยีและการประกอบคอมพิวเตอร์ เราเชื่อว่าคอมพิวเตอร์หนึ่งเครื่อง
-                 ไม่ใช่แค่การนำชิ้นส่วนมาประกอบเข้าด้วยกัน แต่คือการผสาน "ประสิทธิภาพ" เข้ากับ "สุนทรียภาพ"
-               </p>
-               <p>
-                 ตลอดระยะเวลาที่ผ่านมา เรามุ่งมั่นพัฒนามาตรฐานการประกอบ (Cable Management), การเลือกใช้อุปกรณ์ (Part Selection), 
-                 และการทดสอบระบบ (System Stress Test) เพื่อให้มั่นใจว่าลูกค้าจะได้รับเครื่องที่ดีที่สุด
-               </p>
-             </div>
-             
-             <div className="flex items-center gap-4 pt-4">
-                <div className="flex -space-x-4">
-                 
-                </div>
-                
-             </div>
+              </h2>
+              <div className="space-y-6 text-neutral-600 text-lg font-light leading-relaxed">
+                <p>
+                  จุดเริ่มต้นของเราเกิดจากความหลงใหลในเทคโนโลยีและการประกอบคอมพิวเตอร์ เราเชื่อว่าคอมพิวเตอร์หนึ่งเครื่อง
+                  ไม่ใช่แค่การนำชิ้นส่วนมาประกอบเข้าด้วยกัน แต่คือการผสาน "ประสิทธิภาพ" เข้ากับ "สุนทรียภาพ"
+                </p>
+                <p>
+                  ตลอดระยะเวลาที่ผ่านมา เรามุ่งมั่นพัฒนามาตรฐานการประกอบ (Cable Management), การเลือกใช้อุปกรณ์ (Part Selection), 
+                  และการทดสอบระบบ (System Stress Test) เพื่อให้มั่นใจว่าลูกค้าจะได้รับเครื่องที่ดีที่สุด
+                </p>
+              </div>
           </div>
         </div>
       </div>
@@ -125,7 +127,7 @@ export default function AboutPage() {
       {/* ================= WHY CHOOSE US ================= */}
       <div className="max-w-7xl mx-auto px-6 mt-24 mb-24">
         <div className="grid lg:grid-cols-3 gap-12">
-           <div className="lg:col-span-1">
+            <div className="lg:col-span-1">
               <h2 className="text-3xl font-bold mb-6">Why Choose Us?</h2>
               <p className="text-neutral-500 leading-relaxed mb-8">
                 เราไม่ได้ขายแค่สินค้า แต่เราขายความมั่นใจ ประสบการณ์ และความเป็นมืออาชีพ 
@@ -134,9 +136,9 @@ export default function AboutPage() {
               <Link href="/contact" className="inline-flex items-center gap-2 font-bold text-neutral-900 border-b-2 border-neutral-900 pb-1 hover:text-yellow-600 hover:border-yellow-600 transition-colors">
                 Contact Our Experts <ArrowRight size={16} />
               </Link>
-           </div>
-           
-           <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
+            </div>
+            
+            <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
               {[
                 { title: "Authentic 100%", desc: "สินค้าทุกชิ้นเป็นของแท้ มือ 1 รับประกันศูนย์ไทย ไม่มีการย้อมแมว" },
                 { title: "Expert Advice", desc: "ให้คำแนะนำโดยผู้เชี่ยวชาญตัวจริง ไม่เชียร์ขายของเกินความจำเป็น" },
@@ -144,23 +146,18 @@ export default function AboutPage() {
                 { title: "Lifetime Support", desc: "ปรึกษาปัญหาทางเทคนิคได้ตลอดอายุการใช้งาน ฟรีไม่มีค่าใช้จ่าย" },
               ].map((item, i) => (
                 <div key={i} className="flex gap-4">
-                   <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center text-white">
-                      <CheckCircle2 size={14} />
-                   </div>
-                   <div>
-                      <h4 className="font-bold text-neutral-900 mb-1">{item.title}</h4>
-                      <p className="text-sm text-neutral-500 leading-relaxed">{item.desc}</p>
-                   </div>
+                    <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center text-white">
+                       <CheckCircle2 size={14} />
+                    </div>
+                    <div>
+                       <h4 className="font-bold text-neutral-900 mb-1">{item.title}</h4>
+                       <p className="text-sm text-neutral-500 leading-relaxed">{item.desc}</p>
+                    </div>
                 </div>
               ))}
-           </div>
+            </div>
         </div>
       </div>
-
-      {/* ✅ ลบส่วน Team Section ออกไปแล้ว */}
-
-      {/* ================= PARTNERS / BRANDS ================= */}
-      
 
     </div>
   )
