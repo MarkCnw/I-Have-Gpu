@@ -34,7 +34,7 @@ export default function AboutPage() {
                <Award size={14} className="text-yellow-500" /> Since 2024
              </div>
              <h1 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-neutral-900 leading-[1.1]">
-               Crafting Your <br />
+               Crafting Yourrr <br />
                <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-900 via-neutral-600 to-neutral-900">
                  Ultimate Machine
                </span>
