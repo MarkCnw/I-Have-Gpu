@@ -53,7 +53,8 @@ export async function PATCH(
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { status, slipImage, trackingNumber, carrier } = body
+    // ✅ เพิ่ม rejectionReason
+    const { status, slipImage, trackingNumber, carrier, rejectionReason } = body
 
     // 1. กรณีลูกค้าแนบสลิป (เปลี่ยนเป็น VERIFYING)
     if (slipImage && status === 'VERIFYING') {
@@ -61,7 +62,8 @@ export async function PATCH(
         where: { id },
         data: { 
           status: 'VERIFYING',
-          slipImage: slipImage
+          slipImage: slipImage,
+          rejectionReason: null // ✅ ล้างเหตุผลเดิมออกเมื่อส่งใหม่
         }
       })
       return NextResponse.json({ success: true })
@@ -74,6 +76,8 @@ export async function PATCH(
       if (status) updateData.status = status
       if (trackingNumber) updateData.trackingNumber = trackingNumber
       if (carrier) updateData.carrier = carrier
+      // ✅ บันทึกเหตุผลการปฏิเสธ
+      if (rejectionReason !== undefined) updateData.rejectionReason = rejectionReason
 
       await prisma.order.update({
         where: { id },

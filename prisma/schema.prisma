@@ -153,6 +153,7 @@ model Order {
 
   // Payment
   slipImage       String?
+  rejectionReason String?
 }
 
 enum OrderStatus {
@@ -162,6 +163,7 @@ enum OrderStatus {
   SHIPPED
   COMPLETED
   CANCELLED
+  PAYMENT_FAILED // ✅ ควรเพิ่มสถานะนี้เพื่อให้ชัดเจน
 }
 
 model OrderItem {

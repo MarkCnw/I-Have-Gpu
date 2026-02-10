@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Package, Upload, QrCode, X, Copy, Truck, ExternalLink, Loader2, ArrowLeft } from 'lucide-react'
+import { Package, Upload, QrCode, X, Copy, Truck, ExternalLink, Loader2, ArrowLeft, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -16,13 +16,15 @@ const STATUS_LABEL_TH: Record<string, string> = {
   SHIPPED: 'จัดส่งแล้ว',
   CANCELLED: 'ยกเลิก',
   COMPLETED: 'สำเร็จ',
+  PAYMENT_FAILED: 'ชำระเงินไม่สำเร็จ', // ✅ เพิ่มสถานะ
   // เผื่อตัวเล็ก
   pending: 'รอชำระเงิน',
   verifying: 'รอตรวจสอบ',
   paid: 'ชำระแล้ว',
   shipped: 'จัดส่งแล้ว',
   cancelled: 'ยกเลิก',
-  completed: 'สำเร็จ'
+  completed: 'สำเร็จ',
+  payment_failed: 'ชำระเงินไม่สำเร็จ'
 }
 
 // ✅ ส่วนที่เพิ่ม: Component สำหรับ Skeleton Loading ของการ์ดคำสั่งซื้อ
@@ -105,7 +107,11 @@ export default function OrdersPage() {
       const updateRes = await fetch(`/api/orders/${selectedOrder.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'VERIFYING', slipImage: uploadData.url })
+        body: JSON.stringify({ 
+          status: 'VERIFYING', 
+          slipImage: uploadData.url,
+          rejectionReason: null // ✅ ล้างเหตุผลการปฏิเสธ
+        })
       })
 
       if (!updateRes.ok) throw new Error('Update failed')
@@ -184,6 +190,19 @@ export default function OrdersPage() {
                   {/* Divider */}
                   <div className="border-t border-slate-100 my-4"></div>
 
+                  {/* ✅ ส่วนที่เพิ่ม: แสดงกล่องแจ้งเหตุผลหาก Admin ปฏิเสธสลิป */}
+                  {order.status === 'PAYMENT_FAILED' && (
+                    <div className="mb-4 bg-red-50 rounded-xl p-4 border border-red-100 flex items-start gap-3 animate-in slide-in-from-top-2">
+                       <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+                       <div>
+                          <p className="text-sm font-bold text-red-700">การชำระเงินถูกปฏิเสธ</p>
+                          <p className="text-sm text-red-600 mt-1">
+                             เหตุผล: {order.rejectionReason || 'หลักฐานไม่ถูกต้อง กรุณาตรวจสอบและแนบใหม่อีกครั้ง'}
+                          </p>
+                       </div>
+                    </div>
+                  )}
+
                   {/* 🔥 Tracking Number (ภาษาไทย) */}
                   {order.status === 'SHIPPED' && order.trackingNumber && (
                     <div className="mb-4 bg-blue-50/50 rounded-xl p-4 border border-blue-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -221,12 +240,13 @@ export default function OrdersPage() {
                         <span className="font-bold text-2xl text-slate-900">฿{Number(order.total).toLocaleString()}</span>
                     </div>
                     
-                    {order.status === 'PENDING' ? (
+                    {/* ✅ ปรับปรุง Logic ปุ่ม: แสดงตอน PENDING หรือ PAYMENT_FAILED */}
+                    {['PENDING', 'PAYMENT_FAILED'].includes(order.status) ? (
                       <button 
                         onClick={() => setSelectedOrder(order)} 
                         className="bg-black text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition flex items-center gap-2 shadow-lg shadow-black/10 active:scale-95"
                       >
-                        <QrCode size={18} /> แจ้งชำระเงิน
+                        {order.status === 'PAYMENT_FAILED' ? <><Upload size={18} /> แนบสลิปใหม่</> : <><QrCode size={18} /> แจ้งชำระเงิน</>}
                       </button>
                     ) : (
                        <Link href={`/order-success?id=${order.id}`} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition">
@@ -296,7 +316,8 @@ function StatusBadge({ status }: { status: string }) {
     PAID: "bg-emerald-100 text-emerald-700 border-emerald-200",
     SHIPPED: "bg-indigo-100 text-indigo-700 border-indigo-200",
     CANCELLED: "bg-rose-100 text-rose-700 border-rose-200",
-    COMPLETED: "bg-purple-100 text-purple-700 border-purple-200"
+    COMPLETED: "bg-purple-100 text-purple-700 border-purple-200",
+    PAYMENT_FAILED: "bg-red-100 text-red-700 border-red-200" // ✅ เพิ่มสีแดงสำหรับสถานะนี้
   }
   
   // แปลงสถานะเป็นไทย

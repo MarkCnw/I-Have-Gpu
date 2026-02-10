@@ -15,7 +15,8 @@ const STATUS_LABEL: Record<string, string> = {
   PAID: 'ชำระแล้ว',
   SHIPPED: 'จัดส่งแล้ว',
   CANCELLED: 'ยกเลิก',
-  COMPLETED: 'สำเร็จ'
+  COMPLETED: 'สำเร็จ',
+  PAYMENT_FAILED: 'ชำระเงินไม่สำเร็จ' // ✅ เพิ่ม Label
 }
 
 // ✅ ส่วนที่เพิ่ม: Component สำหรับ Skeleton Loading ของแถวตารางคำสั่งซื้อ
@@ -43,6 +44,10 @@ export default function AdminOrdersPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [confirmData, setConfirmData] = useState<{ id: string; status: string } | null>(null)
   const [confirmLoading, setConfirmLoading] = useState(false)
+
+  // ✅ เพิ่ม State สำหรับ Modal ปฏิเสธ
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
+  const [rejectOrderId, setRejectOrderId] = useState<string | null>(null)
 
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null)
@@ -81,6 +86,36 @@ export default function AdminOrdersPage() {
   const openStatusConfirm = (id: string, status: string) => {
     setConfirmData({ id, status })
     setIsConfirmOpen(true)
+  }
+
+  // ✅ ฟังก์ชันเปิด Modal ปฏิเสธ
+  const openRejectModal = (id: string) => {
+    setRejectOrderId(id)
+    setIsRejectModalOpen(true)
+  }
+
+  // ✅ ฟังก์ชันส่งข้อมูลปฏิเสธไปยัง API
+  const handleRejectSubmit = async (reason: string) => {
+    if (!rejectOrderId) return
+    setConfirmLoading(true)
+    try {
+      await fetch(`/api/orders/${rejectOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: 'PAYMENT_FAILED', 
+          rejectionReason: reason 
+        })
+      })
+      toast.success('ปฏิเสธการชำระเงินเรียบร้อย')
+      await fetchOrders()
+    } catch (error) {
+      toast.error('เกิดข้อผิดพลาด')
+    } finally {
+      setConfirmLoading(false)
+      setIsRejectModalOpen(false)
+      setRejectOrderId(null)
+    }
   }
 
   const confirmStatusChange = async () => {
@@ -199,6 +234,7 @@ export default function AdminOrdersPage() {
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-[10px] font-bold 
                       ${order.status === 'VERIFYING' ? 'bg-yellow-100 text-yellow-700' : 
+                        order.status === 'PAYMENT_FAILED' ? 'bg-red-100 text-red-700' :
                         order.status === 'PAID' ? 'bg-indigo-100 text-indigo-700' :
                         order.status === 'SHIPPED' ? 'bg-green-100 text-green-700' : 
                         order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
@@ -243,7 +279,8 @@ export default function AdminOrdersPage() {
                           <button onClick={() => openStatusConfirm(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700 text-xs font-bold">
                             <Check size={14} /> ยืนยัน
                           </button>
-                          <button onClick={() => openStatusConfirm(order.id, 'PENDING')} className="bg-red-50 text-red-600 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-red-100 border border-red-200 text-xs font-bold">
+                          {/* ✅ เปลี่ยนปุ่มปฏิเสธให้เรียก Modal */}
+                          <button onClick={() => openRejectModal(order.id)} className="bg-red-50 text-red-600 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-red-100 border border-red-200 text-xs font-bold">
                             <X size={14} /> ปฏิเสธ
                           </button>
                         </>
@@ -255,6 +292,7 @@ export default function AdminOrdersPage() {
                         </button>
                       )}
                       
+                      {/* ✅ คงฟีเจอร์แก้ไขเลขพัสดุไว้ */}
                       {order.status === 'SHIPPED' && (
                         <button onClick={() => openTrackingModal(order.id)} className="text-blue-600 hover:underline text-xs font-bold">
                             แก้ไขเลข
@@ -268,6 +306,17 @@ export default function AdminOrdersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ✅ Modal สำหรับกรอกเหตุผลการปฏิเสธ */}
+      <InputModal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onConfirm={handleRejectSubmit}
+        title="ระบุเหตุผลที่ปฏิเสธการชำระเงิน"
+        placeholder="เช่น ยอดเงินไม่ถูกต้อง หรือ สลิปไม่ชัดเจน"
+        confirmText="ยืนยันปฏิเสธ"
+        loading={confirmLoading}
+      />
 
       <ConfirmModal
         isOpen={isConfirmOpen}
