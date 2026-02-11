@@ -80,7 +80,7 @@ export default function ProfileDropdown({ user }: { user: any }) {
 
           <div className="border-t border-neutral-50 mt-1 pt-1">
             <button
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: '/login' })}
               className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-3"
             >
               <LogOut size={16} /> ออกจากระบบ
