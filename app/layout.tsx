@@ -26,20 +26,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
-      <body className={`${kanit.variable} font-sans antialiased bg-white text-neutral-900 min-h-screen flex flex-col`}>
+      <body className={`${kanit.variable} font-sans antialiased bg-surface-bg text-foreground min-h-screen flex flex-col transition-colors duration-300`}>
         <Providers>
           <div className="flex-1">
             {children}
           </div>
           <Footer />
-          
+
           {/* ✅ ส่วนเสริม: แชทและแถบเปรียบเทียบ */}
           <CustomerChat />
           <CompareFloatingBar />
-          
+
           {/* Toaster แจ้งเตือน */}
-          <Toaster 
-            position="top-center" 
+          <Toaster
+            position="top-center"
             reverseOrder={false}
             toastOptions={{
               duration: 3000,
@@ -48,7 +48,7 @@ export default function RootLayout({
                 color: '#fff',
                 borderRadius: '10px',
               },
-            }} 
+            }}
           />
         </Providers>
       </body>

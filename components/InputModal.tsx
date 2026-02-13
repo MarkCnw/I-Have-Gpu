@@ -22,7 +22,7 @@ export default function InputModal({
   title,
   placeholder = '',
   defaultValue = '',
-  confirmText = 'ตกลง',
+  confirmText = 'OK',
   loading = false
 }: InputModalProps) {
   const [value, setValue] = useState(defaultValue)
@@ -37,22 +37,22 @@ export default function InputModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95">
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 text-neutral-400 hover:text-black transition"
+      <div className="bg-surface-card rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 border border-border-main">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-txt-muted hover:text-foreground transition"
         >
           <X size={24} />
         </button>
 
-        <h3 className="text-xl font-bold mb-4 text-neutral-900">{title}</h3>
-        
+        <h3 className="text-xl font-bold mb-4 text-foreground">{title}</h3>
+
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
-          className="w-full p-3 border border-neutral-200 rounded-xl mb-4 outline-none focus:border-black transition"
+          className="w-full p-3 border border-border-main rounded-xl mb-4 outline-none focus:border-foreground transition bg-surface-bg text-foreground placeholder:text-txt-muted"
           autoFocus
         />
 
@@ -60,16 +60,16 @@ export default function InputModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 font-bold text-neutral-600 hover:bg-neutral-50 transition disabled:opacity-50"
+            className="flex-1 px-4 py-3 rounded-xl border border-border-main font-bold text-txt-muted hover:bg-surface-bg transition disabled:opacity-50"
           >
-            ยกเลิก
+            Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={loading || !value.trim()}
-            className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-black hover:bg-neutral-800 transition disabled:opacity-50"
+            className="flex-1 px-4 py-3 rounded-xl font-bold text-surface-card bg-foreground hover:opacity-90 transition disabled:opacity-50"
           >
-            {loading ? 'กำลังดำเนินการ...' : confirmText}
+            {loading ? '...' : confirmText}
           </button>
         </div>
       </div>

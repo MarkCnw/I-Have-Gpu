@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 
 export default function AddToCompareBtn({ product }: { product: Product }) {
   const { addToCompare, compareList, removeFromCompare } = useCompareStore()
-  
+
   const isAdded = compareList.some(p => p.id === product.id)
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -24,20 +24,19 @@ export default function AddToCompareBtn({ product }: { product: Product }) {
       if (compareList.length > 0 && compareList[0].category !== product.category) {
         return toast.error(`สินค้าต้องอยู่ในหมวด ${compareList[0].category} เหมือนกัน`)
       }
-      
+
       addToCompare(product)
       toast.success('เพิ่มลงรายการเปรียบเทียบแล้ว')
     }
   }
 
   return (
-    <button 
+    <button
       onClick={handleToggle}
-      className={`p-2 rounded-full transition-all border ${
-        isAdded 
-          ? 'bg-black text-white border-black' 
-          : 'bg-white text-slate-400 border-slate-200 hover:border-black hover:text-black'
-      }`}
+      className={`p-2 rounded-full transition-all border ${isAdded
+          ? 'bg-foreground text-surface-card border-foreground'
+          : 'bg-surface-card text-txt-muted border-border-main hover:border-foreground hover:text-foreground'
+        }`}
       title="เปรียบเทียบสินค้า"
     >
       <Scale size={18} />

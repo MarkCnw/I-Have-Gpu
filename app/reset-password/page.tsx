@@ -22,7 +22,7 @@ function ResetPasswordForm() {
     return (
       <div className="text-center text-red-500">
         Invalid Link. Please request a new one.
-        <Link href="/forgot-password" className="block mt-4 underline text-black">Try again</Link>
+        <Link href="/forgot-password" className="block mt-4 underline text-foreground">Try again</Link>
       </div>
     )
   }
@@ -77,29 +77,29 @@ function ResetPasswordForm() {
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
       {error && <div className="bg-red-50 text-red-500 p-3 rounded text-sm text-center">{error}</div>}
-      
+
       <div className="space-y-4">
         <div className="relative">
-          <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
+          <Lock className="absolute left-3 top-3 text-txt-muted" size={20} />
           <input
             type={showPassword ? 'text' : 'password'}
             required
-            className="w-full pl-10 pr-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
+            className="w-full pl-10 pr-10 p-3 border border-border-main rounded-lg focus:ring-2 focus:ring-foreground outline-none bg-surface-card text-foreground"
             placeholder="New Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400 hover:text-black">
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-txt-muted hover:text-foreground">
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
 
         <div className="relative">
-          <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
+          <Lock className="absolute left-3 top-3 text-txt-muted" size={20} />
           <input
             type="password"
             required
-            className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none"
+            className="w-full pl-10 p-3 border border-border-main rounded-lg focus:ring-2 focus:ring-foreground outline-none bg-surface-card text-foreground"
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -110,7 +110,7 @@ function ResetPasswordForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-surface-card bg-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
       >
         {loading ? 'Resetting...' : 'Set New Password'}
       </button>
@@ -120,11 +120,11 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Reset Password</h2>
-          <p className="mt-2 text-sm text-gray-600">Create a new strong password for your account.</p>
+          <h2 className="text-3xl font-bold text-foreground">Reset Password</h2>
+          <p className="mt-2 text-sm text-txt-secondary">Create a new strong password for your account.</p>
         </div>
         <Suspense fallback={<div>Loading...</div>}>
           <ResetPasswordForm />

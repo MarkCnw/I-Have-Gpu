@@ -47,9 +47,9 @@ export default function ReviewForm({ productId }: { productId: string }) {
 
   if (!isOpen) {
     return (
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
-        className="bg-black text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-neutral-800 transition flex items-center gap-2"
+        className="bg-foreground text-surface-card px-6 py-2 rounded-full text-sm font-bold hover:opacity-90 transition flex items-center gap-2"
       >
         <Star size={16} /> เขียนรีวิวสินค้า
       </button>
@@ -58,10 +58,10 @@ export default function ReviewForm({ productId }: { productId: string }) {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8 animate-in slide-in-from-top-2">
+      <form onSubmit={handleSubmit} className="bg-surface-bg p-6 rounded-xl border border-border-main mb-8 animate-in slide-in-from-top-2">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-slate-800">เขียนรีวิวของคุณ</h3>
-          <button type="button" onClick={() => setIsOpen(false)} className="text-xs text-slate-400 hover:text-red-500">ยกเลิก</button>
+          <h3 className="font-bold text-foreground">เขียนรีวิวของคุณ</h3>
+          <button type="button" onClick={() => setIsOpen(false)} className="text-xs text-txt-muted hover:text-red-500">ยกเลิก</button>
         </div>
 
         {/* เลือกดาว */}
@@ -71,12 +71,12 @@ export default function ReviewForm({ productId }: { productId: string }) {
               key={star}
               type="button"
               onClick={() => setRating(star)}
-              className={`${star <= rating ? 'text-yellow-400' : 'text-slate-300'} transition hover:scale-110`}
+              className={`${star <= rating ? 'text-yellow-400' : 'text-txt-muted'} transition hover:scale-110`}
             >
               <Star size={24} fill="currentColor" />
             </button>
           ))}
-          <span className="ml-2 text-sm text-slate-500 font-medium">({rating}/5 คะแนน)</span>
+          <span className="ml-2 text-sm text-txt-muted font-medium">({rating}/5 คะแนน)</span>
         </div>
 
         {/* ช่องพิมพ์รีวิว */}
@@ -84,14 +84,14 @@ export default function ReviewForm({ productId }: { productId: string }) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="เขียนความคิดเห็นของคุณ..."
-          className="w-full p-3 border border-slate-200 rounded-lg mb-4 outline-none focus:border-black resize-none h-24"
+          className="w-full p-3 border border-border-main rounded-lg mb-4 outline-none focus:border-foreground resize-none h-24 bg-surface-card text-foreground"
           required
         />
 
-        <button 
+        <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-white py-2.5 rounded-lg font-bold hover:bg-neutral-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-foreground text-surface-card py-2.5 rounded-lg font-bold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Send size={16} /> {loading ? 'กำลังส่ง...' : 'ส่งรีวิว'}
         </button>
