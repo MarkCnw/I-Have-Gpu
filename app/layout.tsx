@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
-      <body className={`${kanit.variable} font-sans antialiased bg-white text-neutral-900 min-h-screen flex flex-col`}>
+      <body className={`${kanit.variable} font-sans antialiased bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 min-h-screen flex flex-col`}>
         <Providers>
           <div className="flex-1">
             {children}
