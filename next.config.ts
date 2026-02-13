@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'i.pravatar.cc', // ✅ เพิ่มโดเมนนี้สำหรับรูปโปรไฟล์ Testimonials
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
         port: '',
         pathname: '/**',
@@ -62,6 +68,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'www.advice.co.th', // Advice
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org', // ✅ เพิ่มโดเมนนี้เพื่อรองรับรูปจาก Wikipedia/Wikimedia
         port: '',
         pathname: '/**',
       },

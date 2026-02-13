@@ -3,15 +3,29 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
-// 1. GET: ดึงสินค้า (เฉพาะที่ยังไม่ถูกลบ)
-export async function GET() {
+// 1. GET: ดึงสินค้า (รองรับการกรองตามหมวดหมู่สำหรับระบบจัดสเปค)
+export async function GET(request: Request) {
   try {
+    // ✅ เพิ่มการดึง category จาก query parameters
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get('category')
+
+    // ✅ สร้างเงื่อนไขการกรอง
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const whereClause: any = {
+      isArchived: false // กรองสินค้าที่ถูกลบออก (Soft Delete)
+    }
+
+    // ✅ ถ้ามีการส่ง category มา ให้กรองตามหมวดหมู่นั้น (ยกเว้นค่า 'ALL')
+    if (category && category !== 'ALL') {
+      whereClause.category = category
+    }
+
     const products = await prisma.product.findMany({
-      where: {
-        isArchived: false // กรองสินค้าที่ถูกลบออก (Soft Delete)
-      },
+      where: whereClause,
       orderBy: { createdAt: 'desc' }
     })
+
     return NextResponse.json(products)
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })
@@ -31,7 +45,6 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
-    // ✅ เพิ่ม 'images' เข้ามาใน destructuring
     const { name, description, price, stock, image, images, category, specs } = body
 
     const product = await prisma.product.create({
@@ -41,7 +54,7 @@ export async function POST(request: Request) {
         price,
         stock,
         image,
-        images: images || [],  // 🔥 เพิ่มบรรทัดนี้
+        images: images || [],
         category,
         specs: specs || {}
       }

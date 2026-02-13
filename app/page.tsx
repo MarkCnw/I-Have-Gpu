@@ -7,6 +7,7 @@ import SearchBar from '@/components/SearchBar'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import HeroCarousel from '@/components/HeroCarousel'
 import StoreFeatures from '@/components/StoreFeatures'
+
 import BrandMarquee from '@/components/BrandMarquee'
 import CategoryFilter from '@/components/CategoryFilter'
 import NavbarCart from '@/components/NavbarCart' 
@@ -18,7 +19,10 @@ import {
   Sparkles, LayoutGrid, LogIn, ArrowUpRight 
 } from 'lucide-react'
 import { NEWS_DATA } from '@/lib/news-data'
-import { Suspense } from 'react' // ✅ เพิ่ม Suspense
+import { Suspense } from 'react'
+import Testimonials from '@/components/Testimonials'
+import FAQ from '@/components/FAQ'
+
 
 export const dynamic = 'force-dynamic'
 
@@ -40,7 +44,6 @@ const CATEGORIES = [
   { id: 'CHAIR', name: 'Furniture', icon: <Armchair size={18} /> },
 ]
 
-// ✅ 1. สร้าง Skeleton สำหรับแสดงระหว่างรอผลลัพธ์การค้นหา
 function ProductGridSkeleton() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10 animate-pulse">
@@ -58,10 +61,8 @@ function ProductGridSkeleton() {
   )
 }
 
-// ✅ 2. แยกส่วนดึงข้อมูลสินค้าออกมาเป็น Component ย่อย
 async function ProductList({ searchParams }: { searchParams: any }) {
   const { q, category } = searchParams
-  const currentCategory = category || 'ALL'
   const session = await auth()
   const user = session?.user
 
@@ -153,6 +154,7 @@ export default async function Home({
         <div>
           <div className="max-w-[1400px] mx-auto px-4 h-12 flex items-center justify-end gap-10 text-sm font-bold text-neutral-500">
             <Link href="/" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">หน้าแรก</Link>
+            <Link href="/builder" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">จัดสเปคคอม</Link>
             <Link href="/warranty" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">การรับประกัน</Link>
             <Link href="/contact" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">ติดต่อเรา</Link>
             <Link href="/about" className="hover:text-black transition hover:underline underline-offset-4 decoration-2">เกี่ยวกับเรา</Link>
@@ -203,65 +205,67 @@ export default async function Home({
             <span className="text-neutral-400 text-sm font-medium">Products</span>
           </div>
 
-          {/* ✅ 3. ใช้ Suspense ครอบส่วนแสดงสินค้า โดยใช้ key เป็นค่าค้นหา */}
-          {/* วิธีนี้จะทำให้ Skeleton แสดงผลใหม่ทุกครั้งที่ค่า q หรือ category เปลี่ยน */}
           <Suspense key={q + currentCategory} fallback={<ProductGridSkeleton />}>
             <ProductList searchParams={params} />
           </Suspense>
         </main>
 
-        {/* 📰 2. News & Reviews Section */}
         {!q && currentCategory === 'ALL' && (
-          <section className="mt-24 border-t border-neutral-100 pt-16">
-            <h2 className="text-2xl font-bold mb-10 flex items-center gap-2">
-              <span className="w-1 h-8 bg-black rounded-full"></span> ข่าวสาร & รีวิวจากผู้เชี่ยวชาญ
-            </h2>
-            <div className="grid lg:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl relative group cursor-pointer border border-neutral-100">
-                  <iframe 
-                    className="w-full h-full" 
-                    src="https://www.youtube.com/embed/h15-0I2JxOo" 
-                    title="YouTube video" 
-                    frameBorder="0" 
-                    allowFullScreen
-                  ></iframe>
+          <>
+            <section className="mt-24 border-t border-neutral-100 pt-16">
+              <h2 className="text-2xl font-bold mb-10 flex items-center gap-2">
+                <span className="w-1 h-8 bg-black rounded-full"></span> ข่าวสาร & รีวิวจากผู้เชี่ยวชาญ
+              </h2>
+              <div className="grid lg:grid-cols-2 gap-10">
+                <div className="space-y-4">
+                  <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl relative group cursor-pointer border border-neutral-100">
+                    <iframe 
+                      className="w-full h-full" 
+                      src="https://www.youtube.com/embed/h15-0I2JxOo" 
+                      title="YouTube video" 
+                      frameBorder="0" 
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <h3 className="text-xl font-bold">ศึกตัวท็อป GeForce RTX 5090 VS RTX 4090 บน AMD Ryzen 7 9800X3D แรงต่างกันขนาดไหน ? | iHAVECPU</h3>
+                  <p className="text-neutral-500 text-sm">เจาะลึกผลทดสอบกราฟิกการ์ดสถาปัตยกรรม Blackwell รุ่นล่าสุดปี 2025 และการดึงประสิทธิภาพสูงสุดด้วย CPU X3D</p>
                 </div>
-                <h3 className="text-xl font-bold">ศึกตัวท็อป GeForce RTX 5090 VS RTX 4090 บน AMD Ryzen 7 9800X3D แรงต่างกันขนาดไหน ? | iHAVECPU</h3>
-                <p className="text-neutral-500 text-sm">เจาะลึกผลทดสอบกราฟิกการ์ดสถาปัตยกรรม Blackwell รุ่นล่าสุดปี 2025 และการดึงประสิทธิภาพสูงสุดด้วย CPU X3D</p>
-              </div>
 
-              <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"> 
-                {NEWS_DATA.map((post) => (
-                  <Link 
-                    key={post.id} 
-                    href={`/news/${post.id}`} 
-                    className="flex gap-5 group cursor-pointer p-2 rounded-2xl hover:bg-neutral-50 transition"
-                  >
-                    <div className="relative w-32 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-neutral-100">
-                      <Image 
-                        src={post.img} 
-                        alt={post.title} 
-                        fill 
-                        className="object-cover group-hover:scale-110 transition duration-500" 
-                      />
-                    </div>
-                    <div className="flex flex-col justify-center">
-                      <h4 className="font-bold text-neutral-800 line-clamp-1 group-hover:text-red-600 transition-colors">
-                        {post.title}
-                      </h4>
-                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
-                        {post.desc}
-                      </p>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 mt-2 uppercase tracking-widest">
-                        Read more <ArrowUpRight size={12} />
+                <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"> 
+                  {NEWS_DATA.map((post) => (
+                    <Link 
+                      key={post.id} 
+                      href={`/news/${post.id}`} 
+                      className="flex gap-5 group cursor-pointer p-2 rounded-2xl hover:bg-neutral-50 transition"
+                    >
+                      <div className="relative w-32 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-neutral-100">
+                        <Image 
+                          src={post.img} 
+                          alt={post.title} 
+                          fill 
+                          className="object-cover group-hover:scale-110 transition duration-500" 
+                        />
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="flex flex-col justify-center">
+                        <h4 className="font-bold text-neutral-800 line-clamp-1 group-hover:text-red-600 transition-colors">
+                          {post.title}
+                        </h4>
+                        <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                          {post.desc}
+                        </p>
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 mt-2 uppercase tracking-widest">
+                          Read more <ArrowUpRight size={12} />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+            <FAQ /> {/* ✅ วางไว้ตรงนี้ */}
+            {/* ✅ เรียกใช้งานคอมโพเนนต์รีวิวที่แยกออกมา */}
+            <Testimonials />
+          </>
         )}
       </div>
     </div>

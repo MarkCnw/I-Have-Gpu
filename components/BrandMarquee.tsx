@@ -45,8 +45,8 @@ export default function BrandMarquee() {
   return (
     <div className="w-full py-16 bg-white overflow-hidden border-t border-neutral-100">
       <div className="max-w-[1400px] mx-auto mb-12 text-center px-6">
-        <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">Trusted Partners</span>
-        <h2 className="text-3xl font-bold text-neutral-900 mt-2">Official Retailer for Leading Brands</h2>
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">พันธมิตรที่เชื่อถือได้</span>
+        <h2 className="text-3xl font-bold text-neutral-900 mt-2">ตัวแทนจำหน่ายอย่างเป็นทางการของแบรนด์ชั้นนำ</h2>
       </div>
       
       <div className="relative flex flex-col gap-12">
