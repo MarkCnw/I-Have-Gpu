@@ -13,8 +13,9 @@ import { Suspense } from 'react'
 import Testimonials from '@/components/Testimonials'
 import FAQ from '@/components/FAQ'
 import HomeClient from '@/components/HomeClient'
-import NewsSectionHome from '@/components/NewsSectionHome'
 import ProductSectionHeader from '@/components/ProductSectionHeader'
+import NewsSectionHome from '@/components/NewsSectionHome'
+
 
 export const dynamic = 'force-dynamic'
 
@@ -131,6 +132,8 @@ export default async function Home({
       <section className="mt-24 border-t border-border-main pt-16">
         <NewsSectionHome />
       </section>
+
+
       <FAQ />
       <Testimonials />
     </>

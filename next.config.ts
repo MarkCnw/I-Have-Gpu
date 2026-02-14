@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'flagcdn.com', // ✅ เพิ่มบรรทัดนี้
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
         port: '',
         pathname: '/**',
@@ -97,7 +103,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'media-cdn.bnn.in.th', 
+        hostname: 'media-cdn.bnn.in.th',
         port: '',
         pathname: '/**',
       },
