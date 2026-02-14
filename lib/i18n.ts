@@ -611,6 +611,65 @@ const translations: Record<string, TranslationValue> = {
     'admin.productNotFound': { th: 'ไม่พบข้อมูลสินค้า', en: 'Product not found', jp: '商品が見つかりません' },
     'admin.productSaved': { th: 'บันทึกการแก้ไขเรียบร้อย', en: 'Changes saved', jp: '変更が保存されました' },
     'admin.productSaveError': { th: 'เกิดข้อผิดพลาดในการแก้ไขสินค้า', en: 'Failed to save changes', jp: '変更の保存に失敗しました' },
+
+    // ============ Admin Order Modals ============
+    'admin.rejectTitle': { th: 'ระบุเหตุผลที่ปฏิเสธการชำระเงิน', en: 'Reason for rejection', jp: '拒否理由を入力してください' },
+    'admin.rejectPlaceholder': { th: 'เช่น ยอดเงินไม่ถูกต้อง หรือ สลิปไม่ชัดเจน', en: 'e.g. Incorrect amount or unclear slip', jp: '例：金額が不正確、スリップが不鮮明' },
+    'admin.confirmStatusTitle': { th: 'ยืนยันการเปลี่ยนสถานะ', en: 'Confirm status change', jp: 'ステータス変更の確認' },
+    'admin.changeStatusTo': { th: 'เปลี่ยนสถานะเป็น', en: 'Change status to', jp: 'ステータスを変更:' },
+    'admin.trackingTitle': { th: 'กรุณากรอกเลขพัสดุ (Tracking Number)', en: 'Enter tracking number', jp: '追跡番号を入力' },
+    'admin.next': { th: 'ถัดไป', en: 'Next', jp: '次へ' },
+    'admin.carrierTitle': { th: 'ชื่อบริษัทขนส่ง', en: 'Carrier name', jp: '配送業者名' },
+    'admin.save': { th: 'บันทึก', en: 'Save', jp: '保存' },
+    'status.all': { th: 'ทั้งหมด', en: 'All', jp: 'すべて' },
+
+    // ============ Admin Product Form ============
+    'adminForm.addProduct': { th: 'เพิ่มสินค้าใหม่', en: 'Add New Product', jp: '新しい商品を追加' },
+    'adminForm.addProductDesc': { th: 'กรอกข้อมูลสินค้าให้ครบถ้วนเพื่อลงขาย', en: 'Fill in the product details to list it for sale', jp: '販売する商品情報を入力してください' },
+    'adminForm.editProduct': { th: 'แก้ไขสินค้า', en: 'Edit Product', jp: '商品を編集' },
+    'adminForm.editProductDesc': { th: 'แก้ไขข้อมูลสินค้าและกดบันทึก', en: 'Modify product details and save', jp: '商品情報を修正して保存' },
+    'adminForm.generalInfo': { th: 'ข้อมูลทั่วไป', en: 'General Info', jp: '基本情報' },
+    'adminForm.productName': { th: 'ชื่อสินค้า', en: 'Product Name', jp: '商品名' },
+    'adminForm.productNamePlaceholder': { th: 'เช่น Intel Core i9-14900K', en: 'e.g. Intel Core i9-14900K', jp: '例：Intel Core i9-14900K' },
+    'adminForm.category': { th: 'หมวดหมู่', en: 'Category', jp: 'カテゴリ' },
+    'adminForm.selectCategory': { th: '-- เลือกหมวดหมู่ --', en: '-- Select Category --', jp: '-- カテゴリを選択 --' },
+    'adminForm.description': { th: 'รายละเอียดสินค้า', en: 'Product Description', jp: '商品説明' },
+    'adminForm.descriptionPlaceholder': { th: 'รายละเอียดเพิ่มเติมของสินค้า...', en: 'Additional product details...', jp: '追加の商品詳細...' },
+    'adminForm.price': { th: 'ราคา (บาท)', en: 'Price (THB)', jp: '価格 (バーツ)' },
+    'adminForm.stock': { th: 'จำนวน (สต็อก)', en: 'Stock Quantity', jp: '在庫数' },
+    'adminForm.specs': { th: 'คุณสมบัติเฉพาะ', en: 'Specifications', jp: '仕様' },
+    'adminForm.specPlaceholder': { th: 'ระบุ', en: 'Specify', jp: '入力' },
+    'adminForm.images': { th: 'รูปภาพสินค้า', en: 'Product Images', jp: '商品画像' },
+    'adminForm.coverNote': { th: 'รูปแรกจะเป็นรูปปกสินค้า', en: 'First image will be the cover', jp: '最初の画像がカバーになります' },
+    'adminForm.coverBadge': { th: 'รูปปก', en: 'Cover', jp: 'カバー' },
+    'adminForm.uploadBtn': { th: 'อัปโหลดรูป', en: 'Upload Image', jp: '画像をアップロード' },
+    'adminForm.addUrl': { th: 'เพิ่มรูปจากลิงก์', en: 'Add image from URL', jp: 'URLから画像を追加' },
+    'adminForm.fileSupport': { th: 'รองรับไฟล์ JPG, PNG, WEBP ขนาดไม่เกิน 5MB ต่อรูป', en: 'Supports JPG, PNG, WEBP up to 5MB per image', jp: 'JPG、PNG、WEBP対応（1画像あたり最大5MB）' },
+    'adminForm.dragDrop': { th: 'สามารถลากวางรูปภาพ หรือเลือกทีละหลายรูปได้', en: 'Drag & drop or select multiple images', jp: 'ドラッグ＆ドロップまた複数選択可能' },
+    'adminForm.cancel': { th: 'ยกเลิก', en: 'Cancel', jp: 'キャンセル' },
+    'adminForm.saveProduct': { th: 'บันทึกสินค้า', en: 'Save Product', jp: '商品を保存' },
+    'adminForm.saveChanges': { th: 'บันทึกการแก้ไข', en: 'Save Changes', jp: '変更を保存' },
+
+    // ============ Footer Address ============
+    'footer.address': { th: '123 Cyber Tower, ถ.รัชดา,\nกรุงเทพฯ 10400, ประเทศไทย', en: '123 Cyber Tower, Ratchada,\nBangkok 10400, Thailand', jp: '123 サイバータワー、ラチャダー、\nバンコク 10400、タイ' },
+
+    // ============ Orders Page Extra ============
+    'orders.orderId': { th: 'รหัสออเดอร์', en: 'Order ID', jp: '注文ID' },
+    'orders.supportsFormats': { th: 'รองรับ JPG, PNG', en: 'Supports JPG, PNG', jp: 'JPG, PNG対応' },
+
+    // ============ CategoryFilter Spec Labels ============
+    'spec.brand': { th: 'ยี่ห้อ', en: 'Brand', jp: 'ブランド' },
+    'spec.socket': { th: 'ซ็อกเก็ต', en: 'Socket', jp: 'ソケット' },
+    'spec.series': { th: 'ซีรีส์', en: 'Series', jp: 'シリーズ' },
+    'spec.type': { th: 'ประเภท', en: 'Type', jp: 'タイプ' },
+    'spec.bus': { th: 'ความเร็ว', en: 'Bus', jp: 'バス速度' },
+    'spec.capacity': { th: 'ความจุ', en: 'Capacity', jp: '容量' },
+    'spec.chipset': { th: 'ชิปเซ็ต', en: 'Chipset', jp: 'チップセット' },
+    'spec.vram': { th: 'VRAM', en: 'VRAM', jp: 'VRAM' },
+    'spec.panel': { th: 'แผงจอ', en: 'Panel', jp: 'パネル' },
+    'spec.refreshRate': { th: 'อัตรารีเฟรช', en: 'Refresh Rate', jp: 'リフレッシュレート' },
+    'spec.resolution': { th: 'ความละเอียด', en: 'Resolution', jp: '解像度' },
+    'spec.all': { th: 'ทั้งหมด', en: 'All', jp: 'すべて' },
 }
 
 export function t(key: string, locale: Locale): string {
