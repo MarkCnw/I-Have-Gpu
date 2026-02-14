@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Eye, Check, X, Truck, ExternalLink, Copy, MapPin, Phone, Package } from 'lucide-react'
+import { Eye, Check, X, Truck, ExternalLink, MapPin, Phone, Package } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import ConfirmModal from '@/components/ConfirmModal'
 import InputModal from '@/components/InputModal'
@@ -11,22 +11,17 @@ import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { t } from '@/lib/i18n'
 
 const TableRowSkeleton = () => (
-  <tr className="border-b border-border-main">
-    <td className="p-4"><div className="h-5 w-20 bg-surface-bg rounded animate-pulse" /></td>
+  <tr className="border-b border-slate-100 dark:border-border-main">
+    <td className="p-4"><div className="h-5 w-20 bg-slate-200 dark:bg-surface-bg rounded animate-pulse" /></td>
     <td className="p-4">
-      <div className="h-4 w-32 bg-surface-bg rounded animate-pulse mb-2" />
-      <div className="h-3 w-24 bg-surface-bg rounded animate-pulse" />
+      <div className="h-4 w-32 dark:bg-surface-bg rounded animate-pulse mb-2" />
+      <div className="h-3 w-24 dark:bg-surface-bg rounded animate-pulse" />
     </td>
-    <td className="p-4"><div className="h-5 w-20 bg-surface-bg rounded animate-pulse" /></td>
-    <td className="p-4"><div className="h-6 w-24 bg-surface-bg rounded-full animate-pulse" /></td>
-    <td className="p-4"><div className="h-4 w-16 bg-surface-bg rounded animate-pulse" /></td>
-    <td className="p-4"><div className="h-4 w-24 bg-surface-bg rounded animate-pulse" /></td>
-    <td className="p-4 text-right"><div className="h-8 w-40 bg-surface-bg rounded-lg animate-pulse ml-auto" /></td>
+    <td className="p-4 text-right"><div className="h-8 w-40 bg-slate-200 dark:bg-surface-bg rounded-lg animate-pulse ml-auto" /></td>
   </tr>
 )
 
 export default function AdminOrdersPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([])
   const [filter, setFilter] = useState('ALL')
   const [isLoading, setIsLoading] = useState(true)
@@ -35,18 +30,13 @@ export default function AdminOrdersPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [confirmData, setConfirmData] = useState<{ id: string; status: string } | null>(null)
   const [confirmLoading, setConfirmLoading] = useState(false)
-
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
   const [rejectOrderId, setRejectOrderId] = useState<string | null>(null)
-
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null)
   const [trackingNumber, setTrackingNumber] = useState('')
-
   const [isCarrierModalOpen, setIsCarrierModalOpen] = useState(false)
   const [trackingLoading, setTrackingLoading] = useState(false)
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
 
   const STATUS_LABEL: Record<string, string> = {
@@ -65,31 +55,22 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch('/api/orders', { cache: 'no-store' })
       const data = await res.json()
-      if (Array.isArray(data)) {
-        setOrders(data)
-      } else {
-        setOrders([])
-      }
+      setOrders(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error('Fetch error:', error)
       setOrders([])
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchOrders()
-  }, [])
+  useEffect(() => { fetchOrders() }, [])
 
   const openStatusConfirm = (id: string, status: string) => {
-    setConfirmData({ id, status })
-    setIsConfirmOpen(true)
+    setConfirmData({ id, status }); setIsConfirmOpen(true)
   }
 
   const openRejectModal = (id: string) => {
-    setRejectOrderId(id)
-    setIsRejectModalOpen(true)
+    setRejectOrderId(id); setIsRejectModalOpen(true)
   }
 
   const handleRejectSubmit = async (reason: string) => {
@@ -106,9 +87,7 @@ export default function AdminOrdersPage() {
     } catch (error) {
       toast.error(t('admin.error', locale))
     } finally {
-      setConfirmLoading(false)
-      setIsRejectModalOpen(false)
-      setRejectOrderId(null)
+      setConfirmLoading(false); setIsRejectModalOpen(false)
     }
   }
 
@@ -126,22 +105,16 @@ export default function AdminOrdersPage() {
     } catch (error) {
       toast.error(t('admin.error', locale))
     } finally {
-      setConfirmLoading(false)
-      setIsConfirmOpen(false)
-      setConfirmData(null)
+      setConfirmLoading(false); setIsConfirmOpen(false)
     }
   }
 
   const openTrackingModal = (id: string) => {
-    setTrackingOrderId(id)
-    setTrackingNumber('')
-    setIsTrackingModalOpen(true)
+    setTrackingOrderId(id); setTrackingNumber(''); setIsTrackingModalOpen(true)
   }
 
   const handleTrackingSubmit = (value: string) => {
-    setTrackingNumber(value)
-    setIsTrackingModalOpen(false)
-    setIsCarrierModalOpen(true)
+    setTrackingNumber(value); setIsTrackingModalOpen(false); setIsCarrierModalOpen(true)
   }
 
   const handleCarrierSubmit = async (carrier: string) => {
@@ -163,244 +136,177 @@ export default function AdminOrdersPage() {
     } catch (error) {
       toast.error(t('admin.error', locale))
     } finally {
-      setTrackingLoading(false)
-      setIsCarrierModalOpen(false)
-      setTrackingOrderId(null)
-      setTrackingNumber('')
+      setTrackingLoading(false); setIsCarrierModalOpen(false)
     }
   }
 
   const safeOrders = Array.isArray(orders) ? orders : []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredOrders = filter === 'ALL' ? safeOrders : safeOrders.filter((o: any) => o.status === filter)
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-foreground">{t('admin.manageOrders', locale)}</h1>
-
-        <div className="flex bg-surface-card p-1 rounded-lg border border-border-main">
+    <div className="p-8 min-h-screen bg-slate-50 dark:bg-transparent transition-colors">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-foreground">{t('admin.manageOrders', locale)}</h1>
+        
+        <div className="flex bg-white dark:bg-surface-card p-1 rounded-lg border border-slate-200 dark:border-border-main shadow-sm">
           {['ALL', 'VERIFYING', 'PAID', 'SHIPPED'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${filter === f ? 'bg-foreground text-surface-card' : 'text-txt-muted hover:bg-surface-bg'}`}
+              className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${
+                filter === f 
+                ? 'bg-black text-white dark:bg-foreground dark:text-surface-card' 
+                : 'text-slate-500 dark:text-txt-muted hover:bg-slate-50 dark:hover:bg-surface-bg'
+              }`}
             >
               {STATUS_LABEL[f]}
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {f === 'VERIFYING' && safeOrders.filter((o: any) => o.status === 'VERIFYING').length > 0 && <span className="ml-1 text-red-400">●</span>}
+              {f === 'VERIFYING' && safeOrders.filter((o: any) => o.status === 'VERIFYING').length > 0 && (
+                <span className="ml-1 text-red-500">●</span>
+              )}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="bg-surface-card rounded-xl border border-border-main shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-surface-bg text-txt-muted font-bold border-b border-border-main">
-            <tr>
-              <th className="p-4">{t('admin.orderId', locale)}</th>
-              <th className="p-4">{t('admin.customer', locale)}</th>
-              <th className="p-4">{t('admin.total', locale)}</th>
-              <th className="p-4">{t('admin.status', locale)}</th>
-              <th className="p-4">{t('admin.proof', locale)}</th>
-              <th className="p-4">{t('admin.tracking', locale)}</th>
-              <th className="p-4 text-right">{t('admin.manage', locale)}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-main">
-            {isLoading ? (
-              [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)
-            ) : filteredOrders.length === 0 ? (
+      <div className="bg-white dark:bg-surface-card rounded-xl border border-slate-200 dark:border-border-main shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 dark:bg-surface-bg text-slate-500 dark:text-txt-muted font-bold border-b border-slate-200 dark:border-border-main">
               <tr>
-                <td colSpan={7} className="p-10 text-center text-txt-muted">{t('admin.noOrders', locale)}</td>
+                <th className="p-4">{t('admin.orderId', locale)}</th>
+                <th className="p-4">{t('admin.customer', locale)}</th>
+                <th className="p-4">{t('admin.total', locale)}</th>
+                <th className="p-4">{t('admin.status', locale)}</th>
+                <th className="p-4">{t('admin.proof', locale)}</th>
+                <th className="p-4">{t('admin.tracking', locale)}</th>
+                <th className="p-4 text-right">{t('admin.manage', locale)}</th>
               </tr>
-            ) : (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              filteredOrders.map((order: any) => (
-                <tr key={order.id} className="hover:bg-surface-bg transition">
-                  <td className="p-4 font-mono text-foreground">{order.id.split('-')[0]}</td>
-                  <td className="p-4">
-                    <p className="font-bold text-foreground">{order.shippingName}</p>
-                    <p className="text-xs text-txt-muted">{new Date(order.createdAt).toLocaleDateString(locale === 'th' ? 'th-TH' : locale === 'jp' ? 'ja-JP' : 'en-US', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
-                  </td>
-                  <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">฿{Number(order.total).toLocaleString()}</td>
-
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold 
-                      ${order.status === 'VERIFYING' ? 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400' :
-                        order.status === 'PAYMENT_FAILED' ? 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400' :
-                          order.status === 'PAID' ? 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400' :
-                            order.status === 'SHIPPED' ? 'bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-400' :
-                              order.status === 'CANCELLED' ? 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400' : 'bg-surface-bg text-txt-muted'
-                      }`}
-                    >
-                      {STATUS_LABEL[order.status] || order.status}
-                    </span>
-                  </td>
-
-                  <td className="p-4">
-                    {order.slipImage ? (
-                      <a href={order.slipImage} target="_blank" className="text-blue-600 dark:text-blue-400 flex items-center gap-1 hover:underline text-xs">
-                        <ExternalLink size={12} /> {t('admin.viewSlip', locale)}
-                      </a>
-                    ) : (
-                      <span className="text-txt-muted">-</span>
-                    )}
-                  </td>
-
-                  <td className="p-4">
-                    {order.trackingNumber ? (
-                      <div className="text-xs">
-                        <span className="font-bold text-foreground">{order.carrier}</span>
-                        <br />
-                        <span className="font-mono text-txt-muted">{order.trackingNumber}</span>
-                      </div>
-                    ) : '-'}
-                  </td>
-
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="bg-surface-bg text-txt-muted px-3 py-1.5 rounded flex items-center gap-1 hover:bg-border-main text-xs font-bold transition"
-                      >
-                        <Eye size={14} /> {t('admin.details', locale)}
-                      </button>
-
-                      {order.status === 'VERIFYING' && (
-                        <>
-                          <button onClick={() => openStatusConfirm(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700 text-xs font-bold">
-                            <Check size={14} /> {t('admin.confirm', locale)}
-                          </button>
-                          <button onClick={() => openRejectModal(order.id)} className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-red-100 dark:hover:bg-red-950/50 border border-red-200 dark:border-red-900 text-xs font-bold">
-                            <X size={14} /> {t('admin.reject', locale)}
-                          </button>
-                        </>
-                      )}
-
-                      {order.status === 'PAID' && (
-                        <button onClick={() => openTrackingModal(order.id)} className="bg-foreground text-surface-card px-3 py-1.5 rounded flex items-center gap-1 hover:opacity-90 text-xs font-bold">
-                          <Truck size={14} /> {t('admin.ship', locale)}
-                        </button>
-                      )}
-
-                      {order.status === 'SHIPPED' && (
-                        <button onClick={() => openTrackingModal(order.id)} className="text-blue-600 dark:text-blue-400 hover:underline text-xs font-bold">
-                          {t('admin.editTracking', locale)}
-                        </button>
-                      )}
-                    </div>
-                  </td>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-border-main">
+              {isLoading ? (
+                [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)
+              ) : filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-10 text-center text-slate-400 dark:text-txt-muted">{t('admin.noOrders', locale)}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredOrders.map((order: any) => (
+                  <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-surface-bg transition-colors">
+                    <td className="p-4 font-mono text-slate-600 dark:text-foreground">{order.id.split('-')[0]}</td>
+                    <td className="p-4">
+                      <p className="font-bold text-slate-800 dark:text-foreground">{order.shippingName}</p>
+                      <p className="text-xs text-slate-400 dark:text-txt-muted">{new Date(order.createdAt).toLocaleDateString(locale === 'th' ? 'th-TH' : 'en-US')}</p>
+                    </td>
+                    <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">฿{Number(order.total).toLocaleString()}</td>
+                    <td className="p-4">
+                      {/* ✅ แก้ไข: ปรับสีสถานะให้อ่านง่ายขึ้นใน Light Mode และคงเดิมใน Dark Mode */}
+                      <span className={`px-2 py-1 rounded text-[10px] font-bold 
+                        ${order.status === 'VERIFYING' ? 'bg-amber-100 text-amber-900 dark:bg-yellow-950/50 dark:text-yellow-400' : 
+                          order.status === 'PAID' ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-400' :
+                          order.status === 'SHIPPED' ? 'bg-emerald-100 text-emerald-900 dark:bg-green-950/50 dark:text-green-400' : 
+                          order.status === 'PAYMENT_FAILED' || order.status === 'CANCELLED' ? 'bg-red-100 text-red-900 dark:bg-red-950/50 dark:text-red-400' :
+                          'bg-slate-100 text-slate-600 dark:bg-surface-bg dark:text-txt-muted'}`}
+                      >
+                        {STATUS_LABEL[order.status] || order.status}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      {order.slipImage ? (
+                        <a href={order.slipImage} target="_blank" className="text-blue-600 dark:text-blue-400 flex items-center gap-1 hover:underline text-xs">
+                          <ExternalLink size={12} /> {t('admin.viewSlip', locale)}
+                        </a>
+                      ) : <span className="text-slate-300 dark:text-txt-muted">-</span>}
+                    </td>
+                    <td className="p-4">
+                      {order.trackingNumber ? (
+                        <div className="text-xs">
+                          <span className="font-bold text-slate-700 dark:text-foreground">{order.carrier}</span><br/>
+                          <span className="font-mono text-slate-500 dark:text-txt-muted">{order.trackingNumber}</span>
+                        </div>
+                      ) : '-'}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setSelectedOrder(order)} className="bg-slate-100 dark:bg-surface-bg text-slate-600 dark:text-txt-muted px-3 py-1.5 rounded flex items-center gap-1 hover:bg-slate-200 dark:hover:bg-border-main text-xs font-bold transition">
+                          <Eye size={14} /> {t('admin.details', locale)}
+                        </button>
+                        {order.status === 'VERIFYING' && (
+                          <>
+                            <button onClick={() => openStatusConfirm(order.id, 'PAID')} className="bg-green-600 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-green-700 text-xs font-bold">
+                              <Check size={14} /> {t('admin.confirm', locale)}
+                            </button>
+                            <button onClick={() => openRejectModal(order.id)} className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-red-100 dark:hover:bg-red-950/50 border border-red-200 dark:border-red-900 text-xs font-bold">
+                              <X size={14} /> {t('admin.reject', locale)}
+                            </button>
+                          </>
+                        )}
+                        {order.status === 'PAID' && (
+                          <button onClick={() => openTrackingModal(order.id)} className="bg-black dark:bg-foreground text-white dark:text-surface-card px-3 py-1.5 rounded flex items-center gap-1 hover:opacity-80 text-xs font-bold">
+                            <Truck size={14} /> {t('admin.ship', locale)}
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <InputModal
-        isOpen={isRejectModalOpen}
-        onClose={() => setIsRejectModalOpen(false)}
-        onConfirm={handleRejectSubmit}
-        title={t('admin.rejectTitle', locale)}
-        placeholder={t('admin.rejectPlaceholder', locale)}
-        confirmText={t('admin.confirm', locale)}
-        loading={confirmLoading}
-      />
+      {/* Modals - ใช้คำจาก t() ตามเดิม */}
+      <InputModal isOpen={isRejectModalOpen} onClose={() => setIsRejectModalOpen(false)} onConfirm={handleRejectSubmit} title={t('admin.rejectTitle', locale)} placeholder={t('admin.rejectPlaceholder', locale)} />
+      <ConfirmModal isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} onConfirm={confirmStatusChange} title={t('admin.confirmStatusTitle', locale)} message={t('admin.confirmStatusMsg', locale)} />
+      <InputModal isOpen={isTrackingModalOpen} onClose={() => setIsTrackingModalOpen(false)} onConfirm={handleTrackingSubmit} title={t('admin.trackingTitle', locale)} placeholder={t('admin.placeholderTracking', locale)} />
+      <InputModal isOpen={isCarrierModalOpen} onClose={() => setIsCarrierModalOpen(false)} onConfirm={handleCarrierSubmit} title={t('admin.carrierTitle', locale)} defaultValue="Kerry Express" />
 
-      <ConfirmModal
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={confirmStatusChange}
-        title={t('admin.confirmStatusTitle', locale)}
-        message={`${t('admin.confirmStatusMsg', locale)} "${confirmData ? STATUS_LABEL[confirmData.status] || confirmData.status : ''}"?`}
-        confirmText={t('admin.confirm', locale)}
-        loading={confirmLoading}
-        variant={confirmData?.status === 'PENDING' ? 'danger' : 'info'}
-      />
-
-      <InputModal
-        isOpen={isTrackingModalOpen}
-        onClose={() => setIsTrackingModalOpen(false)}
-        onConfirm={handleTrackingSubmit}
-        title={t('admin.trackingTitle', locale)}
-        placeholder={t('admin.placeholderTracking', locale)}
-        confirmText={t('admin.next', locale)}
-      />
-
-      <InputModal
-        isOpen={isCarrierModalOpen}
-        onClose={() => setIsCarrierModalOpen(false)}
-        onConfirm={handleCarrierSubmit}
-        title={t('admin.carrierTitle', locale)}
-        placeholder={t('admin.placeholderCarrier', locale)}
-        defaultValue="Kerry Express"
-        confirmText={t('admin.save', locale)}
-        loading={trackingLoading}
-      />
-
+      {/* Selected Order Detail Modal - ธีม Slate */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in">
-          <div className="bg-surface-card w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-border-main">
-            <div className="p-6 border-b border-border-main flex justify-between items-center bg-surface-bg">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-surface-card w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-200 dark:border-border-main">
+            <div className="p-6 border-b border-slate-100 dark:border-border-main flex justify-between items-center bg-slate-50 dark:bg-surface-bg">
               <div>
-                <h3 className="font-bold text-lg text-foreground">{t('admin.details', locale)}</h3>
-                <p className="text-xs text-txt-muted font-mono">ID: {selectedOrder.id}</p>
+                <h3 className="font-bold text-lg text-slate-800 dark:text-foreground">{t('admin.details', locale)}</h3>
+                <p className="text-xs text-slate-500 dark:text-txt-muted font-mono">ID: {selectedOrder.id}</p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-surface-card rounded-full text-txt-muted transition">✕</button>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-slate-200 dark:hover:bg-border-main rounded-full text-slate-500 dark:text-txt-muted transition">✕</button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-6">
-              <div className="bg-surface-bg p-4 rounded-xl border border-border-main space-y-3">
-                <h4 className="font-bold text-sm flex items-center gap-2 text-txt-muted"><MapPin size={16} /> {t('cart.shippingAddress', locale)}</h4>
-                <div className="text-sm text-txt-muted pl-6 space-y-1">
-                  <p className="text-lg font-bold text-foreground">{selectedOrder.shippingName}</p>
-                  <p>{selectedOrder.shippingAddress}</p>
-                  <p>{selectedOrder.shippingZipcode}</p>
-                  <div className="flex items-center gap-2 mt-2 text-foreground font-medium">
-                    <Phone size={14} /> {selectedOrder.shippingPhone}
-                  </div>
+              <div className="bg-slate-50 dark:bg-surface-bg p-4 rounded-xl border border-slate-200 dark:border-border-main space-y-3">
+                <h4 className="font-bold text-sm flex items-center gap-2 text-slate-700 dark:text-foreground"><MapPin size={16}/> {t('cart.shippingAddress', locale)}</h4>
+                <div className="text-sm text-slate-600 dark:text-txt-muted pl-6 space-y-1">
+                  <p className="text-lg font-bold text-black dark:text-foreground">{selectedOrder.shippingName}</p>
+                  <p>{selectedOrder.shippingAddress} {selectedOrder.shippingZipcode}</p>
+                  <div className="flex items-center gap-2 mt-2 text-black dark:text-foreground font-medium"><Phone size={14}/> {selectedOrder.shippingPhone}</div>
                 </div>
               </div>
 
               <div>
-                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-txt-muted"><Package size={16} /> {t('admin.products', locale)}</h4>
+                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-700 dark:text-foreground"><Package size={16}/> {t('admin.products', locale)}</h4>
                 <div className="space-y-3">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {selectedOrder.items?.map((item: any, idx: number) => (
-                    <div key={idx} className="flex gap-4 p-3 border border-border-main rounded-lg bg-surface-card">
-                      <div className="w-12 h-12 bg-surface-bg rounded-md flex items-center justify-center relative overflow-hidden">
-                        {item.product?.image ? (
-                          <Image src={item.product.image} alt={item.product.name} fill className="object-contain mix-blend-multiply dark:mix-blend-normal p-1" />
-                        ) : (
-                          <div className="text-xs text-txt-muted">No Img</div>
-                        )}
+                    <div key={idx} className="flex gap-4 p-3 border border-slate-100 dark:border-border-main rounded-lg bg-white dark:bg-surface-card shadow-sm">
+                      <div className="w-12 h-12 bg-slate-50 dark:bg-surface-bg rounded-md relative overflow-hidden flex-shrink-0">
+                        {item.product?.image && <Image src={item.product.image} alt="p" fill className="object-contain p-1 mix-blend-multiply dark:mix-blend-normal" />}
                       </div>
                       <div className="flex-1">
-                        <p className="font-bold text-sm line-clamp-1 text-foreground">{item.product?.name}</p>
-                        <div className="flex justify-between text-xs text-txt-muted mt-1">
+                        <p className="font-bold text-sm line-clamp-1 text-slate-800 dark:text-foreground">{item.product?.name}</p>
+                        <div className="flex justify-between text-xs text-slate-500 dark:text-txt-muted mt-1">
                           <span>x{item.quantity}</span>
-                          <span>฿{Number(item.price).toLocaleString()}</span>
+                          <span className="font-bold">฿{Number(item.price).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {selectedOrder.taxId && (
-                <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border border-blue-100 dark:border-blue-900 text-sm">
-                  <h4 className="font-bold text-blue-800 dark:text-blue-400 mb-2">{t('cart.taxInvoice', locale)}</h4>
-                  <p className="text-foreground"><strong>{t('cart.taxName', locale)}:</strong> {selectedOrder.taxName}</p>
-                  <p className="text-foreground"><strong>{t('cart.taxId', locale)}:</strong> {selectedOrder.taxId}</p>
-                  <p className="text-foreground"><strong>{t('cart.taxAddress', locale)}:</strong> {selectedOrder.taxAddress}</p>
-                </div>
-              )}
             </div>
 
-            <div className="p-4 border-t border-border-main bg-surface-bg text-right">
-              <span className="text-txt-muted text-sm mr-2">{t('cart.total', locale)}</span>
-              <span className="text-xl font-bold text-foreground">฿{Number(selectedOrder.total).toLocaleString()}</span>
+            <div className="p-6 border-t border-slate-100 dark:border-border-main bg-slate-50 dark:bg-surface-bg flex justify-between items-center">
+              <span className="text-slate-500 dark:text-txt-muted text-sm font-bold uppercase tracking-widest">{t('cart.total', locale)}</span>
+              <span className="text-2xl font-black text-slate-900 dark:text-foreground italic">฿{Number(selectedOrder.total).toLocaleString()}</span>
             </div>
           </div>
         </div>
