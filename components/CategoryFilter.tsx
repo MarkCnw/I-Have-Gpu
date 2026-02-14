@@ -3,6 +3,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { X, Filter } from 'lucide-react'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 // 1. ตั้งค่า Config ของสเปคแต่ละหมวดหมู่
 interface SpecOption {
@@ -57,6 +59,7 @@ export default function CategoryFilter() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentCategory = searchParams.get('category') || 'ALL'
+  const { locale } = useLanguageStore()
 
   // หา Config สเปคของหมวดปัจจุบัน
   const currentSpecConfig = SPEC_CONFIG[currentCategory] || []
@@ -118,11 +121,11 @@ export default function CategoryFilter() {
         <div className="bg-surface-bg p-4 rounded-xl border border-border-light animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-txt-muted uppercase tracking-wider flex items-center gap-1">
-              <Filter size={12} /> Filter Options
+              <Filter size={12} /> {t('filter.options', locale)}
             </span>
             {hasActiveFilters && (
               <button onClick={clearFilters} className="text-xs text-red-500 font-bold hover:underline flex items-center gap-1">
-                <X size={12} /> Clear All
+                <X size={12} /> {t('filter.clearAll', locale)}
               </button>
             )}
           </div>

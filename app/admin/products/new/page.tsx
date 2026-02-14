@@ -6,6 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, Upload, Loader2, Save, X, Plus } from 'lucide-react' // เพิ่ม X, Plus
 import toast from 'react-hot-toast'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 // ✅ กำหนด Template ของสเปคสินค้าแต่ละหมวดหมู่ (เหมือนเดิม)
 const SPECS_TEMPLATES: Record<string, Record<string, string>> = {
@@ -31,6 +33,7 @@ export default function NewProductPage() {
   const [uploading, setUploading] = useState(false)
   const [imageUrlInput, setImageUrlInput] = useState('') // state สำหรับช่องกรอก URL
 
+  const { locale } = useLanguageStore()
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -84,9 +87,9 @@ export default function NewProductPage() {
         images: [...prev.images, ...newImages] // ต่อท้ายรูปเดิม
       }))
 
-      toast.success(`อัปโหลด ${newImages.length} รูปเรียบร้อย`)
+      toast.success(t('admin.uploadSuccess', locale))
     } catch (error) {
-      toast.error('อัปโหลดรูปภาพไม่สำเร็จ')
+      toast.error(t('admin.uploadError', locale))
     } finally {
       setUploading(false)
       // Reset input value เพื่อให้เลือกรูปเดิมซ้ำได้ถ้าต้องการ
@@ -114,8 +117,8 @@ export default function NewProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.category) return toast.error('กรุณาเลือกหมวดหมู่สินค้า')
-    if (formData.images.length === 0) return toast.error('กรุณาเพิ่มรูปสินค้าอย่างน้อย 1 รูป')
+    if (!formData.category) return toast.error(t('admin.selectCategory', locale))
+    if (formData.images.length === 0) return toast.error(t('admin.addImage', locale))
 
     setLoading(true)
     try {
@@ -134,11 +137,11 @@ export default function NewProductPage() {
 
       if (!res.ok) throw new Error('Failed to create')
 
-      toast.success('เพิ่มสินค้าเรียบร้อย')
+      toast.success(t('admin.productAdded', locale))
       router.push('/admin/products')
       router.refresh()
     } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการเพิ่มสินค้า')
+      toast.error(t('admin.productAddError', locale))
     } finally {
       setLoading(false)
     }

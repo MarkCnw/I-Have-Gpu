@@ -11,11 +11,14 @@ import {
   ChevronRight, Receipt, Truck
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const orderId = searchParams.get('id')
+  const { locale } = useLanguageStore()
 
   const [order, setOrder] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -34,14 +37,14 @@ function OrderSuccessContent() {
       })
       .catch((err) => {
         console.error(err)
-        toast.error('ไม่พบข้อมูลคำสั่งซื้อ')
+        toast.error(t('orderSuccess.notFound', locale))
       })
       .finally(() => setLoading(false))
   }, [orderId, router])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    toast.success('คัดลอกรหัสออเดอร์แล้ว')
+    toast.success(t('orderSuccess.copiedId', locale))
   }
 
   const handlePrint = () => {
@@ -51,7 +54,7 @@ function OrderSuccessContent() {
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-surface-card">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-foreground mb-4"></div>
-      <p className="text-txt-muted font-medium">กำลังโหลดข้อมูลใบเสร็จ...</p>
+      <p className="text-txt-muted font-medium">{t('orderSuccess.loading', locale)}</p>
     </div>
   )
 
@@ -73,18 +76,18 @@ function OrderSuccessContent() {
       <div className="border-b border-border-light bg-surface-card sticky top-0 z-30 shadow-sm print:hidden">
         <div className="max-w-[1000px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-txt-muted">
-            <Link href="/" className="hover:text-foreground transition-colors">หน้าแรก</Link>
+            <Link href="/" className="hover:text-foreground transition-colors">{t('orderSuccess.home', locale)}</Link>
             <ChevronRight size={14} className="text-txt-muted" />
-            <Link href="/orders" className="hover:text-foreground transition-colors">คำสั่งซื้อ</Link>
+            <Link href="/orders" className="hover:text-foreground transition-colors">{t('orderSuccess.orders', locale)}</Link>
             <ChevronRight size={14} className="text-txt-muted" />
-            <span className="text-foreground font-medium">รายละเอียดออเดอร์</span>
+            <span className="text-foreground font-medium">{t('orderSuccess.detail', locale)}</span>
           </div>
 
           <button
             onClick={handlePrint}
             className="flex items-center gap-2 text-sm font-bold text-txt-secondary hover:text-foreground transition-colors"
           >
-            <Printer size={18} /> พิมพ์ใบเสร็จ
+            <Printer size={18} /> {t('orderSuccess.print', locale)}
           </button>
         </div>
       </div>
@@ -96,8 +99,8 @@ function OrderSuccessContent() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-50 rounded-full mb-6">
             <CheckCircle size={48} className="text-emerald-500" />
           </div>
-          <h1 className="text-4xl font-black tracking-tight mb-3">ขอบคุณที่สั่งซื้อ!</h1>
-          <p className="text-txt-muted">เราได้รับคำสั่งซื้อของคุณแล้ว และจะดำเนินการจัดส่งโดยเร็วที่สุด</p>
+          <h1 className="text-4xl font-black tracking-tight mb-3">{t('orderSuccess.thankyou', locale)}</h1>
+          <p className="text-txt-muted">{t('orderSuccess.subtitle', locale)}</p>
         </div>
 
         {/* ✅ Main Receipt Card (Compact for Print) */}
@@ -113,7 +116,7 @@ function OrderSuccessContent() {
                 <span className="text-xl font-black tracking-tighter print:text-lg">iHAVEGPU STORE</span>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest print:text-[10px]">หมายเลขคำสั่งซื้อ</p>
+                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest print:text-[10px]">{t('orderSuccess.orderNumber', locale)}</p>
                 <div className="flex items-center gap-2">
                   <h2 className="text-2xl font-mono font-bold print:text-xl">#{order.id.split('-')[0].toUpperCase()}</h2>
                   <button onClick={() => copyToClipboard(order.id)} className="text-neutral-500 hover:text-white transition print:hidden">
@@ -124,7 +127,7 @@ function OrderSuccessContent() {
             </div>
 
             <div className="md:text-right flex flex-col justify-end">
-              <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1 print:text-[10px]">วันที่ทำรายการ</p>
+              <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1 print:text-[10px]">{t('orderSuccess.orderDate', locale)}</p>
               <p className="text-lg font-bold print:text-sm">
                 {new Date(order.createdAt).toLocaleDateString('th-TH', {
                   day: '2-digit', month: 'long', year: 'numeric'
@@ -138,7 +141,7 @@ function OrderSuccessContent() {
             {/* 📦 Items List (Condensed) */}
             <div>
               <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:mb-3 print:text-xs">
-                <ShoppingBag size={16} /> รายการสินค้า
+                <ShoppingBag size={16} /> {t('orderSuccess.items', locale)}
               </h3>
               <div className="space-y-6 print:space-y-2">
                 {order.items?.map((item: any) => (
@@ -149,7 +152,7 @@ function OrderSuccessContent() {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-foreground line-clamp-1 print:text-xs">{item.product.name}</p>
                       <p className="text-xs text-txt-muted print:text-[10px]">
-                        จำนวน: {item.quantity} • ฿{Number(item.price).toLocaleString()}
+                        {t('orderSuccess.qty', locale)} {item.quantity} • ฿{Number(item.price).toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
@@ -167,7 +170,7 @@ function OrderSuccessContent() {
               {/* Shipping Info */}
               <div className="space-y-3 print:space-y-1">
                 <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
-                  <MapPin size={14} /> ข้อมูลการจัดส่ง
+                  <MapPin size={14} /> {t('orderSuccess.shipping', locale)}
                 </h4>
                 <div className="text-sm leading-relaxed print:text-xs">
                   <p className="font-bold text-foreground">{order.shippingName}</p>
@@ -181,18 +184,18 @@ function OrderSuccessContent() {
                 {order.taxId && (
                   <div className="space-y-2 print:space-y-0">
                     <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
-                      <Receipt size={14} /> ข้อมูลใบกำกับภาษี
+                      <Receipt size={14} /> {t('orderSuccess.taxInvoice', locale)}
                     </h4>
                     <div className="text-xs bg-surface-bg p-4 rounded-2xl border border-border-light print:p-2 print:bg-transparent print:border-none">
                       <p className="font-bold">{order.taxName}</p>
-                      <p>เลขผู้เสียภาษี: {order.taxId}</p>
+                      <p>{t('orderSuccess.taxId', locale)} {order.taxId}</p>
                     </div>
                   </div>
                 )}
 
                 {order.trackingNumber && (
                   <div className="space-y-1">
-                    <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">ข้อมูลการขนส่ง</h4>
+                    <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t('orderSuccess.logistics', locale)}</h4>
                     <p className="text-xs font-bold">{order.carrier}: {order.trackingNumber}</p>
                   </div>
                 )}
@@ -202,15 +205,15 @@ function OrderSuccessContent() {
             {/* 💰 Totals Summary (Compact) */}
             <div className="bg-surface-bg rounded-3xl p-8 space-y-2 print:p-4 print:rounded-xl print:bg-neutral-50">
               <div className="flex justify-between text-sm print:text-xs">
-                <span className="text-txt-muted font-bold uppercase">ยอดรวมสินค้า</span>
+                <span className="text-txt-muted font-bold uppercase">{t('orderSuccess.subtotal', locale)}</span>
                 <span className="font-mono font-bold">฿{Number(order.total).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm print:text-xs">
-                <span className="text-txt-muted font-bold uppercase">ค่าจัดส่ง</span>
-                <span className="font-bold text-emerald-600">ฟรี</span>
+                <span className="text-txt-muted font-bold uppercase">{t('orderSuccess.shippingCost', locale)}</span>
+                <span className="font-bold text-emerald-600">{t('orderSuccess.free', locale)}</span>
               </div>
               <div className="pt-4 border-t border-border-main mt-2 flex justify-between items-center print:pt-2">
-                <h4 className="text-xs font-bold text-txt-muted uppercase print:text-[10px]">ยอดชำระสุทธิ</h4>
+                <h4 className="text-xs font-bold text-txt-muted uppercase print:text-[10px]">{t('orderSuccess.grandTotal', locale)}</h4>
                 <span className="text-4xl font-black text-foreground tracking-tighter print:text-2xl">
                   ฿{Number(order.total).toLocaleString()}
                 </span>
@@ -221,7 +224,7 @@ function OrderSuccessContent() {
           {/* Footer Receipt (Small text) */}
           <div className="p-8 border-t border-dashed border-border-light text-center print:p-4">
             <p className="text-[10px] text-neutral-300 font-medium italic print:text-neutral-500">
-              ขอบคุณที่ไว้วางใจ iHAVEGPU STORE - สินค้าทุกชิ้นมีการรับประกันตามเงื่อนไขที่บริษัทกำหนด
+              {t('orderSuccess.footer', locale)}
             </p>
           </div>
         </div>
@@ -229,10 +232,10 @@ function OrderSuccessContent() {
         {/* Action Buttons (Hide when printing) */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center print:hidden">
           <Link href="/" className="px-8 py-4 bg-foreground text-surface-card rounded-2xl font-bold hover:opacity-90 transition shadow-xl flex items-center justify-center gap-2">
-            <Home size={20} /> กลับหน้าแรก
+            <Home size={20} /> {t('orderSuccess.backHome', locale)}
           </Link>
           <Link href="/orders" className="px-8 py-4 bg-surface-card border border-border-main text-foreground rounded-2xl font-bold hover:bg-surface-bg transition flex items-center justify-center gap-2">
-            <ShoppingBag size={20} /> ดูคำสั่งซื้อทั้งหมด
+            <ShoppingBag size={20} /> {t('orderSuccess.viewAll', locale)}
           </Link>
         </div>
       </div>

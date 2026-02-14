@@ -7,6 +7,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, Upload, Loader2, Save, X, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 // Template สเปคสินค้า
 const SPECS_TEMPLATES: Record<string, Record<string, string>> = {
@@ -34,6 +36,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [uploading, setUploading] = useState(false)
   const [imageUrlInput, setImageUrlInput] = useState('')
 
+  const { locale } = useLanguageStore()
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -62,7 +65,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           specs: data.specs || {}
         })
       } catch (error) {
-        toast.error('ไม่พบข้อมูลสินค้า')
+        toast.error(t('admin.productNotFound', locale))
         router.push('/admin/products')
       } finally {
         setLoading(false)
@@ -102,9 +105,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       })
       const newImages = await Promise.all(uploadPromises)
       setFormData(prev => ({ ...prev, images: [...prev.images, ...newImages] }))
-      toast.success(`อัปโหลด ${newImages.length} รูปเรียบร้อย`)
+      toast.success(t('admin.uploadSuccess', locale))
     } catch (error) {
-      toast.error('อัปโหลดรูปภาพไม่สำเร็จ')
+      toast.error(t('admin.uploadError', locale))
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -127,8 +130,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   // ✅ ฟังก์ชันบันทึกการแก้ไข (PATCH)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.category) return toast.error('กรุณาเลือกหมวดหมู่สินค้า')
-    if (formData.images.length === 0) return toast.error('กรุณาเพิ่มรูปสินค้าอย่างน้อย 1 รูป')
+    if (!formData.category) return toast.error(t('admin.selectCategory', locale))
+    if (formData.images.length === 0) return toast.error(t('admin.addImage', locale))
 
     setSaving(true)
     try {
@@ -146,11 +149,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
       if (!res.ok) throw new Error('Failed to update')
 
-      toast.success('บันทึกการแก้ไขเรียบร้อย')
+      toast.success(t('admin.productSaved', locale))
       router.push('/admin/products')
       router.refresh()
     } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการแก้ไขสินค้า')
+      toast.error(t('admin.productSaveError', locale))
     } finally {
       setSaving(false)
     }

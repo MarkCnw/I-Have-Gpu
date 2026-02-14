@@ -7,24 +7,23 @@ import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useLanguageStore, Locale } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
-// 🔥 ตัวแปลงภาษา (ฝั่ง User)
-const STATUS_LABEL_TH: Record<string, string> = {
-  PENDING: 'รอชำระเงิน',
-  VERIFYING: 'รอตรวจสอบ',
-  PAID: 'ชำระแล้ว',
-  SHIPPED: 'จัดส่งแล้ว',
-  CANCELLED: 'ยกเลิก',
-  COMPLETED: 'สำเร็จ',
-  PAYMENT_FAILED: 'ชำระเงินไม่สำเร็จ', // ✅ เพิ่มสถานะ
-  // เผื่อตัวเล็ก
-  pending: 'รอชำระเงิน',
-  verifying: 'รอตรวจสอบ',
-  paid: 'ชำระแล้ว',
-  shipped: 'จัดส่งแล้ว',
-  cancelled: 'ยกเลิก',
-  completed: 'สำเร็จ',
-  payment_failed: 'ชำระเงินไม่สำเร็จ'
+// Locale-aware status label resolver
+const STATUS_KEY_MAP: Record<string, string> = {
+  PENDING: 'status.pending',
+  VERIFYING: 'status.verifying',
+  PAID: 'status.paid',
+  SHIPPED: 'status.shipped',
+  CANCELLED: 'status.cancelled',
+  COMPLETED: 'status.completed',
+  PAYMENT_FAILED: 'status.paymentFailed',
+}
+
+function getStatusLabel(status: string, locale: Locale): string {
+  const key = STATUS_KEY_MAP[status.toUpperCase()] || STATUS_KEY_MAP[status]
+  return key ? t(key, locale) : status
 }
 
 // ✅ ส่วนที่เพิ่ม: Component สำหรับ Skeleton Loading ของการ์ดคำสั่งซื้อ
@@ -61,6 +60,7 @@ const OrderSkeleton = () => (
 export default function OrdersPage() {
   const router = useRouter()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { locale } = useLanguageStore()
   const [orders, setOrders] = useState<any[]>([])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
@@ -73,7 +73,7 @@ export default function OrdersPage() {
       const data = await res.json()
       if (Array.isArray(data)) setOrders(data)
     } catch (error) {
-      toast.error('ไม่สามารถโหลดข้อมูลได้')
+      toast.error(t('orders.loadError', locale))
     } finally {
       setLoadingPage(false)
     }
@@ -85,10 +85,10 @@ export default function OrdersPage() {
   const safeCopy = (text: string) => {
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(text)
-      toast.success('คัดลอกแล้ว')
+      toast.success(t('orders.copied', locale))
     } else {
       // Fallback สำหรับ Browser เก่า หรือ HTTP
-      toast.error('Browser ไม่รองรับการคัดลอก')
+      toast.error(t('orders.copyNotSupported', locale))
     }
   }
 
@@ -97,7 +97,7 @@ export default function OrdersPage() {
     if (!file || !selectedOrder) return
 
     setUploading(true)
-    const toastId = toast.loading('กำลังอัปโหลดสลิป...')
+    const toastId = toast.loading(t('orders.uploadingSlip', locale))
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -116,11 +116,11 @@ export default function OrdersPage() {
 
       if (!updateRes.ok) throw new Error('Update failed')
 
-      toast.success('แจ้งโอนเงินเรียบร้อย!', { id: toastId })
+      toast.success(t('orders.slipSuccess', locale), { id: toastId })
       await fetchOrders()
       setSelectedOrder(null)
     } catch (err) {
-      toast.error('เกิดข้อผิดพลาด', { id: toastId })
+      toast.error(t('orders.slipError', locale), { id: toastId })
     } finally {
       setUploading(false)
     }
@@ -131,15 +131,15 @@ export default function OrdersPage() {
       <div className="max-w-4xl mx-auto">
         {/* ✅ เพิ่ม Breadcrumb Navigation ที่นี่ */}
         <div className="flex items-center gap-2 text-sm text-txt-muted mb-6">
-          <Link href="/" className="hover:text-foreground transition-colors">หน้าแรก</Link>
+          <Link href="/" className="hover:text-foreground transition-colors">{t('orders.breadcrumbHome', locale)}</Link>
           <span className="text-txt-muted text-xs font-bold">{'>'}</span>
-          <span className="text-foreground font-medium">คำสั่งซื้อของฉัน</span>
+          <span className="text-foreground font-medium">{t('orders.breadcrumbOrders', locale)}</span>
         </div>
 
         <div className="flex items-center gap-4 mb-8">
 
           <h1 className="text-3xl font-bold flex items-center gap-3 text-foreground">
-            <Package className="text-foreground" /> คำสั่งซื้อของฉัน
+            <Package className="text-foreground" /> {t('orders.title', locale)}
           </h1>
         </div>
 
@@ -149,7 +149,7 @@ export default function OrdersPage() {
             [...Array(3)].map((_, i) => <OrderSkeleton key={i} />)
           ) : orders.length === 0 ? (
             <div className="text-center py-20 text-txt-muted bg-surface-card rounded-2xl border border-dashed border-border-main">
-              ยังไม่มีคำสั่งซื้อ
+              {t('orders.empty', locale)}
             </div>
           ) : (
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -180,7 +180,7 @@ export default function OrdersPage() {
                         </div>
                         <div>
                           <span className="font-bold text-foreground line-clamp-1">{item.product?.name}</span>
-                          <span className="text-txt-muted text-xs">จำนวน: {item.quantity} ชิ้น</span>
+                          <span className="text-txt-muted text-xs">{t('orders.quantity', locale)} {item.quantity} {t('orders.pieces', locale)}</span>
                         </div>
                       </div>
                       <span className="font-mono font-bold text-txt-secondary">฿{(item.price * item.quantity).toLocaleString()}</span>
@@ -195,9 +195,9 @@ export default function OrdersPage() {
                     <div className="mb-4 bg-red-50 rounded-xl p-4 border border-red-100 flex items-start gap-3 animate-in slide-in-from-top-2">
                       <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
                       <div>
-                        <p className="text-sm font-bold text-red-700">การชำระเงินถูกปฏิเสธ</p>
+                        <p className="text-sm font-bold text-red-700">{t('orders.paymentRejected', locale)}</p>
                         <p className="text-sm text-red-600 mt-1">
-                          เหตุผล: {order.rejectionReason || 'หลักฐานไม่ถูกต้อง กรุณาตรวจสอบและแนบใหม่อีกครั้ง'}
+                          {t('orders.rejectionReason', locale)} {order.rejectionReason || t('orders.defaultRejection', locale)}
                         </p>
                       </div>
                     </div>
@@ -211,7 +211,7 @@ export default function OrdersPage() {
                           <Truck size={20} />
                         </div>
                         <div>
-                          <p className="text-xs text-blue-600 font-bold uppercase tracking-wide">เลขพัสดุ ({order.carrier})</p>
+                          <p className="text-xs text-blue-600 font-bold uppercase tracking-wide">{t('orders.trackingNumber', locale)} ({order.carrier})</p>
                           <p className="text-lg font-mono font-bold text-blue-900 tracking-wide">{order.trackingNumber}</p>
                         </div>
                       </div>
@@ -220,14 +220,14 @@ export default function OrdersPage() {
                           onClick={() => safeCopy(order.trackingNumber)} // ✅ เรียกใช้ safeCopy แทน
                           className="flex-1 sm:flex-none px-3 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-50 transition flex items-center justify-center gap-1"
                         >
-                          <Copy size={14} /> คัดลอก
+                          <Copy size={14} /> {t('orders.copyTracking', locale)}
                         </button>
                         <a
                           href={`https://www.google.com/search?q=${order.trackingNumber}`}
                           target="_blank"
                           className="flex-1 sm:flex-none px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition flex items-center justify-center gap-1"
                         >
-                          <ExternalLink size={14} /> เช็คสถานะ
+                          <ExternalLink size={14} /> {t('orders.checkStatus', locale)}
                         </a>
                       </div>
                     </div>
@@ -236,7 +236,7 @@ export default function OrdersPage() {
                   {/* Footer Actions */}
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-xs text-txt-muted font-bold uppercase">ยอดสุทธิ</p>
+                      <p className="text-xs text-txt-muted font-bold uppercase">{t('orders.totalNet', locale)}</p>
                       <span className="font-bold text-2xl text-foreground">฿{Number(order.total).toLocaleString()}</span>
                     </div>
 
@@ -246,11 +246,11 @@ export default function OrdersPage() {
                         onClick={() => setSelectedOrder(order)}
                         className="bg-foreground text-surface-card px-6 py-3 rounded-xl text-sm font-bold hover:opacity-90 transition flex items-center gap-2 shadow-lg shadow-black/10 active:scale-95"
                       >
-                        {order.status === 'PAYMENT_FAILED' ? <><Upload size={18} /> แนบสลิปใหม่</> : <><QrCode size={18} /> แจ้งชำระเงิน</>}
+                        {order.status === 'PAYMENT_FAILED' ? <><Upload size={18} /> {t('orders.reuploadSlip', locale)}</> : <><QrCode size={18} /> {t('orders.notifyPayment', locale)}</>}
                       </button>
                     ) : (
                       <Link href={`/order-success?id=${order.id}`} className="px-4 py-2 rounded-lg border border-border-main text-txt-secondary text-sm font-bold hover:bg-surface-bg transition">
-                        ดูบิลใบเสร็จ
+                        {t('orders.viewReceipt', locale)}
                       </Link>
                     )}
                   </div>
@@ -269,7 +269,7 @@ export default function OrdersPage() {
               <X size={20} />
             </button>
 
-            <h3 className="text-xl font-bold mb-6 text-center text-foreground">ชำระเงิน (Payment)</h3>
+            <h3 className="text-xl font-bold mb-6 text-center text-foreground">{t('orders.paymentTitle', locale)}</h3>
 
             <div className="bg-surface-bg p-6 rounded-2xl border border-border-main mb-6 text-center">
               <div className="bg-surface-card p-4 inline-block rounded-xl shadow-sm border border-border-light mb-4">
@@ -281,11 +281,11 @@ export default function OrdersPage() {
                   className="object-contain"
                 />
               </div>
-              <p className="text-sm text-txt-muted font-bold">สแกน QR เพื่อโอนเงิน</p>
-              <p className="text-xs text-txt-muted mt-1">ธ.ออมสิน • บจก. ไอแฮฟจีพียู</p>
+              <p className="text-sm text-txt-muted font-bold">{t('orders.scanQr', locale)}</p>
+              <p className="text-xs text-txt-muted mt-1">{t('orders.bankInfo', locale)}</p>
               <div className="my-4 border-t border-dashed border-border-main"></div>
               <div className="flex justify-between items-end px-4">
-                <span className="text-sm text-txt-muted font-bold">ยอดที่ต้องโอน</span>
+                <span className="text-sm text-txt-muted font-bold">{t('orders.amountToPay', locale)}</span>
                 <span className="text-3xl font-bold text-emerald-600">฿{Number(selectedOrder.total).toLocaleString()}</span>
               </div>
             </div>
@@ -296,7 +296,7 @@ export default function OrdersPage() {
                   {uploading ? <Loader2 size={24} className="text-txt-muted animate-spin" /> : <Upload size={24} className="text-txt-muted group-hover:text-foreground" />}
                 </div>
                 <div>
-                  <span className="font-bold text-txt-secondary block">{uploading ? 'กำลังอัปโหลด...' : 'แนบสลิปการโอนเงิน'}</span>
+                  <span className="font-bold text-txt-secondary block">{uploading ? t('orders.uploading', locale) : t('orders.attachSlip', locale)}</span>
                   <span className="text-[10px] text-txt-muted uppercase">Supports JPG, PNG</span>
                 </div>
               </div>
@@ -320,8 +320,8 @@ function StatusBadge({ status }: { status: string }) {
     PAYMENT_FAILED: "bg-red-100 text-red-700 border-red-200" // ✅ เพิ่มสีแดงสำหรับสถานะนี้
   }
 
-  // แปลงสถานะเป็นไทย
-  const label = STATUS_LABEL_TH[status] || STATUS_LABEL_TH[status.toUpperCase()] || status
+  const { locale } = useLanguageStore()
+  const label = getStatusLabel(status, locale)
 
   return (
     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${styles[status.toUpperCase()] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
