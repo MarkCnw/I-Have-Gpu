@@ -35,24 +35,24 @@ const OrderSkeleton = () => (
         <div className="h-3 w-16 bg-border-main rounded"></div>
         <div className="h-4 w-32 bg-border-main rounded"></div>
       </div>
-      <div className="h-6 w-24 bg-slate-200 rounded-full"></div>
+      <div className="h-6 w-24 bg-border-main rounded-full"></div>
     </div>
     <div className="p-5 space-y-4">
       <div className="flex gap-3">
-        <div className="w-12 h-12 bg-slate-200 rounded-lg flex-shrink-0"></div>
+        <div className="w-12 h-12 bg-border-main rounded-lg flex-shrink-0"></div>
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-3/4 bg-slate-200 rounded"></div>
-          <div className="h-3 w-1/4 bg-slate-200 rounded"></div>
+          <div className="h-4 w-3/4 bg-border-main rounded"></div>
+          <div className="h-3 w-1/4 bg-border-main rounded"></div>
         </div>
-        <div className="h-4 w-20 bg-slate-200 rounded"></div>
+        <div className="h-4 w-20 bg-border-main rounded"></div>
       </div>
       <div className="border-t border-border-light my-4"></div>
       <div className="flex justify-between items-center">
         <div className="space-y-2">
-          <div className="h-3 w-16 bg-slate-200 rounded"></div>
-          <div className="h-6 w-28 bg-slate-200 rounded"></div>
+          <div className="h-3 w-16 bg-border-main rounded"></div>
+          <div className="h-6 w-28 bg-border-main rounded"></div>
         </div>
-        <div className="h-10 w-32 bg-slate-200 rounded-xl"></div>
+        <div className="h-10 w-32 bg-border-main rounded-xl"></div>
       </div>
     </div>
   </div>
@@ -176,7 +176,7 @@ export default function OrdersPage() {
                     <div key={item.id} className="flex justify-between items-center text-sm mb-3 last:mb-0">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-surface-bg rounded-lg flex-shrink-0 overflow-hidden border border-border-main">
-                          {item.product?.image && <img src={item.product.image} className="w-full h-full object-cover mix-blend-multiply" />}
+                          {item.product?.image && <img src={item.product.image} className="w-full h-full object-cover mix-blend-multiply dark:mix-blend-normal" />}
                         </div>
                         <div>
                           <span className="font-bold text-foreground line-clamp-1">{item.product?.name}</span>

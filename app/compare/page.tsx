@@ -88,7 +88,7 @@ export default function ComparePage() {
                           src={product.image || '/placeholder.png'}
                           alt={product.name}
                           fill
-                          className="object-contain p-6 mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                          className="object-contain p-6 mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
 

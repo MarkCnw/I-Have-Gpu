@@ -3,10 +3,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 import { useSession } from 'next-auth/react'
 
 export default function CustomerChat() {
   const { data: session } = useSession()
+  const { locale } = useLanguageStore()
   const [isOpen, setIsOpen] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [messages, setMessages] = useState<any[]>([])
@@ -82,10 +85,10 @@ export default function CustomerChat() {
       {isOpen ? (
         <div className="bg-surface-card w-[350px] h-[450px] rounded-2xl shadow-2xl flex flex-col border border-border-main overflow-hidden animate-in slide-in-from-bottom-5">
           {/* Header */}
-          <div className="bg-black text-white p-4 flex justify-between items-center">
+          <div className="bg-foreground text-surface-card p-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="font-bold">ฝ่ายบริการลูกค้า</span>
+              <span className="font-bold">{t('chat.title', locale)}</span>
             </div>
             <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded">
               <X size={18} />
@@ -127,11 +130,11 @@ export default function CustomerChat() {
           <form onSubmit={handleSend} className="p-3 bg-surface-card border-t border-border-main flex gap-2">
             <input
               className="flex-1 bg-surface-bg rounded-full px-4 py-2 text-sm text-foreground outline-none focus:ring-1 focus:ring-foreground"
-              placeholder="พิมพ์ข้อความ..."
+              placeholder={t('chat.placeholder', locale)}
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
-            <button type="submit" disabled={sending} className="bg-black text-white p-2 rounded-full hover:bg-neutral-800 disabled:opacity-50">
+            <button type="submit" disabled={sending} className="bg-foreground text-surface-card p-2 rounded-full hover:opacity-90 disabled:opacity-50">
               {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
             </button>
           </form>
@@ -139,10 +142,10 @@ export default function CustomerChat() {
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-black text-white p-4 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center gap-2"
+          className="bg-foreground text-surface-card p-4 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center gap-2"
         >
           <MessageCircle size={24} />
-          <span className="font-bold text-sm hidden md:block">ติดต่อเรา</span>
+          <span className="font-bold text-sm hidden md:block">{t('chat.contactUs', locale)}</span>
         </button>
       )}
     </div>

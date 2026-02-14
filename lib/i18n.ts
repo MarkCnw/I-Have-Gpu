@@ -254,6 +254,270 @@ const translations: Record<string, TranslationValue> = {
     // ============ Testimonials ============
     'testimonials.subtitle': { th: 'เสียงระดับโลก', en: 'World-Class Voices', jp: 'ワールドクラスの声' },
     'testimonials.title': { th: 'ความประทับใจจากลูกค้าของเรา', en: 'What Our Customers Say', jp: 'お客様の声' },
+
+    // ============ Profile ============
+    'profile.loginRequired': { th: 'กรุณาเข้าสู่ระบบเพื่อดูโปรไฟล์', en: 'Please login to view your profile', jp: 'プロフィールを表示するにはログインしてください' },
+    'profile.login': { th: 'เข้าสู่ระบบ', en: 'Sign In', jp: 'ログイン' },
+    'profile.breadcrumbHome': { th: 'หน้าแรก', en: 'Home', jp: 'ホーム' },
+    'profile.breadcrumbAccount': { th: 'บัญชีของฉัน', en: 'My Account', jp: 'マイアカウント' },
+    'profile.tabInfo': { th: 'ข้อมูลส่วนตัว', en: 'Personal Info', jp: '個人情報' },
+    'profile.tabAddress': { th: 'ที่อยู่จัดส่ง', en: 'Shipping Addresses', jp: '配送先住所' },
+    'profile.tabOrders': { th: 'ประวัติคำสั่งซื้อ', en: 'Order History', jp: '注文履歴' },
+    'profile.tabFavorites': { th: 'สินค้าที่ถูกใจ', en: 'Wishlist', jp: 'お気に入り' },
+    'profile.name': { th: 'ชื่อ - นามสกุล', en: 'Full Name', jp: '氏名' },
+    'profile.email': { th: 'อีเมล', en: 'Email', jp: 'メール' },
+    'profile.phone': { th: 'เบอร์โทรศัพท์', en: 'Phone Number', jp: '電話番号' },
+    'profile.save': { th: 'บันทึกข้อมูล', en: 'Save Changes', jp: '保存' },
+    'profile.addAddress': { th: 'เพิ่มที่อยู่ใหม่', en: 'Add New Address', jp: '新しい住所を追加' },
+    'profile.addressLabel': { th: 'ที่อยู่ (บ้านเลขที่, หมู่, ซอย, ถนน)', en: 'Address (House No., Village, Soi, Road)', jp: '住所（番地、村、通り）' },
+    'profile.district': { th: 'แขวง/ตำบล', en: 'Sub-district', jp: '地区' },
+    'profile.amphoe': { th: 'เขต/อำเภอ', en: 'District', jp: '区' },
+    'profile.province': { th: 'จังหวัด', en: 'Province', jp: '都道府県' },
+    'profile.zipcode': { th: 'รหัสไปรษณีย์', en: 'Zip Code', jp: '郵便番号' },
+    'profile.saveAddress': { th: 'บันทึกที่อยู่', en: 'Save Address', jp: '住所を保存' },
+    'profile.setDefault': { th: 'ตั้งเป็นที่อยู่หลัก', en: 'Set as Default', jp: 'デフォルトに設定' },
+    'profile.default': { th: 'ที่อยู่หลัก', en: 'Default', jp: 'デフォルト' },
+    'profile.noOrders': { th: 'ยังไม่มีคำสั่งซื้อ', en: 'No orders yet', jp: 'まだ注文がありません' },
+    'profile.noFavorites': { th: 'ยังไม่มีสินค้าที่ถูกใจ', en: 'No favorite items yet', jp: 'お気に入りはまだありません' },
+
+    // ============ Favorites ============
+    'favorites.loginRequired': { th: 'กรุณาเข้าสู่ระบบ', en: 'Please Sign In', jp: 'ログインしてください' },
+    'favorites.loginDesc': { th: 'คุณต้องล็อกอินก่อนเพื่อดูรายการสินค้าที่ถูกใจ', en: 'You need to sign in to view your wishlist', jp: 'ウィッシュリストを表示するにはログインが必要です' },
+    'favorites.login': { th: 'เข้าสู่ระบบ', en: 'Sign In', jp: 'ログイン' },
+    'favorites.breadcrumbHome': { th: 'หน้าแรก', en: 'Home', jp: 'ホーム' },
+    'favorites.breadcrumbFav': { th: 'สินค้าที่ถูกใจ', en: 'Wishlist', jp: 'お気に入り' },
+    'favorites.title': { th: 'My Wishlist', en: 'My Wishlist', jp: 'お気に入りリスト' },
+    'favorites.items': { th: 'items', en: 'items', jp: '件' },
+    'favorites.empty': { th: 'ยังไม่มีสินค้าที่ถูกใจ', en: 'No favorite items yet', jp: 'お気に入りはまだありません' },
+    'favorites.emptyDesc': { th: 'บันทึกสินค้าที่คุณชอบไว้ที่นี่ เพื่อกลับมาดูหรือสั่งซื้อในภายหลัง', en: 'Save items you like here to revisit or purchase later', jp: 'お気に入り商品をここに保存して、後で確認・購入できます' },
+    'favorites.goShopping': { th: 'ไปเลือกสินค้า', en: 'Start Shopping', jp: 'ショッピングを始める' },
+
+    // ============ Builder ============
+    'builder.breadcrumbHome': { th: 'หน้าแรก', en: 'Home', jp: 'ホーム' },
+    'builder.breadcrumbTitle': { th: 'จัดสเปคคอมพิวเตอร์', en: 'PC Builder', jp: 'PCビルダー' },
+    'builder.title': { th: 'PC BUILDER', en: 'PC BUILDER', jp: 'PCビルダー' },
+    'builder.subtitle': { th: 'สร้างคอมพิวเตอร์ในฝันของคุณ พร้อมตรวจสอบความเข้ากันได้ของอุปกรณ์อัตโนมัติ', en: 'Build your dream PC with automatic compatibility checking', jp: '自動互換性チェック付きのドリームPC構築' },
+    'builder.selectItem': { th: 'เลือกอุปกรณ์', en: 'Choose Part', jp: 'パーツ選択' },
+    'builder.clickToSelect': { th: 'คลิกเพื่อเลือก', en: 'Click to select', jp: 'クリックして選択' },
+    'builder.summary': { th: 'สรุปรายการจัดสเปค', en: 'Build Summary', jp: 'ビルドサマリー' },
+    'builder.emptyState': { th: 'กรุณาเลือกอุปกรณ์เพื่อเริ่มจัดสเปค', en: 'Select parts to start building', jp: 'パーツを選択してビルドを開始' },
+    'builder.total': { th: 'ยอดรวมสุทธิ', en: 'Total', jp: '合計' },
+    'builder.orderNow': { th: 'สั่งซื้อชุดสเปคนี้', en: 'Order This Build', jp: 'このビルドを注文' },
+    'builder.modalTitle': { th: 'เลือก', en: 'Choose', jp: '選択' },
+    'builder.modalDesc': { th: 'ระบบจะแสดงเฉพาะสินค้าที่เข้ากันได้กับชุดคอมพิวเตอร์ของคุณ', en: 'Showing only compatible parts for your build', jp: 'ビルドに互換性のあるパーツのみ表示' },
+    'builder.selectThis': { th: 'เลือกรายการนี้', en: 'Select This', jp: 'これを選択' },
+    'builder.saveBuild': { th: 'บันทึกสเปค', en: 'Save Build', jp: 'ビルド保存' },
+    'builder.saveSuccess': { th: 'บันทึกสเปคคอมลงในบัญชีเรียบร้อยแล้ว!', en: 'Build saved to your account!', jp: 'ビルドをアカウントに保存しました！' },
+    'builder.saveLoginRequired': { th: 'กรุณาเข้าสู่ระบบก่อนบันทึกสเปค', en: 'Please login to save your build', jp: 'ビルドを保存するにはログインしてください' },
+    'builder.addedToCart': { th: 'เพิ่มชุดสเปคลงในตะกร้าสินค้าแล้ว', en: 'Build added to cart!', jp: 'ビルドをカートに追加しました！' },
+
+    // ============ Orders ============
+    'orders.title': { th: 'คำสั่งซื้อของฉัน', en: 'My Orders', jp: 'マイオーダー' },
+    'orders.breadcrumbHome': { th: 'หน้าแรก', en: 'Home', jp: 'ホーム' },
+    'orders.breadcrumbOrders': { th: 'คำสั่งซื้อ', en: 'Orders', jp: '注文' },
+    'orders.loginRequired': { th: 'กรุณาเข้าสู่ระบบ', en: 'Please Sign In', jp: 'ログインしてください' },
+    'orders.loginDesc': { th: 'คุณต้องล็อกอินก่อนเพื่อดูคำสั่งซื้อ', en: 'You need to sign in to view your orders', jp: '注文を表示するにはログインが必要です' },
+    'orders.empty': { th: 'ยังไม่มีคำสั่งซื้อ', en: 'No orders yet', jp: 'まだ注文がありません' },
+    'orders.emptyDesc': { th: 'เมื่อคุณสั่งซื้อสินค้า ประวัติจะแสดงที่นี่', en: 'Your order history will appear here', jp: '注文履歴はここに表示されます' },
+    'orders.goShopping': { th: 'ไปเลือกซื้อสินค้า', en: 'Start Shopping', jp: 'ショッピングを始める' },
+    'orders.total': { th: 'ยอดรวม', en: 'Total', jp: '合計' },
+    'orders.trackingNumber': { th: 'เลขพัสดุ', en: 'Tracking Number', jp: '追跡番号' },
+    'orders.uploadSlip': { th: 'แนบสลิปโอนเงิน', en: 'Upload Payment Slip', jp: '支払いスリップをアップロード' },
+    'orders.trackPackage': { th: 'ติดตามพัสดุ', en: 'Track Package', jp: '配送を追跡' },
+    'orders.details': { th: 'รายละเอียด', en: 'Details', jp: '詳細' },
+
+    // ============ Order Success ============
+    'orderSuccess.title': { th: 'สั่งซื้อสำเร็จแล้ว!', en: 'Order Placed!', jp: '注文完了！' },
+    'orderSuccess.subtitle': { th: 'ขอบคุณที่สั่งซื้อกับเรา', en: 'Thank you for your order', jp: 'ご注文ありがとうございます' },
+    'orderSuccess.orderId': { th: 'หมายเลขคำสั่งซื้อ', en: 'Order ID', jp: '注文番号' },
+    'orderSuccess.date': { th: 'วันที่ทำรายการ', en: 'Order Date', jp: '注文日' },
+    'orderSuccess.items': { th: 'รายการสินค้า', en: 'Items', jp: '商品' },
+    'orderSuccess.shipping': { th: 'ข้อมูลการจัดส่ง', en: 'Shipping Info', jp: '配送情報' },
+    'orderSuccess.payment': { th: 'การชำระเงิน', en: 'Payment', jp: 'お支払い' },
+    'orderSuccess.delivery': { th: 'ข้อมูลการขนส่ง', en: 'Delivery Info', jp: '配送詳細' },
+    'orderSuccess.total': { th: 'ยอดชำระทั้งหมด', en: 'Total Amount', jp: '合計金額' },
+    'orderSuccess.backHome': { th: 'กลับหน้าแรก', en: 'Back to Home', jp: 'ホームに戻る' },
+    'orderSuccess.viewOrders': { th: 'ดูคำสั่งซื้อ', en: 'View Orders', jp: '注文を見る' },
+
+    // ============ About ============
+    'about.title': { th: 'เกี่ยวกับเรา', en: 'About Us', jp: '私たちについて' },
+    'about.subtitle': { th: 'ร้านอุปกรณ์คอมพิวเตอร์ครบวงจร', en: 'Your Complete PC Hardware Store', jp: '総合PCハードウェアストア' },
+    'about.breadcrumbHome': { th: 'หน้าแรก', en: 'Home', jp: 'ホーム' },
+
+    // ============ Contact ============
+    'contact.title': { th: 'ติดต่อเรา', en: 'Contact Us', jp: 'お問い合わせ' },
+    'contact.subtitle': { th: 'ต้องการความช่วยเหลือ? ทีมงานพร้อมตอบทุกคำถามของคุณ', en: 'Need help? Our team is ready to answer all your questions', jp: 'お困りですか？すべてのご質問にお答えします' },
+    'contact.breadcrumbHome': { th: 'หน้าแรก', en: 'Home', jp: 'ホーム' },
+    'contact.name': { th: 'ชื่อ - นามสกุล', en: 'Full Name', jp: '氏名' },
+    'contact.email': { th: 'อีเมล', en: 'Email', jp: 'メール' },
+    'contact.subject': { th: 'หัวข้อ', en: 'Subject', jp: '件名' },
+    'contact.message': { th: 'รายละเอียด', en: 'Message', jp: 'メッセージ' },
+    'contact.send': { th: 'ส่งข้อความ', en: 'Send Message', jp: 'メッセージを送信' },
+
+    // ============ Warranty ============
+    'warranty.title': { th: 'นโยบายการรับประกัน', en: 'Warranty Policy', jp: '保証ポリシー' },
+    'warranty.breadcrumbHome': { th: 'หน้าแรก', en: 'Home', jp: 'ホーム' },
+
+    // ============ Compare ============
+    'compare.title': { th: 'เปรียบเทียบสินค้า', en: 'Compare Products', jp: '商品比較' },
+    'compare.empty': { th: 'ยังไม่มีสินค้าให้เปรียบเทียบ', en: 'No products to compare', jp: '比較する商品がありません' },
+    'compare.emptyDesc': { th: 'กรุณาเลือกสินค้าอย่างน้อย 2 ชิ้นจากหน้าร้าน', en: 'Please select at least 2 products from the store', jp: 'ストアから2つ以上の商品を選択してください' },
+    'compare.goShopping': { th: 'ไปเลือกสินค้า', en: 'Go Shopping', jp: 'ショッピングへ' },
+    'compare.remove': { th: 'นำออก', en: 'Remove', jp: '削除' },
+
+    // ============ Product Detail ============
+    'product.description': { th: 'รายละเอียด', en: 'Description', jp: '商品説明' },
+    'product.specs': { th: 'สเปคสินค้า', en: 'Specifications', jp: '仕様' },
+    'product.reviews': { th: 'รีวิวลูกค้า', en: 'Customer Reviews', jp: 'カスタマーレビュー' },
+    'product.addToCart': { th: 'ใส่ตะกร้า', en: 'Add to Cart', jp: 'カートに追加' },
+    'product.buyNow': { th: 'ซื้อเลย', en: 'Buy Now', jp: '今すぐ購入' },
+    'product.freeShipping': { th: 'จัดส่งฟรีทั่วไทย เมื่อช้อปครบ 5,000.-', en: 'Free shipping on orders over ฿5,000', jp: '5,000バーツ以上送料無料' },
+    'product.inStock': { th: 'มีสินค้า', en: 'In Stock', jp: '在庫あり' },
+    'product.outOfStock': { th: 'สินค้าหมด', en: 'Out of Stock', jp: '在庫切れ' },
+    'product.noDescription': { th: 'ไม่มีรายละเอียด', en: 'No description available', jp: '説明なし' },
+    'product.noSpecs': { th: 'ไม่มีข้อมูลสเปค', en: 'No specifications available', jp: '仕様情報なし' },
+    'product.noReviews': { th: 'ยังไม่มีรีวิว', en: 'No reviews yet', jp: 'レビューはまだありません' },
+    'product.writeReview': { th: 'เขียนรีวิว', en: 'Write a Review', jp: 'レビューを書く' },
+    'product.addedToCart': { th: 'เพิ่มสินค้าลงตะกร้าเรียบร้อย', en: 'Added to cart!', jp: 'カートに追加しました！' },
+    'product.addToCartError': { th: 'เกิดข้อผิดพลาดในการหยิบใส่ตะกร้า', en: 'Error adding to cart', jp: 'カート追加エラー' },
+
+    // ============ News Detail ============
+    'news.backToNews': { th: 'กลับไปหน้าข่าว', en: 'Back to News', jp: 'ニュースに戻る' },
+    'news.writtenBy': { th: 'เขียนโดย', en: 'Written by', jp: '著者' },
+    'news.published': { th: 'เผยแพร่', en: 'Published', jp: '公開日' },
+    'news.readTime': { th: 'เวลาอ่าน', en: 'Read Time', jp: '読了時間' },
+    'news.relatedArticles': { th: 'บทความที่เกี่ยวข้อง', en: 'Related Articles', jp: '関連記事' },
+
+    // ============ Forgot Password ============
+    'forgotPassword.title': { th: 'ลืมรหัสผ่าน?', en: 'Forgot Password?', jp: 'パスワードをお忘れですか？' },
+    'forgotPassword.subtitle': { th: 'กรอกอีเมลของคุณ แล้วเราจะส่งลิงก์สำหรับรีเซ็ตรหัสผ่านให้', en: "Enter your email and we'll send you a reset link", jp: 'メールアドレスを入力すると、リセットリンクを送信します' },
+    'forgotPassword.emailPlaceholder': { th: 'อีเมล', en: 'Email address', jp: 'メールアドレス' },
+    'forgotPassword.submit': { th: 'ส่งลิงก์รีเซ็ต', en: 'Send Reset Link', jp: 'リセットリンクを送信' },
+    'forgotPassword.sending': { th: 'กำลังส่ง...', en: 'Sending...', jp: '送信中...' },
+    'forgotPassword.sent': { th: 'ตรวจสอบอีเมลของคุณ!', en: 'Check your email!', jp: 'メールを確認してください！' },
+    'forgotPassword.sentDesc': { th: 'เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปที่', en: 'We have sent a password reset link to', jp: 'パスワードリセットリンクを送信しました' },
+    'forgotPassword.backToLogin': { th: 'กลับหน้าเข้าสู่ระบบ', en: 'Back to Login', jp: 'ログインに戻る' },
+
+    // ============ Reset Password ============
+    'resetPassword.title': { th: 'ตั้งรหัสผ่านใหม่', en: 'Reset Password', jp: 'パスワードリセット' },
+    'resetPassword.subtitle': { th: 'สร้างรหัสผ่านใหม่ที่ปลอดภัยสำหรับบัญชีของคุณ', en: 'Create a new strong password for your account', jp: 'アカウントの新しい安全なパスワードを作成' },
+    'resetPassword.newPassword': { th: 'รหัสผ่านใหม่', en: 'New Password', jp: '新しいパスワード' },
+    'resetPassword.confirmPassword': { th: 'ยืนยันรหัสผ่าน', en: 'Confirm Password', jp: 'パスワード確認' },
+    'resetPassword.submit': { th: 'ตั้งรหัสผ่านใหม่', en: 'Set New Password', jp: '新しいパスワードを設定' },
+    'resetPassword.resetting': { th: 'กำลังรีเซ็ต...', en: 'Resetting...', jp: 'リセット中...' },
+    'resetPassword.success': { th: 'รีเซ็ตรหัสผ่านสำเร็จ!', en: 'Password Reset!', jp: 'パスワードリセット完了！' },
+    'resetPassword.successDesc': { th: 'รหัสผ่านของคุณถูกอัปเดตเรียบร้อยแล้ว', en: 'Your password has been updated successfully', jp: 'パスワードが正常に更新されました' },
+    'resetPassword.redirecting': { th: 'กำลังนำทางไปหน้าเข้าสู่ระบบ...', en: 'Redirecting to login...', jp: 'ログインページに移動中...' },
+    'resetPassword.loginNow': { th: 'เข้าสู่ระบบ', en: 'Login Now', jp: '今すぐログイン' },
+    'resetPassword.invalidLink': { th: 'ลิงก์ไม่ถูกต้อง กรุณาขอใหม่', en: 'Invalid Link. Please request a new one.', jp: '無効なリンクです。新しいリンクをリクエストしてください。' },
+    'resetPassword.tryAgain': { th: 'ลองอีกครั้ง', en: 'Try again', jp: 'もう一度試す' },
+
+    // ============ CustomerChat ============
+    'chat.title': { th: 'ฝ่ายบริการลูกค้า', en: 'Customer Support', jp: 'カスタマーサポート' },
+    'chat.contactUs': { th: 'ติดต่อเรา', en: 'Contact Us', jp: 'お問い合わせ' },
+    'chat.placeholder': { th: 'พิมพ์ข้อความ...', en: 'Type a message...', jp: 'メッセージを入力...' },
+
+    // ============ ProfileDropdown ============
+    'profileDropdown.myAccount': { th: 'บัญชีของฉัน', en: 'My Account', jp: 'マイアカウント' },
+    'profileDropdown.myOrders': { th: 'คำสั่งซื้อของฉัน', en: 'My Orders', jp: 'マイオーダー' },
+    'profileDropdown.favorites': { th: 'รายการสินค้าโปรด', en: 'My Wishlist', jp: 'お気に入り' },
+    'profileDropdown.admin': { th: 'ระบบหลังบ้าน', en: 'Admin Panel', jp: '管理パネル' },
+    'profileDropdown.logout': { th: 'ออกจากระบบ', en: 'Sign Out', jp: 'ログアウト' },
+
+    // ============ ProfileView (extra) ============
+    'profile.account': { th: 'บัญชี', en: 'Account', jp: 'アカウント' },
+    'profile.personalInfo': { th: 'ข้อมูลส่วนตัว', en: 'Personal Info', jp: '個人情報' },
+    'profile.addressBook': { th: 'สมุดที่อยู่', en: 'Address Book', jp: '住所録' },
+    'profile.orderHistory': { th: 'ประวัติสั่งซื้อ', en: 'Order History', jp: '注文履歴' },
+    'profile.favItems': { th: 'สินค้าที่ชอบ', en: 'Favorites', jp: 'お気に入り' },
+    'profile.birthday': { th: 'วันเกิด', en: 'Date of Birth', jp: '生年月日' },
+    'profile.saving': { th: 'กำลังบันทึก...', en: 'Saving...', jp: '保存中...' },
+    'profile.saveChanges': { th: 'บันทึกการเปลี่ยนแปลง', en: 'Save Changes', jp: '変更を保存' },
+    'profile.addNewAddress': { th: 'เพิ่มที่อยู่จัดส่งใหม่', en: 'Add New Shipping Address', jp: '新しい配送先を追加' },
+    'profile.recipientName': { th: 'ชื่อผู้รับ', en: 'Recipient Name', jp: '受取人名' },
+    'profile.subdistrict': { th: 'แขวง / ตำบล', en: 'Sub-district', jp: '地区' },
+    'profile.districtLabel': { th: 'เขต / อำเภอ', en: 'District', jp: '区' },
+    'profile.defaultAddress': { th: 'ตั้งเป็นที่อยู่หลัก (Default)', en: 'Set as default address', jp: 'デフォルトに設定' },
+    'profile.cancel': { th: 'ยกเลิก', en: 'Cancel', jp: 'キャンセル' },
+    'profile.savingAddress': { th: 'บันทึก...', en: 'Saving...', jp: '保存中...' },
+    'profile.noAddress': { th: 'ยังไม่มีที่อยู่จัดส่ง', en: 'No shipping addresses yet', jp: '配送先住所はまだありません' },
+    'profile.deleteAddress': { th: 'ลบที่อยู่', en: 'Delete Address', jp: '住所を削除' },
+    'profile.confirmDeleteAddress': { th: 'ยืนยันการลบที่อยู่', en: 'Confirm Delete Address', jp: '住所削除の確認' },
+    'profile.confirmDeleteAddressMsg': { th: 'คุณต้องการลบที่อยู่นี้ใช่หรือไม่?', en: 'Are you sure you want to delete this address?', jp: 'この住所を削除しますか？' },
+    'profile.items': { th: 'รายการ', en: 'items', jp: '件' },
+
+    // ============ CompareFloatingBar ============
+    'compare.list': { th: 'รายการเปรียบเทียบ', en: 'Compare List', jp: '比較リスト' },
+    'compare.maxItems': { th: 'เลือกได้สูงสุด 3 รายการ', en: 'Select up to 3 items', jp: '最大3つ選択可能' },
+    'compare.emptySlot': { th: 'ว่าง', en: 'Empty', jp: '空' },
+    'compare.clearAll': { th: 'ล้างทั้งหมด', en: 'Clear All', jp: 'すべてクリア' },
+    'compare.compareBtn': { th: 'เปรียบเทียบ', en: 'Compare', jp: '比較' },
+    'compare.added': { th: '✓ เทียบแล้ว', en: '✓ Added', jp: '✓ 追加済み' },
+    'compare.removedFromList': { th: 'ลบออกจากรายการเปรียบเทียบ', en: 'Removed from compare', jp: '比較リストから削除' },
+    'compare.max3': { th: 'เปรียบเทียบได้สูงสุด 3 ชิ้น', en: 'Max 3 items to compare', jp: '比較は最大3つまで' },
+    'compare.sameCategory': { th: 'สินค้าต้องอยู่ในหมวดเดียวกัน', en: 'Items must be in the same category', jp: '同じカテゴリの商品のみ比較可能' },
+    'compare.addedToList': { th: 'เพิ่มลงรายการเปรียบเทียบ', en: 'Added to compare', jp: '比較リストに追加' },
+
+    // ============ BuildSummaryBar ============
+    'buildSummary.yourBuild': { th: 'สเปคของคุณ', en: 'Your Build', jp: 'あなたのビルド' },
+    'buildSummary.totalPrice': { th: 'Total Price', en: 'Total Price', jp: '合計金額' },
+    'buildSummary.processing': { th: 'กำลังดำเนินการ...', en: 'Processing...', jp: '処理中...' },
+    'buildSummary.checkout': { th: 'สั่งซื้อ', en: 'Checkout', jp: '注文する' },
+    'buildSummary.confirmTitle': { th: 'ยืนยันการสั่งซื้อ', en: 'Confirm Order', jp: '注文の確認' },
+    'buildSummary.confirmMsg': { th: 'คุณต้องการดำเนินการต่อหรือไม่?', en: 'Do you want to proceed?', jp: '続行しますか？' },
+    'buildSummary.pay': { th: 'ชำระเงิน', en: 'Pay Now', jp: '支払う' },
+    'buildSummary.orderSuccess': { th: 'สั่งซื้อสำเร็จ!', en: 'Order placed!', jp: '注文完了！' },
+    'buildSummary.orderError': { th: 'เกิดข้อผิดพลาด', en: 'An error occurred', jp: 'エラーが発生しました' },
+    'buildSummary.connectionError': { th: 'เชื่อมต่อไม่ได้', en: 'Connection failed', jp: '接続失敗' },
+
+    // ============ OrderStatusSelector ============
+    'orderStatus.confirmTitle': { th: 'ยืนยันการเปลี่ยนสถานะ', en: 'Confirm Status Change', jp: 'ステータス変更の確認' },
+    'orderStatus.confirmMsg': { th: 'คุณต้องการเปลี่ยนสถานะใช่หรือไม่?', en: 'Do you want to change the status?', jp: 'ステータスを変更しますか？' },
+    'orderStatus.confirm': { th: 'ยืนยัน', en: 'Confirm', jp: '確認' },
+    'orderStatus.success': { th: 'อัปเดตสถานะสำเร็จ', en: 'Status updated', jp: 'ステータスが更新されました' },
+    'orderStatus.error': { th: 'อัปเดตไม่สำเร็จ', en: 'Update failed', jp: '更新に失敗しました' },
+
+    // ============ ReviewForm ============
+    'review.writeReview': { th: 'เขียนรีวิวสินค้า', en: 'Write a Review', jp: 'レビューを書く' },
+    'review.yourReview': { th: 'เขียนรีวิวของคุณ', en: 'Write Your Review', jp: 'レビューを入力' },
+    'review.cancel': { th: 'ยกเลิก', en: 'Cancel', jp: 'キャンセル' },
+    'review.score': { th: 'คะแนน', en: 'score', jp: '点' },
+    'review.placeholder': { th: 'เขียนความคิดเห็นของคุณ...', en: 'Write your comment...', jp: 'コメントを入力...' },
+    'review.sending': { th: 'กำลังส่ง...', en: 'Sending...', jp: '送信中...' },
+    'review.submit': { th: 'ส่งรีวิว', en: 'Submit Review', jp: 'レビューを送信' },
+    'review.success': { th: 'ขอบคุณสำหรับรีวิวครับ! 🎉', en: 'Thank you for your review! 🎉', jp: 'レビューありがとうございます！🎉' },
+    'review.error': { th: 'เกิดข้อผิดพลาด หรือคุณยังไม่ได้เข้าสู่ระบบ', en: 'Error occurred or you are not logged in', jp: 'エラーが発生しました。ログインしてください' },
+    'review.connectionError': { th: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', en: 'Cannot connect to server', jp: 'サーバーに接続できません' },
+    'review.confirmTitle': { th: 'ยืนยันการส่งรีวิว', en: 'Confirm Review Submission', jp: 'レビュー送信の確認' },
+    'review.confirmMsg': { th: 'คุณต้องการส่งรีวิวนี้ใช่หรือไม่?', en: 'Are you sure you want to submit this review?', jp: 'このレビューを送信しますか？' },
+
+    // ============ FavoriteButton ============
+    'favorite.loginRequired': { th: 'กรุณาเข้าสู่ระบบก่อนกดถูกใจ', en: 'Please sign in to add favorites', jp: 'お気に入りに追加するにはログインしてください' },
+
+    // ============ NewsSection ============
+    'newsSection.title': { th: 'วิดีโอรีวิวจากผู้เชี่ยวชาญ', en: 'Expert Video Reviews', jp: 'エキスパート動画レビュー' },
+    'newsSection.featuredTitle': { th: 'รีวิวเจาะลึก: ประกอบคอมชุดน้ำเปิด งบไม่อั้น!', en: 'Deep Dive: Custom Open-Loop Watercooled PC Build!', jp: '徹底レビュー：オープンループ水冷PC構築！' },
+    'newsSection.featuredDesc': { th: 'ชมขั้นตอนการประกอบสุดประณีต พร้อมเทคนิคการเดินท่อสวยๆ จากทีมงานมืออาชีพของ iHAVEGPU ที่จะช่วยให้คอมพิวเตอร์ของคุณโดดเด่นไม่เหมือนใคร', en: 'Watch the meticulous assembly process with premium tubing techniques from our professional team at iHAVEGPU', jp: 'iHAVEGPUプロチームによる丁寧な組立と美しい配管テクニックをご覧ください' },
+    'newsSection.moreVideos': { th: 'วิดีโอแนะนำเพิ่มเติม', en: 'More Recommended Videos', jp: 'おすすめ動画' },
+    'newsSection.viewAll': { th: 'ดูวิดีโอทั้งหมดบน YouTube', en: 'View All Videos on YouTube', jp: 'YouTubeで全動画を見る' },
+
+    // ============ BrandMarquee ============
+    'brand.subtitle': { th: 'พันธมิตรที่เชื่อถือได้', en: 'Trusted Partners', jp: '信頼のパートナー' },
+    'brand.title': { th: 'ตัวแทนจำหน่ายอย่างเป็นทางการของแบรนด์ชั้นนำ', en: 'Official Distributor of Leading Brands', jp: '主要ブランドの正規販売代理店' },
+
+    // ============ HeroCarousel ============
+    'hero.badge': { th: 'Premium Selection', en: 'Premium Selection', jp: 'プレミアムセレクション' },
+    'hero.slide1.title': { th: 'Welcome to iHAVEGPU', en: 'Welcome to iHAVEGPU', jp: 'iHAVEGPUへようこそ' },
+    'hero.slide1.subtitle': { th: 'สินค้าคอมพิวเตอร์คุณภาพดีที่สุดสำหรับการจัดสเปคคอมในฝันของคุณ', en: 'Discover the best PC components and gaming gears for your ultimate setup.', jp: '最高のPCコンポーネントとゲーミングギアで究極のセットアップを。' },
+    'hero.slide2.title': { th: 'High Performance', en: 'High Performance', jp: 'ハイパフォーマンス' },
+    'hero.slide2.subtitle': { th: 'สัมผัสพลังของกราฟิกการ์ดและโปรเซสเซอร์แห่งอนาคต', en: 'Experience the power of next-gen graphics cards and processors.', jp: '次世代グラフィックカードとプロセッサのパワーを体験。' },
+    'hero.slide3.title': { th: 'Unleash The Beast', en: 'Unleash The Beast', jp: 'ビーストを解き放て' },
+    'hero.slide3.subtitle': { th: 'ครองทุกเกมด้วยสเปคคอมที่สร้างมาเพื่อชัยชนะ', en: 'Dominate every game with our extreme performance custom builds.', jp: '極限のパフォーマンスでゲームを制覇。' },
+
+    // ============ Common / Shared ============
+    'common.confirm': { th: 'ยืนยัน', en: 'Confirm', jp: '確認' },
+    'common.cancel': { th: 'ยกเลิก', en: 'Cancel', jp: 'キャンセル' },
+    'common.noImage': { th: 'ไม่มีรูป', en: 'No Image', jp: '画像なし' },
 }
 
 export function t(key: string, locale: Locale): string {

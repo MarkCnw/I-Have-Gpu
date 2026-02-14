@@ -36,12 +36,12 @@ export default function NavbarCart() {
   }, [])
 
   return (
-    <Link 
-      href="/cart" 
-      className="relative group p-2 hover:bg-neutral-100 rounded-full transition text-neutral-600 hover:text-black"
+    <Link
+      href="/cart"
+      className="relative group p-2 hover:bg-surface-bg rounded-full transition text-txt-secondary hover:text-foreground"
     >
       <ShoppingBag size={24} />
-      
+
       {/* Badge แจ้งเตือนตัวเลข */}
       {count > 0 && (
         <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm transform group-hover:scale-110 transition-transform">

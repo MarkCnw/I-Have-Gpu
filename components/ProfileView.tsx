@@ -7,11 +7,14 @@ import Link from 'next/link'
 import { Package, Heart, User, MapPin, Save, Plus, Trash2, Home } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import ConfirmModal from './ConfirmModal'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ProfileView({ user, orders, favorites }: { user: any, orders: any[], favorites: any[] }) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('INFO')
+  const { locale } = useLanguageStore()
   const [loading, setLoading] = useState(false)
 
   // --- Profile State ---
@@ -60,10 +63,10 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         body: JSON.stringify(formData)
       })
       if (res.ok) {
-        toast.success('✅ บันทึกข้อมูลเรียบร้อย')
+        toast.success('✅ ' + t('profile.saveChanges', locale))
         router.refresh()
       } else {
-        toast.error('❌ เกิดข้อผิดพลาด')
+        toast.error('❌ ' + t('buildSummary.orderError', locale))
       }
     } finally {
       setLoading(false)
@@ -81,7 +84,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         body: JSON.stringify(newAddress)
       })
       if (res.ok) {
-        toast.success('เพิ่มที่อยู่สำเร็จ')
+        toast.success('✅ ' + t('profile.saveAddress', locale))
         setShowAddressForm(false)
         setNewAddress({ name: user.name || '', phone: user.phone || '', houseNumber: '', subdistrict: '', district: '', province: '', zipcode: '', isDefault: false })
         const updated = await fetch('/api/user/addresses').then(r => r.json())
@@ -102,7 +105,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
     if (!deleteAddressId) return
     await fetch(`/api/user/addresses?id=${deleteAddressId}`, { method: 'DELETE' })
     setAddresses(addresses.filter(a => a.id !== deleteAddressId))
-    toast.success('ลบที่อยู่สำเร็จ')
+    toast.success(t('profile.deleteAddress', locale))
     setIsDeleteModalOpen(false)
     setDeleteAddressId(null)
   }
@@ -124,18 +127,18 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
           </div>
 
           <div>
-            <h3 className="text-xs font-bold text-txt-muted uppercase tracking-wider mb-2">บัญชี</h3>
+            <h3 className="text-xs font-bold text-txt-muted uppercase tracking-wider mb-2">{t('profile.account', locale)}</h3>
             <button onClick={() => setActiveTab('INFO')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'INFO' ? 'font-bold text-foreground' : 'text-txt-secondary hover:text-foreground'}`}>
-              <User size={16} /> ข้อมูลส่วนตัว
+              <User size={16} /> {t('profile.personalInfo', locale)}
             </button>
             <button onClick={() => setActiveTab('ADDRESS')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'ADDRESS' ? 'font-bold text-foreground' : 'text-txt-secondary hover:text-foreground'}`}>
-              <MapPin size={16} /> สมุดที่อยู่
+              <MapPin size={16} /> {t('profile.addressBook', locale)}
             </button>
             <button onClick={() => setActiveTab('ORDERS')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'ORDERS' ? 'font-bold text-foreground' : 'text-txt-secondary hover:text-foreground'}`}>
-              <Package size={16} /> ประวัติสั่งซื้อ
+              <Package size={16} /> {t('profile.orderHistory', locale)}
             </button>
             <button onClick={() => setActiveTab('FAVORITES')} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition mb-1 flex items-center gap-3 ${activeTab === 'FAVORITES' ? 'font-bold text-foreground' : 'text-txt-secondary hover:text-foreground'}`}>
-              <Heart size={16} /> สินค้าที่ชอบ
+              <Heart size={16} /> {t('profile.favItems', locale)}
             </button>
           </div>
         </div>
@@ -148,29 +151,29 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         {activeTab === 'INFO' && (
           <form onSubmit={handleUpdateInfo} className="space-y-6 animate-in fade-in duration-300">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <User className="text-txt-muted" /> ข้อมูลส่วนตัว
+              <User className="text-txt-muted" /> {t('profile.personalInfo', locale)}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">ชื่อ - นามสกุล</label>
+                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">{t('profile.name', locale)}</label>
                 <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-surface-bg border border-border-main rounded-lg px-4 py-3 text-sm text-foreground focus:border-foreground outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">อีเมล</label>
+                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">{t('profile.email', locale)}</label>
                 <input type="text" value={user.email} disabled className="w-full bg-surface-bg border border-border-main rounded-lg px-4 py-3 text-sm text-txt-muted cursor-not-allowed" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">เบอร์โทรศัพท์</label>
+                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">{t('profile.phone', locale)}</label>
                 <input type="tel" value={formData.phone} placeholder="08x-xxx-xxxx" onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full bg-surface-bg border border-border-main rounded-lg px-4 py-3 text-sm text-foreground focus:border-foreground outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">วันเกิด</label>
+                <label className="block text-xs font-bold text-txt-muted uppercase mb-2">{t('profile.birthday', locale)}</label>
                 <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} className="w-full bg-surface-bg border border-border-main rounded-lg px-4 py-3 text-sm text-foreground focus:border-foreground outline-none" />
               </div>
             </div>
             <div className="pt-6 flex justify-end">
               <button disabled={loading} className="bg-foreground text-surface-card px-8 py-3 rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2">
-                {loading ? 'กำลังบันทึก...' : <><Save size={18} /> บันทึกการเปลี่ยนแปลง</>}
+                {loading ? t('profile.saving', locale) : <><Save size={18} /> {t('profile.saveChanges', locale)}</>}
               </button>
             </div>
           </form>
@@ -181,11 +184,11 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
           <div className="animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-6 border-b border-border-light pb-4">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <MapPin className="text-txt-muted" /> สมุดที่อยู่
+                <MapPin className="text-txt-muted" /> {t('profile.addressBook', locale)}
               </h2>
               {!showAddressForm && (
                 <button onClick={() => setShowAddressForm(true)} className="bg-foreground text-surface-card px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:opacity-90 shadow-md">
-                  <Plus size={16} /> เพิ่มที่อยู่ใหม่
+                  <Plus size={16} /> {t('profile.addAddress', locale)}
                 </button>
               )}
             </div>
@@ -193,55 +196,55 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
             {/* ฟอร์มเพิ่มที่อยู่ */}
             {showAddressForm ? (
               <form onSubmit={handleAddAddress} className="bg-surface-bg p-6 rounded-xl border border-border-main mb-6 animate-in slide-in-from-top-2">
-                <h3 className="font-bold mb-4 text-foreground">เพิ่มที่อยู่จัดส่งใหม่</h3>
+                <h3 className="font-bold mb-4 text-foreground">{t('profile.addNewAddress', locale)}</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">ชื่อผู้รับ</label>
+                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">{t('profile.recipientName', locale)}</label>
                     <input className="p-3 rounded-lg border border-border-main w-full text-sm bg-surface-card text-foreground" value={newAddress.name} onChange={e => setNewAddress({ ...newAddress, name: e.target.value })} required />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">เบอร์โทรศัพท์</label>
+                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">{t('profile.phone', locale)}</label>
                     <input className="p-3 rounded-lg border border-border-main w-full text-sm bg-surface-card text-foreground" value={newAddress.phone} onChange={e => setNewAddress({ ...newAddress, phone: e.target.value })} required />
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="text-xs font-bold text-neutral-500 uppercase mb-1 block">ที่อยู่ (บ้านเลขที่, หมู่, ซอย, ถนน)</label>
-                  <input className="p-3 rounded-lg border border-neutral-300 w-full text-sm" value={newAddress.houseNumber} onChange={e => setNewAddress({ ...newAddress, houseNumber: e.target.value })} required />
+                  <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">{t('profile.addressLabel', locale)}</label>
+                  <input className="p-3 rounded-lg border border-border-main w-full text-sm bg-surface-card text-foreground" value={newAddress.houseNumber} onChange={e => setNewAddress({ ...newAddress, houseNumber: e.target.value })} required />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">แขวง / ตำบล</label>
+                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">{t('profile.subdistrict', locale)}</label>
                     <input className="p-3 rounded-lg border border-border-main w-full text-sm bg-surface-card text-foreground" value={newAddress.subdistrict} onChange={e => setNewAddress({ ...newAddress, subdistrict: e.target.value })} required />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">เขต / อำเภอ</label>
+                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">{t('profile.districtLabel', locale)}</label>
                     <input className="p-3 rounded-lg border border-border-main w-full text-sm bg-surface-card text-foreground" value={newAddress.district} onChange={e => setNewAddress({ ...newAddress, district: e.target.value })} required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">จังหวัด</label>
+                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">{t('profile.province', locale)}</label>
                     <input className="p-3 rounded-lg border border-border-main w-full text-sm bg-surface-card text-foreground" value={newAddress.province} onChange={e => setNewAddress({ ...newAddress, province: e.target.value })} required />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">รหัสไปรษณีย์</label>
+                    <label className="text-xs font-bold text-txt-muted uppercase mb-1 block">{t('profile.zipcode', locale)}</label>
                     <input className="p-3 rounded-lg border border-border-main w-full text-sm bg-surface-card text-foreground" value={newAddress.zipcode} onChange={e => setNewAddress({ ...newAddress, zipcode: e.target.value })} required />
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 mb-6 bg-surface-card p-3 rounded-lg border border-border-main">
                   <input type="checkbox" id="default" className="w-4 h-4" checked={newAddress.isDefault} onChange={e => setNewAddress({ ...newAddress, isDefault: e.target.checked })} />
-                  <label htmlFor="default" className="text-sm font-medium cursor-pointer">ตั้งเป็นที่อยู่หลัก (Default)</label>
+                  <label htmlFor="default" className="text-sm font-medium cursor-pointer">{t('profile.defaultAddress', locale)}</label>
                 </div>
 
                 <div className="flex gap-2 justify-end">
-                  <button type="button" onClick={() => setShowAddressForm(false)} className="text-txt-muted px-6 py-2 text-sm hover:text-foreground">ยกเลิก</button>
+                  <button type="button" onClick={() => setShowAddressForm(false)} className="text-txt-muted px-6 py-2 text-sm hover:text-foreground">{t('profile.cancel', locale)}</button>
                   <button disabled={loading} className="bg-foreground text-surface-card px-8 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 shadow-lg">
-                    {loading ? 'บันทึก...' : 'บันทึกที่อยู่'}
+                    {loading ? t('profile.savingAddress', locale) : t('profile.saveAddress', locale)}
                   </button>
                 </div>
               </form>
@@ -251,7 +254,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 {addresses.length === 0 ? (
                   <div className="text-center py-16 text-txt-muted bg-surface-bg rounded-xl border border-dashed border-border-main flex flex-col items-center">
                     <Home size={32} className="mb-2 opacity-20" />
-                    ยังไม่มีที่อยู่จัดส่ง
+                    {t('profile.noAddress', locale)}
                   </div>
                 ) : (
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -281,7 +284,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                         <button
                           onClick={() => openDeleteModal(addr.id)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
-                          title="ลบที่อยู่"
+                          title={t('profile.deleteAddress', locale)}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -298,12 +301,12 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         {activeTab === 'ORDERS' && (
           <div className="animate-in fade-in duration-300">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Package className="text-txt-muted" /> ประวัติคำสั่งซื้อ ({orders.length})
+              <Package className="text-txt-muted" /> {t('profile.orderHistory', locale)} ({orders.length})
             </h2>
             {orders.length === 0 ? (
               <div className="text-center py-20 bg-surface-bg rounded-xl flex flex-col items-center">
                 <Package size={48} className="text-txt-muted mb-2" />
-                <p className="text-txt-muted">ยังไม่มีคำสั่งซื้อ</p>
+                <p className="text-txt-muted">{t('profile.noOrders', locale)}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -331,7 +334,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                       </div>
                     </div>
                     <div className="flex items-center justify-between border-t border-border-light pt-3">
-                      <p className="text-sm text-txt-muted">{order.items.length} รายการ</p>
+                      <p className="text-sm text-txt-muted">{order.items.length} {t('profile.items', locale)}</p>
                       <p className="font-bold">฿{Number(order.total).toLocaleString()}</p>
                     </div>
                   </div>
@@ -345,12 +348,12 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         {activeTab === 'FAVORITES' && (
           <div className="animate-in fade-in duration-300">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Heart className="text-txt-muted" /> สินค้าที่ชอบ ({favorites.length})
+              <Heart className="text-txt-muted" /> {t('profile.favItems', locale)} ({favorites.length})
             </h2>
             {favorites.length === 0 ? (
               <div className="text-center py-20 bg-surface-bg rounded-xl flex flex-col items-center">
                 <Heart size={48} className="text-txt-muted mb-2" />
-                <p className="text-txt-muted">ยังไม่มีรายการโปรด</p>
+                <p className="text-txt-muted">{t('profile.noFavorites', locale)}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -358,7 +361,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 {favorites.map((fav: any) => (
                   <Link href={`/products/${fav.product.id}`} key={fav.id} className="flex gap-4 p-4 border border-border-light rounded-xl hover:border-foreground transition items-center">
                     <div className="w-16 h-16 bg-surface-bg rounded-lg flex-shrink-0 flex items-center justify-center p-2">
-                      <img src={fav.product.image} className="max-w-full max-h-full mix-blend-multiply" />
+                      <img src={fav.product.image} className="max-w-full max-h-full mix-blend-multiply dark:mix-blend-normal" />
                     </div>
                     <div>
                       <h4 className="font-bold text-sm line-clamp-1">{fav.product.name}</h4>
@@ -379,9 +382,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteAddress}
-        title="ยืนยันการลบที่อยู่"
-        message="คุณต้องการลบที่อยู่นี้ใช่หรือไม่?"
-        confirmText="ลบที่อยู่"
+        title={t('profile.confirmDeleteAddress', locale)}
+        message={t('profile.confirmDeleteAddressMsg', locale)}
+        confirmText={t('profile.deleteAddress', locale)}
         variant="danger"
       />
     </div>

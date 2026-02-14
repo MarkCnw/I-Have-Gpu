@@ -144,7 +144,7 @@ function OrderSuccessContent() {
                 {order.items?.map((item: any) => (
                   <div key={item.id} className="flex gap-6 items-center print:gap-3">
                     <div className="w-14 h-14 bg-surface-bg rounded-2xl flex-shrink-0 relative overflow-hidden border border-border-light p-2 print:w-10 print:h-10 print:rounded-lg">
-                      {item.product.image && <Image src={item.product.image} alt="" fill className="object-contain mix-blend-multiply" />}
+                      {item.product.image && <Image src={item.product.image} alt="" fill className="object-contain mix-blend-multiply dark:mix-blend-normal" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-foreground line-clamp-1 print:text-xs">{item.product.name}</p>
@@ -170,9 +170,9 @@ function OrderSuccessContent() {
                   <MapPin size={14} /> ข้อมูลการจัดส่ง
                 </h4>
                 <div className="text-sm leading-relaxed print:text-xs">
-                  <p className="font-bold text-black">{order.shippingName}</p>
-                  <p className="text-neutral-500 print:text-black">{order.shippingAddress} {order.shippingZipcode}</p>
-                  <p className="font-medium text-black">📞 {order.shippingPhone}</p>
+                  <p className="font-bold text-foreground">{order.shippingName}</p>
+                  <p className="text-txt-muted print:text-black">{order.shippingAddress} {order.shippingZipcode}</p>
+                  <p className="font-medium text-foreground">📞 {order.shippingPhone}</p>
                 </div>
               </div>
 

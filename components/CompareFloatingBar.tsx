@@ -1,93 +1,71 @@
+// components/CompareFloatingBar.tsx
 'use client'
 
 import { useCompareStore } from '@/app/store/useCompareStore'
-import Image from 'next/image'
+import { X, ArrowRight, Scale } from 'lucide-react'
 import Link from 'next/link'
-import { X, ArrowRight, Layers, Trash2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion' // ✅ Import
+import Image from 'next/image'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 export default function CompareFloatingBar() {
   const { compareList, removeFromCompare, clearCompare } = useCompareStore()
+  const { locale } = useLanguageStore()
+
+  if (compareList.length === 0) return null
 
   return (
-    <AnimatePresence>
-      {compareList.length > 0 && (
-        <motion.div
-          initial={{ y: 100, opacity: 0 }} // เริ่มต้น: อยู่ข้างล่าง มองไม่เห็น
-          animate={{ y: 0, opacity: 1 }}   // จบ: เลื่อนขึ้นมาที่เดิม
-          exit={{ y: 100, opacity: 0 }}    // ออก: เลื่อนกลับลงไป
-          transition={{ type: "spring", stiffness: 300, damping: 30 }} // เด้งดึ๋ง
-          className="fixed bottom-0 left-0 right-0 bg-surface-card/95 backdrop-blur-md border-t border-border-main shadow-[0_-8px_30px_rgba(0,0,0,0.08)] py-4 px-4 sm:px-6 z-50"
-        >
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            {/* ... (เนื้อหาข้างในเหมือนเดิม) ... */}
-            <div className="flex items-center gap-4 sm:gap-8">
-              <div className="hidden md:flex items-center gap-3">
-                <div className="bg-surface-bg text-txt-secondary p-2.5 rounded-xl">
-                  <Layers size={20} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground text-sm leading-tight">รายการเปรียบเทียบ</h3>
-                  <p className="text-xs text-txt-muted font-medium mt-0.5">เลือกได้สูงสุด 3 รายการ</p>
-                </div>
-              </div>
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pointer-events-none">
+      <div className="max-w-3xl mx-auto bg-surface-card/80 backdrop-blur-2xl border border-border-main shadow-2xl shadow-black/10 rounded-2xl p-4 pointer-events-auto">
+        <div className="flex items-center justify-between flex-wrap gap-y-3">
 
-              <div className="flex items-center gap-3">
-                <AnimatePresence mode='popLayout'>
-                  {compareList.map((item) => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      className="relative group w-14 h-14 bg-surface-card border border-border-main rounded-xl overflow-hidden shadow-sm transition-all hover:border-foreground/20 hover:shadow-md"
-                    >
-                      <Image
-                        src={item.image || '/placeholder.png'}
-                        alt={item.name}
-                        fill
-                        className="object-contain p-2 mix-blend-multiply"
-                      />
-                      <button
-                        onClick={() => removeFromCompare(item.id)}
-                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white backdrop-blur-[1px]"
-                      >
-                        <X size={18} strokeWidth={2.5} />
-                      </button>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-
-                {/* Empty Slots */}
-                {Array.from({ length: 3 - compareList.length }).map((_, i) => (
-                  <div key={`empty-${i}`} className="w-14 h-14 bg-surface-bg/50 border border-dashed border-border-main rounded-xl flex items-center justify-center text-txt-muted group cursor-default">
-                    <span className="text-[10px] font-medium uppercase tracking-wider group-hover:text-txt-secondary transition-colors">ว่าง</span>
-                  </div>
-                ))}
-              </div>
+          {/* Left: Items */}
+          <div className="flex items-center gap-3">
+            <div className="text-center">
+              <Scale size={20} className="mx-auto mb-1 text-txt-muted" />
+              <span className="text-sm font-bold text-foreground leading-tight">{t('compare.list', locale)}</span>
+              <p className="text-[9px] text-txt-muted tracking-wide">{t('compare.maxItems', locale)}</p>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-6">
-              <button
-                onClick={clearCompare}
-                className="hidden sm:flex items-center gap-2 text-txt-muted hover:text-red-600 text-sm font-medium transition-colors group px-2 py-1 rounded-lg hover:bg-red-50"
-              >
-                <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
-                <span className="underline decoration-border-main hover:decoration-red-200 underline-offset-4">ล้างทั้งหมด</span>
-              </button>
-
-              <Link
-                href="/compare"
-                className="bg-foreground text-surface-card pl-6 pr-5 py-3 rounded-full font-bold text-sm sm:text-base flex items-center gap-2 hover:opacity-90 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10 ring-4 ring-transparent hover:ring-foreground/5"
-              >
-                เปรียบเทียบ <span className="bg-white/20 px-2 py-0.5 rounded-md text-xs font-mono">{compareList.length}</span>
-                <ArrowRight size={18} strokeWidth={2.5} />
-              </Link>
+            <div className="flex gap-2 ml-2">
+              {[0, 1, 2].map((i) => {
+                const item = compareList[i]
+                return (
+                  <div key={i} className={`relative group w-16 h-16 rounded-xl border-2 border-dashed transition-all flex items-center justify-center overflow-hidden
+                    ${item ? 'border-foreground bg-surface-bg' : 'border-border-light bg-surface-bg/50'}
+                  `}>
+                    {item ? (
+                      <>
+                        <Image src={item.image || '/placeholder.png'} alt={item.name} fill className="object-contain p-1.5" />
+                        <button
+                          onClick={() => removeFromCompare(item.id)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                        >
+                          <X size={12} />
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-[10px] font-medium uppercase tracking-wider group-hover:text-txt-secondary transition-colors">{t('compare.emptySlot', locale)}</span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3">
+            <button onClick={clearCompare} className="text-xs text-red-500 hover:text-red-600 font-bold hover:underline">
+              {t('compare.clearAll', locale)}
+            </button>
+            <Link href="/compare" className="bg-foreground text-surface-card pl-6 pr-5 py-3 rounded-full font-bold text-sm sm:text-base flex items-center gap-2 hover:opacity-90 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10 ring-4 ring-transparent hover:ring-foreground/5">
+              {t('compare.compareBtn', locale)} <span className="bg-white/20 px-2 py-0.5 rounded-md text-xs font-mono">{compareList.length}</span>
+              <ArrowRight size={18} strokeWidth={2.5} />
+            </Link>
+          </div>
+
+        </div>
+      </div>
+    </div>
   )
 }

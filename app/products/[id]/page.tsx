@@ -211,7 +211,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       src={related.image || '/placeholder.png'}
                       alt={related.name}
                       fill
-                      className="object-contain p-4 mix-blend-multiply group-hover:scale-105 transition-transform"
+                      className="object-contain p-4 mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform"
                     />
                   </div>
                   <span className="text-[10px] font-bold text-txt-muted bg-surface-bg px-2 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">

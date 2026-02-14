@@ -5,11 +5,14 @@ import { useBuilderStore } from '@/app/store/useBuilderStore'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import ConfirmModal from './ConfirmModal'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 export default function BuildSummaryBar() {
   const { selectedParts, getTotalPrice, removePart } = useBuilderStore()
   const [loading, setLoading] = useState(false)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const { locale } = useLanguageStore()
 
   const totalPrice = getTotalPrice()
   const selectedItems = Object.values(selectedParts).filter((item) => item !== null)
@@ -31,13 +34,13 @@ export default function BuildSummaryBar() {
       const data = await res.json()
 
       if (data.success) {
-        toast.success('✅ สั่งซื้อสำเร็จ! Order ID: ' + data.orderId)
+        toast.success('✅ ' + t('buildSummary.orderSuccess', locale) + ' Order ID: ' + data.orderId)
         window.location.reload()
       } else {
-        toast.error('❌ เกิดข้อผิดพลาด: ' + data.error)
+        toast.error('❌ ' + t('buildSummary.orderError', locale) + ': ' + data.error)
       }
     } catch (err) {
-      toast.error('❌ เชื่อมต่อไม่ได้')
+      toast.error('❌ ' + t('buildSummary.connectionError', locale))
     } finally {
       setLoading(false)
       setIsConfirmOpen(false)
@@ -52,7 +55,7 @@ export default function BuildSummaryBar() {
 
             <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 flex-1">
               <span className="text-sm font-medium text-txt-secondary whitespace-nowrap">
-                Your Build ({selectedItems.length}):
+                {t('buildSummary.yourBuild', locale)} ({selectedItems.length}):
               </span>
               <div className="flex gap-2">
                 {selectedItems.map((item) => (
@@ -80,7 +83,7 @@ export default function BuildSummaryBar() {
 
             <div className="flex items-center gap-4 flex-shrink-0">
               <div className="text-right">
-                <div className="text-xs text-txt-muted">Total Price</div>
+                <div className="text-xs text-txt-muted">{t('buildSummary.totalPrice', locale)}</div>
                 <div className="text-2xl font-bold text-foreground">
                   ฿{totalPrice.toLocaleString()}
                 </div>
@@ -97,7 +100,7 @@ export default function BuildSummaryBar() {
                   }
                 `}
               >
-                {loading ? 'Processing...' : 'Checkout'}
+                {loading ? t('buildSummary.processing', locale) : t('buildSummary.checkout', locale)}
               </button>
             </div>
           </div>
@@ -108,9 +111,9 @@ export default function BuildSummaryBar() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleCheckout}
-        title="ยืนยันการสั่งซื้อ"
-        message={`ยอดชำระทั้งหมด ฿${totalPrice.toLocaleString()} คุณต้องการดำเนินการต่อหรือไม่?`}
-        confirmText="ชำระเงิน"
+        title={t('buildSummary.confirmTitle', locale)}
+        message={`฿${totalPrice.toLocaleString()} — ${t('buildSummary.confirmMsg', locale)}`}
+        confirmText={t('buildSummary.pay', locale)}
         loading={loading}
         variant="info"
       />

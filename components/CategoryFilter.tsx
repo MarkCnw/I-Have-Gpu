@@ -146,7 +146,7 @@ export default function CategoryFilter() {
                   >
                     <option value="">{spec.label}: All</option>
                     {spec.options.map(opt => (
-                      <option key={opt} value={opt} className="text-black bg-white">{opt}</option>
+                      <option key={opt} value={opt} className="text-foreground bg-surface-card">{opt}</option>
                     ))}
                   </select>
                   {/* Custom Arrow Icon */}

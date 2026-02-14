@@ -73,7 +73,15 @@ export default function AdminFinanceClient({ data }: Props) {
             {/* Chart */}
             <div className="bg-surface-card p-6 rounded-2xl border border-border-main shadow-sm">
                 <h2 className="font-bold text-xl mb-4 text-foreground">{t('admin.revenueTrends', locale)}</h2>
-                <AdminFinanceChart />
+                <AdminFinanceChart data={
+                    data.recentTransactions.reduce((acc: { date: string; total: number }[], tx) => {
+                        const dateStr = new Date(tx.createdAt).toLocaleDateString('th-TH', { day: '2-digit', month: 'short' })
+                        const existing = acc.find(d => d.date === dateStr)
+                        if (existing) existing.total += tx.total
+                        else acc.push({ date: dateStr, total: tx.total })
+                        return acc
+                    }, [])
+                } />
             </div>
 
             {/* Recent Transactions */}

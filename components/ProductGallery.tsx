@@ -14,7 +14,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
           src={mainImage}
           alt="Product Image"
           fill
-          className="object-contain p-8 mix-blend-multiply transition-all duration-500 group-hover:scale-105"
+          className="object-contain p-8 mix-blend-multiply dark:mix-blend-normal transition-all duration-500 group-hover:scale-105"
         />
       </div>
 
@@ -27,7 +27,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
               onClick={() => setMainImage(img)}
               className={`aspect-square bg-surface-card rounded-xl border p-2 relative cursor-pointer hover:border-foreground transition-all overflow-hidden ${mainImage === img ? 'border-foreground ring-1 ring-foreground' : 'border-border-light'}`}
             >
-              <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain p-1 mix-blend-multiply" />
+              <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain p-1 mix-blend-multiply dark:mix-blend-normal" />
             </button>
           ))}
         </div>
