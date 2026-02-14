@@ -104,7 +104,7 @@ export default function WarrantyClient() {
                             <p className="text-sm text-txt-muted mt-1">{t('warranty.coverageSubtitle', locale)}</p>
                         </div>
                         <span className="hidden md:block text-xs font-bold bg-black text-white px-3 py-1 rounded-full">
-                            PREMIUM CARE
+                            {t('warranty.premiumCare', locale)}
                         </span>
                     </div>
 

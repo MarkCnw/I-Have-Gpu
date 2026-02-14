@@ -60,7 +60,7 @@ export default function LocationsClient() {
                                 rel="noreferrer"
                                 className="bg-surface-bg hover:bg-surface-card text-foreground px-4 py-2 rounded-lg text-sm border border-border-main transition flex items-center gap-2"
                             >
-                                <Map size={16} /> Google Maps
+                                <Map size={16} /> {t('locations.googleMaps', locale)}
                             </a>
                         </div>
                     ))}

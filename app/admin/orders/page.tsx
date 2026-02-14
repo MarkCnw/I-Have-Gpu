@@ -302,8 +302,8 @@ export default function AdminOrdersPage() {
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         onConfirm={handleRejectSubmit}
-        title={locale === 'en' ? 'Reason for rejection' : locale === 'jp' ? '拒否理由を入力してください' : 'ระบุเหตุผลที่ปฏิเสธการชำระเงิน'}
-        placeholder={locale === 'en' ? 'e.g. Incorrect amount or unclear slip' : locale === 'jp' ? '例：金額が不正確、スリップが不鮮明' : 'เช่น ยอดเงินไม่ถูกต้อง หรือ สลิปไม่ชัดเจน'}
+        title={t('admin.rejectTitle', locale)}
+        placeholder={t('admin.rejectPlaceholder', locale)}
         confirmText={t('admin.confirm', locale)}
         loading={confirmLoading}
       />
@@ -312,8 +312,8 @@ export default function AdminOrdersPage() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={confirmStatusChange}
-        title={locale === 'en' ? 'Confirm status change' : locale === 'jp' ? 'ステータス変更の確認' : 'ยืนยันการเปลี่ยนสถานะ'}
-        message={`${locale === 'en' ? 'Change status to' : locale === 'jp' ? 'ステータスを変更:' : 'เปลี่ยนสถานะเป็น'} "${confirmData ? STATUS_LABEL[confirmData.status] || confirmData.status : ''}"?`}
+        title={t('admin.confirmStatusTitle', locale)}
+        message={`${t('admin.confirmStatusMsg', locale)} "${confirmData ? STATUS_LABEL[confirmData.status] || confirmData.status : ''}"?`}
         confirmText={t('admin.confirm', locale)}
         loading={confirmLoading}
         variant={confirmData?.status === 'PENDING' ? 'danger' : 'info'}
@@ -323,19 +323,19 @@ export default function AdminOrdersPage() {
         isOpen={isTrackingModalOpen}
         onClose={() => setIsTrackingModalOpen(false)}
         onConfirm={handleTrackingSubmit}
-        title={locale === 'en' ? 'Enter tracking number' : locale === 'jp' ? '追跡番号を入力' : 'กรุณากรอกเลขพัสดุ (Tracking Number)'}
+        title={t('admin.trackingTitle', locale)}
         placeholder="e.g. TH12345678901"
-        confirmText={locale === 'en' ? 'Next' : locale === 'jp' ? '次へ' : 'ถัดไป'}
+        confirmText={t('admin.next', locale)}
       />
 
       <InputModal
         isOpen={isCarrierModalOpen}
         onClose={() => setIsCarrierModalOpen(false)}
         onConfirm={handleCarrierSubmit}
-        title={locale === 'en' ? 'Carrier name' : locale === 'jp' ? '配送業者名' : 'ชื่อบริษัทขนส่ง'}
+        title={t('admin.carrierTitle', locale)}
         placeholder="e.g. Kerry, Flash, Thailand Post"
         defaultValue="Kerry Express"
-        confirmText={locale === 'en' ? 'Save' : locale === 'jp' ? '保存' : 'บันทึก'}
+        confirmText={t('admin.save', locale)}
         loading={trackingLoading}
       />
 
