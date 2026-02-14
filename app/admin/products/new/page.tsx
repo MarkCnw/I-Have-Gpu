@@ -159,8 +159,8 @@ export default function NewProductPage() {
           <ChevronLeft size={24} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">เพิ่มสินค้าใหม่</h1>
-          <p className="text-txt-muted text-sm">กรอกข้อมูลสินค้าให้ครบถ้วนเพื่อลงขาย</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('adminForm.addProduct', locale)}</h1>
+          <p className="text-txt-muted text-sm">{t('adminForm.addProductDesc', locale)}</p>
         </div>
       </div>
 
@@ -168,30 +168,30 @@ export default function NewProductPage() {
 
         {/* 1. ข้อมูลพื้นฐาน */}
         <div className="bg-surface-card p-6 rounded-xl border border-border-main shadow-sm space-y-6">
-          <h2 className="font-bold text-lg border-b border-border-main pb-4 text-foreground">ข้อมูลทั่วไป</h2>
+          <h2 className="font-bold text-lg border-b border-border-main pb-4 text-foreground">{t('adminForm.generalInfo', locale)}</h2>
 
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-txt-muted">ชื่อสินค้า <span className="text-red-500">*</span></label>
+              <label className="text-sm font-bold text-txt-muted">{t('adminForm.productName', locale)} <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 required
                 className="w-full bg-surface-bg border border-border-main rounded-lg p-3 text-foreground focus:border-foreground focus:ring-0 outline-none transition-all"
-                placeholder="เช่น Intel Core i9-14900K"
+                placeholder={t('adminForm.productNamePlaceholder', locale)}
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-txt-muted">หมวดหมู่ <span className="text-red-500">*</span></label>
+              <label className="text-sm font-bold text-txt-muted">{t('adminForm.category', locale)} <span className="text-red-500">*</span></label>
               <div className="relative">
                 <select
                   className="w-full bg-surface-bg border border-border-main rounded-lg p-3 text-foreground focus:border-foreground outline-none appearance-none cursor-pointer"
                   value={formData.category}
                   onChange={e => handleCategoryChange(e.target.value)}
                 >
-                  <option value="">-- เลือกหมวดหมู่ --</option>
+                  <option value="">{t('adminForm.selectCategory', locale)}</option>
                   {Object.keys(SPECS_TEMPLATES).map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
@@ -202,11 +202,11 @@ export default function NewProductPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-txt-muted">รายละเอียดสินค้า</label>
+            <label className="text-sm font-bold text-txt-muted">{t('adminForm.description', locale)}</label>
             <textarea
               rows={4}
               className="w-full bg-surface-bg border border-border-main rounded-lg p-3 text-foreground focus:border-foreground focus:ring-0 outline-none transition-all resize-none"
-              placeholder="รายละเอียดเพิ่มเติมของสินค้า..."
+              placeholder={t('adminForm.descriptionPlaceholder', locale)}
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
             />
@@ -214,7 +214,7 @@ export default function NewProductPage() {
 
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-txt-muted">ราคา (บาท) <span className="text-red-500">*</span></label>
+              <label className="text-sm font-bold text-txt-muted">{t('adminForm.price', locale)} <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 required
@@ -226,7 +226,7 @@ export default function NewProductPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-txt-muted">จำนวน (สต็อก) <span className="text-red-500">*</span></label>
+              <label className="text-sm font-bold text-txt-muted">{t('adminForm.stock', locale)} <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 required
@@ -243,7 +243,7 @@ export default function NewProductPage() {
         {/* 2. สเปคสินค้า */}
         {formData.category && (
           <div className="bg-surface-card p-6 rounded-xl border border-border-main shadow-sm space-y-6 animate-in fade-in slide-in-from-bottom-4">
-            <h2 className="font-bold text-lg border-b border-border-main pb-4 text-foreground">คุณสมบัติเฉพาะ ({formData.category})</h2>
+            <h2 className="font-bold text-lg border-b border-border-main pb-4 text-foreground">{t('adminForm.specs', locale)} ({formData.category})</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {Object.keys(SPECS_TEMPLATES[formData.category]).map((key) => (
                 <div key={key} className="space-y-2">
@@ -253,7 +253,7 @@ export default function NewProductPage() {
                   <input
                     type="text"
                     className="w-full bg-surface-bg border border-border-main rounded-lg p-2.5 text-sm text-foreground focus:border-foreground outline-none"
-                    placeholder={`ระบุ ${key}`}
+                    placeholder={`${t('adminForm.specPlaceholder', locale)} ${key}`}
                     value={formData.specs[key] || ''}
                     onChange={e => handleSpecChange(key, e.target.value)}
                   />
@@ -266,8 +266,8 @@ export default function NewProductPage() {
         {/* 3. รูปภาพสินค้า (Multiple Images) */}
         <div className="bg-surface-card p-6 rounded-xl border border-border-main shadow-sm space-y-6">
           <div className="flex justify-between items-center border-b border-border-main pb-4">
-            <h2 className="font-bold text-lg text-foreground">รูปภาพสินค้า ({formData.images.length})</h2>
-            <span className="text-xs text-txt-muted">รูปแรกจะเป็นรูปปกสินค้า</span>
+            <h2 className="font-bold text-lg text-foreground">{t('adminForm.images', locale)} ({formData.images.length})</h2>
+            <span className="text-xs text-txt-muted">{t('adminForm.coverNote', locale)}</span>
           </div>
 
           {/* Gallery Grid */}
@@ -279,7 +279,7 @@ export default function NewProductPage() {
               ) : (
                 <>
                   <Upload className="text-txt-muted mb-2 group-hover:text-foreground transition-colors" />
-                  <span className="text-xs text-txt-muted font-medium">อัปโหลดรูป</span>
+                  <span className="text-xs text-txt-muted font-medium">{t('adminForm.upload', locale)}</span>
                 </>
               )}
               <input
@@ -300,7 +300,7 @@ export default function NewProductPage() {
                 {/* Badge รูปปก */}
                 {index === 0 && (
                   <div className="absolute top-2 left-2 bg-foreground text-surface-card text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
-                    รูปปก
+                    {t('adminForm.coverBadge', locale)}
                   </div>
                 )}
 
@@ -319,7 +319,7 @@ export default function NewProductPage() {
           {/* URL Input */}
           <div className="flex gap-2 items-end pt-2 border-t border-border-main mt-2">
             <div className="flex-1 space-y-2">
-              <label className="text-sm font-bold text-txt-muted">เพิ่มรูปจากลิงก์</label>
+              <label className="text-sm font-bold text-txt-muted">{t('adminForm.addUrl', locale)}</label>
               <input
                 type="text"
                 className="w-full bg-surface-bg border border-border-main rounded-lg p-3 text-foreground focus:border-foreground outline-none text-sm"
@@ -339,8 +339,8 @@ export default function NewProductPage() {
           </div>
 
           <p className="text-xs text-txt-muted leading-relaxed">
-            รองรับไฟล์ JPG, PNG, WEBP ขนาดไม่เกิน 5MB ต่อรูป <br />
-            สามารถลากวางรูปภาพ หรือเลือกทีละหลายรูปได้
+            {t('adminForm.fileSupport', locale)} <br />
+            {t('adminForm.dragDrop', locale)}
           </p>
         </div>
 
@@ -350,7 +350,7 @@ export default function NewProductPage() {
             href="/admin/products"
             className="px-6 py-3 rounded-lg border border-border-main text-txt-muted font-bold hover:bg-surface-bg transition-colors"
           >
-            ยกเลิก
+            {t('adminForm.cancel', locale)}
           </Link>
           <button
             type="submit"
@@ -358,7 +358,7 @@ export default function NewProductPage() {
             className="px-8 py-3 rounded-lg bg-foreground text-surface-card font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? <Loader2 className="animate-spin" /> : <Save size={20} />}
-            บันทึกสินค้า
+            {t('adminForm.saveProduct', locale)}
           </button>
         </div>
 

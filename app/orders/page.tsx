@@ -159,10 +159,10 @@ export default function OrdersPage() {
                 {/* Header Card */}
                 <div className="bg-surface-bg p-4 flex justify-between items-center border-b border-border-light">
                   <div>
-                    <p className="text-xs text-txt-muted font-bold uppercase tracking-wider mb-0.5">Order ID</p>
+                    <p className="text-xs text-txt-muted font-bold uppercase tracking-wider mb-0.5">{t('orders.orderId', locale)}</p>
                     <p className="text-sm font-mono font-bold text-txt-secondary">#{order.id.split('-')[0]}</p>
                     <p className="text-[10px] text-txt-muted mt-1">
-                      {new Date(order.createdAt).toLocaleString('th-TH', { dateStyle: 'long', timeStyle: 'short' })}
+                      {new Date(order.createdAt).toLocaleString(locale === 'th' ? 'th-TH' : locale === 'jp' ? 'ja-JP' : 'en-US', { dateStyle: 'long', timeStyle: 'short' })}
                     </p>
                   </div>
                   {/* Status Badge ภาษาไทย */}
@@ -297,7 +297,7 @@ export default function OrdersPage() {
                 </div>
                 <div>
                   <span className="font-bold text-txt-secondary block">{uploading ? t('orders.uploading', locale) : t('orders.attachSlip', locale)}</span>
-                  <span className="text-[10px] text-txt-muted uppercase">Supports JPG, PNG</span>
+                  <span className="text-[10px] text-txt-muted uppercase">{t('orders.supportsFile', locale)}</span>
                 </div>
               </div>
               <input type="file" accept="image/*" className="hidden" onChange={handleUploadSlip} disabled={uploading} />

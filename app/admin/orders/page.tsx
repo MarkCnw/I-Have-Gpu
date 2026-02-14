@@ -101,10 +101,10 @@ export default function AdminOrdersPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'PAYMENT_FAILED', rejectionReason: reason })
       })
-      toast.success('✅')
+      toast.success(t('admin.success', locale))
       await fetchOrders()
     } catch (error) {
-      toast.error('Error')
+      toast.error(t('admin.error', locale))
     } finally {
       setConfirmLoading(false)
       setIsRejectModalOpen(false)
@@ -121,10 +121,10 @@ export default function AdminOrdersPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: confirmData.status })
       })
-      toast.success('✅')
+      toast.success(t('admin.success', locale))
       await fetchOrders()
     } catch (error) {
-      toast.error('Error')
+      toast.error(t('admin.error', locale))
     } finally {
       setConfirmLoading(false)
       setIsConfirmOpen(false)
@@ -158,10 +158,10 @@ export default function AdminOrdersPage() {
           carrier: carrier || 'Kerry Express'
         })
       })
-      toast.success('✅')
+      toast.success(t('admin.success', locale))
       await fetchOrders()
     } catch (error) {
-      toast.error('Error')
+      toast.error(t('admin.error', locale))
     } finally {
       setTrackingLoading(false)
       setIsCarrierModalOpen(false)
@@ -221,7 +221,7 @@ export default function AdminOrdersPage() {
                   <td className="p-4 font-mono text-foreground">{order.id.split('-')[0]}</td>
                   <td className="p-4">
                     <p className="font-bold text-foreground">{order.shippingName}</p>
-                    <p className="text-xs text-txt-muted">{new Date(order.createdAt).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className="text-xs text-txt-muted">{new Date(order.createdAt).toLocaleDateString(locale === 'th' ? 'th-TH' : locale === 'jp' ? 'ja-JP' : 'en-US', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
                   </td>
                   <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">฿{Number(order.total).toLocaleString()}</td>
 
@@ -324,7 +324,7 @@ export default function AdminOrdersPage() {
         onClose={() => setIsTrackingModalOpen(false)}
         onConfirm={handleTrackingSubmit}
         title={t('admin.trackingTitle', locale)}
-        placeholder="e.g. TH12345678901"
+        placeholder={t('admin.placeholderTracking', locale)}
         confirmText={t('admin.next', locale)}
       />
 
@@ -333,7 +333,7 @@ export default function AdminOrdersPage() {
         onClose={() => setIsCarrierModalOpen(false)}
         onConfirm={handleCarrierSubmit}
         title={t('admin.carrierTitle', locale)}
-        placeholder="e.g. Kerry, Flash, Thailand Post"
+        placeholder={t('admin.placeholderCarrier', locale)}
         defaultValue="Kerry Express"
         confirmText={t('admin.save', locale)}
         loading={trackingLoading}
