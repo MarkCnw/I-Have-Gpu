@@ -131,7 +131,7 @@ export default function LoginPage() {
             </div>
 
             <p className="mt-8 text-xs text-txt-muted">
-                © 2026 iHAVEGPU Store. All rights reserved.
+                © 2026 iHAVEGPU Store. {t('login.copyright', locale)}
             </p>
         </div>
     )

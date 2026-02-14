@@ -2,6 +2,8 @@
 'use client'
 
 import { X } from 'lucide-react'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 interface ConfirmModalProps {
   isOpen: boolean
@@ -21,11 +23,14 @@ export default function ConfirmModal({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   loading = false,
   variant = 'info'
 }: ConfirmModalProps) {
+  const { locale } = useLanguageStore()
+  const resolvedConfirmText = confirmText || t('common.confirm', locale)
+  const resolvedCancelText = cancelText || t('common.cancel', locale)
   if (!isOpen) return null
 
   const variantStyles = {
@@ -53,14 +58,14 @@ export default function ConfirmModal({
             disabled={loading}
             className="flex-1 px-4 py-3 rounded-xl border border-border-main font-bold text-txt-muted hover:bg-surface-bg transition disabled:opacity-50"
           >
-            {cancelText}
+            {resolvedCancelText}
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
             className={`flex-1 px-4 py-3 rounded-xl font-bold text-white transition disabled:opacity-50 ${variantStyles[variant]}`}
           >
-            {loading ? '...' : confirmText}
+            {loading ? '...' : resolvedConfirmText}
           </button>
         </div>
       </div>

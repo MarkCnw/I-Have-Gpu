@@ -3,6 +3,8 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 interface InputModalProps {
   isOpen: boolean
@@ -25,6 +27,7 @@ export default function InputModal({
   confirmText = 'OK',
   loading = false
 }: InputModalProps) {
+  const { locale } = useLanguageStore()
   const [value, setValue] = useState(defaultValue)
 
   if (!isOpen) return null
@@ -62,7 +65,7 @@ export default function InputModal({
             disabled={loading}
             className="flex-1 px-4 py-3 rounded-xl border border-border-main font-bold text-txt-muted hover:bg-surface-bg transition disabled:opacity-50"
           >
-            Cancel
+            {t('common.cancel', locale)}
           </button>
           <button
             onClick={handleConfirm}
