@@ -24,12 +24,12 @@ function ProductGridSkeleton() {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10 animate-pulse">
       {[...Array(10)].map((_, i) => (
         <div key={i} className="flex flex-col h-[400px]">
-          <div className="aspect-square bg-border-light rounded-2xl mb-4" />
-          <div className="h-4 w-1/3 bg-border-light rounded mb-2" />
-          <div className="h-6 w-3/4 bg-border-light rounded mb-2" />
-          <div className="h-4 w-full bg-border-light rounded mb-1" />
-          <div className="h-4 w-5/6 bg-border-light rounded" />
-          <div className="mt-auto h-8 w-1/2 bg-border-light rounded" />
+          <div className="aspect-square bg-skeleton rounded-2xl mb-4" />
+          <div className="h-4 w-1/3 bg-skeleton-light rounded mb-2" />
+          <div className="h-6 w-3/4 bg-skeleton rounded mb-2" />
+          <div className="h-4 w-full bg-skeleton-light rounded mb-1" />
+          <div className="h-4 w-5/6 bg-skeleton-light rounded" />
+          <div className="mt-auto h-8 w-1/2 bg-skeleton rounded" />
         </div>
       ))}
     </div>

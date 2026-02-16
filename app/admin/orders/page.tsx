@@ -11,13 +11,13 @@ import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { t } from '@/lib/i18n'
 
 const TableRowSkeleton = () => (
-  <tr className="border-b border-slate-100 dark:border-border-main">
-    <td className="p-4"><div className="h-5 w-20 bg-slate-200 dark:bg-surface-bg rounded animate-pulse" /></td>
+  <tr className="border-b border-border-light">
+    <td className="p-4"><div className="h-5 w-20 bg-skeleton rounded animate-pulse" /></td>
     <td className="p-4">
-      <div className="h-4 w-32 dark:bg-surface-bg rounded animate-pulse mb-2" />
-      <div className="h-3 w-24 dark:bg-surface-bg rounded animate-pulse" />
+      <div className="h-4 w-32 bg-skeleton rounded animate-pulse mb-2" />
+      <div className="h-3 w-24 bg-skeleton-light rounded animate-pulse" />
     </td>
-    <td className="p-4 text-right"><div className="h-8 w-40 bg-slate-200 dark:bg-surface-bg rounded-lg animate-pulse ml-auto" /></td>
+    <td className="p-4 text-right"><div className="h-8 w-40 bg-skeleton rounded-lg animate-pulse ml-auto" /></td>
   </tr>
 )
 
@@ -65,6 +65,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => { fetchOrders() }, [])
 
+  // ... (Functions confirmStatusChange, handleRejectSubmit etc. remain same)
   const openStatusConfirm = (id: string, status: string) => {
     setConfirmData({ id, status }); setIsConfirmOpen(true)
   }
@@ -147,21 +148,21 @@ export default function AdminOrdersPage() {
     <div className="p-8 min-h-screen bg-slate-50 dark:bg-transparent transition-colors">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-foreground">{t('admin.manageOrders', locale)}</h1>
-        
-        <div className="flex bg-white dark:bg-surface-card p-1 rounded-lg border border-slate-200 dark:border-border-main shadow-sm">
+
+        {/* Filter Tabs: Light=Slate , Dark=surface-card */}
+        <div className="flex bg-white dark:bg-surface-card p-1 rounded-lg border border-slate-200 dark:border-border-main">
           {['ALL', 'VERIFYING', 'PAID', 'SHIPPED'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${
-                filter === f 
-                ? 'bg-black text-white dark:bg-foreground dark:text-surface-card' 
-                : 'text-slate-500 dark:text-txt-muted hover:bg-slate-50 dark:hover:bg-surface-bg'
-              }`}
+              className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${filter === f
+                  ? 'bg-black text-white dark:bg-foreground dark:text-surface-card'
+                  : 'text-slate-500 dark:text-txt-muted hover:bg-slate-50 dark:hover:bg-surface-bg'
+                }`}
             >
               {STATUS_LABEL[f]}
               {f === 'VERIFYING' && safeOrders.filter((o: any) => o.status === 'VERIFYING').length > 0 && (
-                <span className="ml-1 text-red-500">●</span>
+                <span className="ml-1 text-red-400">●</span>
               )}
             </button>
           ))}
@@ -199,13 +200,12 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">฿{Number(order.total).toLocaleString()}</td>
                     <td className="p-4">
-                      {/* ✅ แก้ไข: ปรับสีสถานะให้อ่านง่ายขึ้นใน Light Mode และคงเดิมใน Dark Mode */}
+                      {/* ✅ ปรับสีสถานะให้อ่านง่าย (ตัวหนังสือเข้มมาก) ใน Light Mode และคงเดิมใน Dark Mode */}
                       <span className={`px-2 py-1 rounded text-[10px] font-bold 
-                        ${order.status === 'VERIFYING' ? 'bg-amber-100 text-amber-900 dark:bg-yellow-950/50 dark:text-yellow-400' : 
+                        ${order.status === 'VERIFYING' ? 'bg-amber-100 text-amber-900 dark:bg-yellow-950/50 dark:text-yellow-400' :
                           order.status === 'PAID' ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-400' :
-                          order.status === 'SHIPPED' ? 'bg-emerald-100 text-emerald-900 dark:bg-green-950/50 dark:text-green-400' : 
-                          order.status === 'PAYMENT_FAILED' || order.status === 'CANCELLED' ? 'bg-red-100 text-red-900 dark:bg-red-950/50 dark:text-red-400' :
-                          'bg-slate-100 text-slate-600 dark:bg-surface-bg dark:text-txt-muted'}`}
+                            order.status === 'SHIPPED' ? 'bg-emerald-100 text-emerald-900 dark:bg-green-950/50 dark:text-green-400' :
+                              'bg-slate-100 text-slate-700 dark:bg-surface-bg dark:text-txt-muted'}`}
                       >
                         {STATUS_LABEL[order.status] || order.status}
                       </span>
@@ -220,7 +220,7 @@ export default function AdminOrdersPage() {
                     <td className="p-4">
                       {order.trackingNumber ? (
                         <div className="text-xs">
-                          <span className="font-bold text-slate-700 dark:text-foreground">{order.carrier}</span><br/>
+                          <span className="font-bold text-slate-700 dark:text-foreground">{order.carrier}</span><br />
                           <span className="font-mono text-slate-500 dark:text-txt-muted">{order.trackingNumber}</span>
                         </div>
                       ) : '-'}
@@ -241,7 +241,7 @@ export default function AdminOrdersPage() {
                           </>
                         )}
                         {order.status === 'PAID' && (
-                          <button onClick={() => openTrackingModal(order.id)} className="bg-black dark:bg-foreground text-white dark:text-surface-card px-3 py-1.5 rounded flex items-center gap-1 hover:opacity-80 text-xs font-bold">
+                          <button onClick={() => openTrackingModal(order.id)} className="bg-black dark:bg-white text-white dark:text-black px-3 py-1.5 rounded flex items-center gap-1 hover:opacity-80 text-xs font-bold">
                             <Truck size={14} /> {t('admin.ship', locale)}
                           </button>
                         )}
@@ -255,39 +255,39 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* Modals - ใช้คำจาก t() ตามเดิม */}
-      <InputModal isOpen={isRejectModalOpen} onClose={() => setIsRejectModalOpen(false)} onConfirm={handleRejectSubmit} title={t('admin.rejectTitle', locale)} placeholder={t('admin.rejectPlaceholder', locale)} />
-      <ConfirmModal isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} onConfirm={confirmStatusChange} title={t('admin.confirmStatusTitle', locale)} message={t('admin.confirmStatusMsg', locale)} />
+      {/* Modals - ใช้คำจาก i18n Dictionary */}
+      <InputModal isOpen={isRejectModalOpen} onClose={() => setIsRejectModalOpen(false)} onConfirm={handleRejectSubmit} title={t('admin.rejectTitle', locale)} placeholder={t('admin.rejectPlaceholder', locale)} loading={confirmLoading} />
+      <ConfirmModal isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} onConfirm={confirmStatusChange} title={t('admin.confirmStatusTitle', locale)} message={t('admin.confirmStatusMsg', locale)} loading={confirmLoading} />
       <InputModal isOpen={isTrackingModalOpen} onClose={() => setIsTrackingModalOpen(false)} onConfirm={handleTrackingSubmit} title={t('admin.trackingTitle', locale)} placeholder={t('admin.placeholderTracking', locale)} />
-      <InputModal isOpen={isCarrierModalOpen} onClose={() => setIsCarrierModalOpen(false)} onConfirm={handleCarrierSubmit} title={t('admin.carrierTitle', locale)} defaultValue="Kerry Express" />
+      <InputModal isOpen={isCarrierModalOpen} onClose={() => setIsCarrierModalOpen(false)} onConfirm={handleCarrierSubmit} title={t('admin.carrierTitle', locale)} defaultValue="Kerry Express" loading={trackingLoading} />
 
-      {/* Selected Order Detail Modal - ธีม Slate */}
+      {/* Selected Order Detail Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white dark:bg-surface-card w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-200 dark:border-border-main">
             <div className="p-6 border-b border-slate-100 dark:border-border-main flex justify-between items-center bg-slate-50 dark:bg-surface-bg">
               <div>
                 <h3 className="font-bold text-lg text-slate-800 dark:text-foreground">{t('admin.details', locale)}</h3>
-                <p className="text-xs text-slate-500 dark:text-txt-muted font-mono">ID: {selectedOrder.id}</p>
+                <p className="text-xs text-slate-500 dark:text-neutral-500 font-mono">ID: {selectedOrder.id}</p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-slate-200 dark:hover:bg-border-main rounded-full text-slate-500 dark:text-txt-muted transition">✕</button>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-full text-slate-500 transition">✕</button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-6">
-              <div className="bg-slate-50 dark:bg-surface-bg p-4 rounded-xl border border-slate-200 dark:border-border-main space-y-3">
-                <h4 className="font-bold text-sm flex items-center gap-2 text-slate-700 dark:text-foreground"><MapPin size={16}/> {t('cart.shippingAddress', locale)}</h4>
+              <div className="bg-slate-50 dark:bg-neutral-800/30 p-4 rounded-xl border border-slate-200 dark:border-neutral-800 space-y-3">
+                <h4 className="font-bold text-sm flex items-center gap-2 text-slate-700 dark:text-foreground"><MapPin size={16} /> {t('cart.shippingAddress', locale)}</h4>
                 <div className="text-sm text-slate-600 dark:text-txt-muted pl-6 space-y-1">
                   <p className="text-lg font-bold text-black dark:text-foreground">{selectedOrder.shippingName}</p>
                   <p>{selectedOrder.shippingAddress} {selectedOrder.shippingZipcode}</p>
-                  <div className="flex items-center gap-2 mt-2 text-black dark:text-foreground font-medium"><Phone size={14}/> {selectedOrder.shippingPhone}</div>
+                  <div className="flex items-center gap-2 mt-2 text-black dark:text-foreground font-medium"><Phone size={14} /> {selectedOrder.shippingPhone}</div>
                 </div>
               </div>
 
               <div>
-                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-700 dark:text-foreground"><Package size={16}/> {t('admin.products', locale)}</h4>
+                <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-slate-700 dark:text-foreground"><Package size={16} /> {t('admin.products', locale)}</h4>
                 <div className="space-y-3">
                   {selectedOrder.items?.map((item: any, idx: number) => (
-                    <div key={idx} className="flex gap-4 p-3 border border-slate-100 dark:border-border-main rounded-lg bg-white dark:bg-surface-card shadow-sm">
+                    <div key={idx} className="flex gap-4 p-3 border border-slate-100 dark:border-border-main rounded-lg bg-white dark:bg-surface-card">
                       <div className="w-12 h-12 bg-slate-50 dark:bg-surface-bg rounded-md relative overflow-hidden flex-shrink-0">
                         {item.product?.image && <Image src={item.product.image} alt="p" fill className="object-contain p-1 mix-blend-multiply dark:mix-blend-normal" />}
                       </div>

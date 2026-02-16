@@ -35,7 +35,7 @@ export default function AdminDashboardClient({ stats }: Props) {
                     </div>
                     <p className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-1">{t('admin.pendingSlip', locale)}</p>
                     <p className="text-4xl font-extrabold text-foreground">{stats.pendingSlip}</p>
-                    <div className="mt-4 text-xs font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full inline-block">
+                    <div className="mt-4 text-xs font-bold text-blue-600 dark:text-blue-400 inline-block">
                         {t('admin.actionRequired', locale)}
                     </div>
                 </Link>
@@ -46,7 +46,7 @@ export default function AdminDashboardClient({ stats }: Props) {
                     </div>
                     <p className="text-sm font-bold text-emerald-600 uppercase tracking-wide mb-1">{t('admin.toShip', locale)}</p>
                     <p className="text-4xl font-extrabold text-foreground">{stats.toShip}</p>
-                    <div className="mt-4 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full inline-block">
+                    <div className="mt-4 text-xs font-bold text-emerald-600 dark:text-emerald-400 inline-block">
                         {t('admin.readyToShip', locale)}
                     </div>
                 </Link>
@@ -57,7 +57,7 @@ export default function AdminDashboardClient({ stats }: Props) {
                     </div>
                     <p className="text-sm font-bold text-orange-600 uppercase tracking-wide mb-1">{t('admin.lowStock', locale)}</p>
                     <p className="text-4xl font-extrabold text-foreground">{stats.lowStock}</p>
-                    <div className="mt-4 text-xs font-bold bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 px-3 py-1 rounded-full inline-block">
+                    <div className="mt-4 text-xs font-bold text-orange-600 dark:text-orange-400 inline-block">
                         {t('admin.restockNow', locale)}
                     </div>
                 </Link>

@@ -7,8 +7,8 @@ import { LayoutDashboard, Package, ShoppingCart, LogOut, Store, DollarSign, Mess
 import { signOut } from 'next-auth/react'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { t } from '@/lib/i18n'
-import ThemeToggle from '@/components/ThemeToggle'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
+
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -86,8 +86,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
-                    ? 'bg-foreground text-surface-card shadow-md'
-                    : 'text-txt-muted hover:bg-surface-bg hover:text-foreground'
+                  ? 'bg-foreground text-surface-card shadow-md'
+                  : 'text-txt-muted hover:bg-surface-bg hover:text-foreground'
                   }`}
               >
                 <item.icon size={20} />
@@ -98,11 +98,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="p-4 border-t border-border-main space-y-2">
-          {/* Theme & Language Toggles */}
-          <div className="flex items-center justify-between px-2 py-2">
-            <ThemeToggle />
-            <LanguageSwitcher />
-          </div>
           <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-txt-muted hover:bg-surface-bg transition-all font-medium">
             <Store size={20} /> {t('admin.backToStore', locale)}
           </Link>

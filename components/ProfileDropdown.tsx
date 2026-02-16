@@ -4,8 +4,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { User, Package, Heart, Shield, LogOut, ChevronDown } from 'lucide-react'
+import { User, Package, Heart, Shield, LogOut, ChevronDown, Sun, Moon } from 'lucide-react'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { useThemeStore } from '@/app/store/useThemeStore'
 import { t } from '@/lib/i18n'
 
 export default function ProfileDropdown() {
@@ -13,6 +14,8 @@ export default function ProfileDropdown() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { locale } = useLanguageStore()
+  const { theme, toggleTheme } = useThemeStore()
+  const isDark = theme === 'dark'
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -65,8 +68,25 @@ export default function ProfileDropdown() {
             </Link>
           )}
 
+          {/* Dark Mode Toggle */}
+          <div className="px-4 py-2.5 border-t border-border-light flex items-center justify-between">
+            <div className="flex items-center gap-3 text-sm text-txt-secondary">
+              {isDark ? <Moon size={16} /> : <Sun size={16} />}
+              <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${isDark ? 'bg-neutral-600' : 'bg-neutral-200'}`}
+              aria-label="Toggle dark mode"
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-300 ${isDark ? 'translate-x-5' : 'translate-x-0'}`}>
+                {isDark ? <Moon size={12} className="text-indigo-500" /> : <Sun size={12} className="text-amber-500" />}
+              </div>
+            </button>
+          </div>
+
           {/* Sign Out */}
-          <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-3 border-t border-border-light">
+          <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition flex items-center gap-3 border-t border-border-light">
             <LogOut size={16} /> {t('profileDropdown.logout', locale)}
           </button>
         </div>

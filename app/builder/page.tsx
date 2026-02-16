@@ -262,7 +262,7 @@ export default function BuilderPage() {
             <div className="overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {loading ? (
                 [...Array(6)].map((_, i) => (
-                  <div key={i} className="h-48 bg-surface-bg rounded-3xl animate-pulse" />
+                  <div key={i} className="h-48 bg-skeleton rounded-3xl animate-pulse" />
                 ))
               ) : products.map((p) => {
                 const { compatible, reason } = checkCompatibility(p)

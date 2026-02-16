@@ -88,7 +88,6 @@ export default function HomeClient({
                             <SearchBar />
                         </div>
                         <LanguageSwitcher />
-                        <ThemeToggle />
                         <NavbarCart />
                         {(user as any)?.role === 'ADMIN' && (
                             <Link href="/admin" className="text-[10px] font-bold bg-primary text-surface-card px-2 py-1 rounded hover:bg-primary-hover transition-colors">{t('nav.admin', locale)}</Link>
@@ -96,9 +95,12 @@ export default function HomeClient({
                         {user ? (
                             <ProfileDropdown user={user} />
                         ) : (
-                            <Link href="/login" className="text-sm font-medium hover:text-txt-secondary flex items-center gap-2 transition-colors">
-                                <LogIn size={20} /> {t('nav.login', locale)}
-                            </Link>
+                            <>
+                                <ThemeToggle />
+                                <Link href="/login" className="text-sm font-medium hover:text-txt-secondary flex items-center gap-2 transition-colors">
+                                    <LogIn size={20} /> {t('nav.login', locale)}
+                                </Link>
+                            </>
                         )}
                     </div>
                 </div>

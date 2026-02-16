@@ -29,29 +29,29 @@ function getStatusLabel(status: string, locale: Locale): string {
 // ✅ ส่วนที่เพิ่ม: Component สำหรับ Skeleton Loading ของการ์ดคำสั่งซื้อ
 const OrderSkeleton = () => (
   <div className="bg-surface-card rounded-2xl shadow-sm border border-border-light overflow-hidden animate-pulse">
-    <div className="bg-surface-bg p-4 border-b border-border-light flex justify-between items-center">
+    <div className="bg-skeleton-light/50 p-4 border-b border-border-light flex justify-between items-center">
       <div className="space-y-2">
-        <div className="h-3 w-16 bg-border-main rounded"></div>
-        <div className="h-4 w-32 bg-border-main rounded"></div>
+        <div className="h-3 w-16 bg-skeleton rounded"></div>
+        <div className="h-4 w-32 bg-skeleton rounded"></div>
       </div>
-      <div className="h-6 w-24 bg-border-main rounded-full"></div>
+      <div className="h-6 w-24 bg-skeleton rounded-full"></div>
     </div>
     <div className="p-5 space-y-4">
       <div className="flex gap-3">
-        <div className="w-12 h-12 bg-border-main rounded-lg flex-shrink-0"></div>
+        <div className="w-12 h-12 bg-skeleton rounded-lg flex-shrink-0"></div>
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-3/4 bg-border-main rounded"></div>
-          <div className="h-3 w-1/4 bg-border-main rounded"></div>
+          <div className="h-4 w-3/4 bg-skeleton rounded"></div>
+          <div className="h-3 w-1/4 bg-skeleton-light rounded"></div>
         </div>
-        <div className="h-4 w-20 bg-border-main rounded"></div>
+        <div className="h-4 w-20 bg-skeleton rounded"></div>
       </div>
       <div className="border-t border-border-light my-4"></div>
       <div className="flex justify-between items-center">
         <div className="space-y-2">
-          <div className="h-3 w-16 bg-border-main rounded"></div>
-          <div className="h-6 w-28 bg-border-main rounded"></div>
+          <div className="h-3 w-16 bg-skeleton rounded"></div>
+          <div className="h-6 w-28 bg-skeleton rounded"></div>
         </div>
-        <div className="h-10 w-32 bg-border-main rounded-xl"></div>
+        <div className="h-10 w-32 bg-skeleton rounded-xl"></div>
       </div>
     </div>
   </div>

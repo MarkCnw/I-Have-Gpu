@@ -796,6 +796,33 @@ const translations: Record<string, TranslationValue> = {
     // ============ Admin Extras ============
     'admin.placeholderTracking': { th: 'เช่น TH12345678901', en: 'e.g. TH12345678901', jp: '例：TH12345678901' },
     'admin.placeholderCarrier': { th: 'เช่น Kerry, Flash, ไปรษณีย์ไทย', en: 'e.g. Kerry, Flash, Thailand Post', jp: '例：Kerry, Flash, Thailand Post' },
+
+    // ============ Finance Charts ============
+    'admin.financeDashboard': { th: 'ภาพรวมการเงิน', en: 'Finance Dashboard', jp: '財務ダッシュボード' },
+    'admin.analyzeRevenue': { th: 'วิเคราะห์รายได้และธุรกรรมของร้าน', en: 'Analyze revenue and store transactions', jp: '収益と取引を分析' },
+    'admin.totalIncome': { th: 'รายได้ทั้งหมด', en: 'Total Income', jp: '総収入' },
+    'admin.paidOrders': { th: 'ออเดอร์ที่ชำระแล้ว', en: 'Paid Orders', jp: '支払い済み注文' },
+    'admin.avgOrder': { th: 'ค่าเฉลี่ยต่อออเดอร์', en: 'Average Order', jp: '平均注文額' },
+    'admin.revenueTrends': { th: 'แนวโน้มรายได้', en: 'Revenue Trends', jp: '収益トレンド' },
+    'admin.orderStatusDist': { th: 'สัดส่วนสถานะคำสั่งซื้อ', en: 'Order Status Distribution', jp: '注文ステータス分布' },
+    'admin.dailyRevenue': { th: 'รายได้รายวัน (7 วันล่าสุด)', en: 'Daily Revenue (Last 7 Days)', jp: '日次収益（過去7日間）' },
+    'admin.topCategories': { th: 'หมวดหมู่สินค้าขายดี', en: 'Top Categories by Revenue', jp: 'カテゴリ別収益ランキング' },
+    'admin.last7Days': { th: 'รวม 7 วันล่าสุด', en: 'Last 7 days total', jp: '過去7日間の合計' },
+    'admin.revenue': { th: 'รายได้', en: 'Revenue', jp: '収益' },
+    'admin.recentTx': { th: 'ธุรกรรมล่าสุด', en: 'Recent Transactions', jp: '最近の取引' },
+    'admin.orderId': { th: 'เลขออเดอร์', en: 'Order ID', jp: '注文ID' },
+    'admin.customer': { th: 'ลูกค้า', en: 'Customer', jp: '顧客' },
+    'admin.amount': { th: 'ยอดเงิน', en: 'Amount', jp: '金額' },
+    'admin.status': { th: 'สถานะ', en: 'Status', jp: 'ステータス' },
+    'admin.date': { th: 'วันที่', en: 'Date', jp: '日付' },
+
+    // ============ Order Status Labels ============
+    'status.pending': { th: 'รอชำระเงิน', en: 'Pending', jp: '保留中' },
+    'status.verifying': { th: 'รอตรวจสอบ', en: 'Verifying', jp: '確認中' },
+    'status.paid': { th: 'ชำระแล้ว', en: 'Paid', jp: '支払い済み' },
+    'status.shipped': { th: 'จัดส่งแล้ว', en: 'Shipped', jp: '発送済み' },
+    'status.completed': { th: 'สำเร็จ', en: 'Completed', jp: '完了' },
+    'status.cancelled': { th: 'ยกเลิก', en: 'Cancelled', jp: 'キャンセル' },
 }
 
 export function t(key: string, locale: Locale): string {

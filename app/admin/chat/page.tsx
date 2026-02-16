@@ -9,10 +9,10 @@ import { t } from '@/lib/i18n'
 const SidebarSkeleton = () => (
   <div className="p-4 border-b border-border-main animate-pulse">
     <div className="flex justify-between items-start mb-2">
-      <div className="h-4 w-32 bg-surface-bg rounded" />
-      <div className="h-3 w-10 bg-surface-bg rounded" />
+      <div className="h-4 w-32 bg-skeleton rounded" />
+      <div className="h-3 w-10 bg-skeleton-light rounded" />
     </div>
-    <div className="h-3 w-48 bg-surface-bg rounded" />
+    <div className="h-3 w-48 bg-skeleton-light rounded" />
   </div>
 )
 
