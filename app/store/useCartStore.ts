@@ -9,16 +9,17 @@ export type CartItem = {
   price: number
   image: string | null
   quantity: number
-  category?: string // เพิ่ม field นี้เผื่อไว้โชว์ในตะกร้า
+  category?: string
 }
 
 type CartState = {
-  items: CartItem[] // เปลี่ยนชื่อจาก cart -> items ให้ตรงกับหน้า CartPage
+  items: CartItem[]
   addToCart: (product: any) => void
-  removeItem: (productId: string) => void // เปลี่ยนชื่อจาก removeFromCart -> removeItem
-  updateQuantity: (productId: string, quantity: number) => void // 🔥 เพิ่มฟังก์ชันนี้
+  addMultipleToCart: (products: any[]) => void // 🔥 ต้องมีบรรทัดนี้
+  removeItem: (productId: string) => void
+  updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
-  totalPrice: () => number // เปลี่ยนชื่อจาก getCartTotal -> totalPrice
+  totalPrice: () => number
   getCartCount: () => number
 }
 
@@ -48,11 +49,39 @@ export const useCartStore = create<CartState>()(
         }
       }),
 
+      // 🔥 ฟังก์ชันสำคัญที่ต้องเพิ่ม เพื่อให้ AI ยัดของลงตะกร้าได้
+      addMultipleToCart: (products) => set((state) => {
+        let newItems = [...state.items]
+        
+        products.forEach(product => {
+          const existingIndex = newItems.findIndex(item => item.id === product.id)
+          
+          if (existingIndex > -1) {
+            // ถ้ามีอยู่แล้ว ให้บวกจำนวนเพิ่ม
+            newItems[existingIndex] = {
+              ...newItems[existingIndex],
+              quantity: newItems[existingIndex].quantity + 1
+            }
+          } else {
+            // ถ้ายังไม่มี ให้เพิ่มใหม่
+            newItems.push({
+              id: product.id,
+              name: product.name,
+              price: Number(product.price),
+              image: product.image,
+              category: product.category,
+              quantity: 1 
+            })
+          }
+        })
+        
+        return { items: newItems }
+      }),
+
       removeItem: (id) => set((state) => ({
         items: state.items.filter(item => item.id !== id)
       })),
 
-      // 🔥 ฟังก์ชันสำหรับปุ่ม + / - ในหน้าตะกร้า
       updateQuantity: (id, quantity) => set((state) => ({
         items: state.items.map(item => 
           item.id === id ? { ...item, quantity: quantity } : item

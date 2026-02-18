@@ -1,28 +1,21 @@
-// store/useBuilderStore.ts
+// app/store/useBuilderStore.ts
 import { create } from 'zustand'
 
-// กำหนดหน้าตาของข้อมูลสินค้า (Copy มาให้ตรงกับ Prisma)
 type Product = {
     id: string
     name: string
-    price: number // Prisma Decimal จะถูกแปลงเป็น number หรือ string ใน JS
+    price: number
     category: string
     image: string | null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     specs: any
 }
 
 type BuilderState = {
-    // เก็บของที่เลือกตามหมวดหมู่ (Key เป็นชื่อ Category)
     selectedParts: Record<string, Product | null>
-
-    // ฟังก์ชันสำหรับเลือกของ
     selectPart: (category: string, product: Product) => void
-
-    // ฟังก์ชันสำหรับลบของ
     removePart: (category: string) => void
-
-    // คำนวณราคารวม
+    // 🔥 เพิ่มฟังก์ชันนี้
+    setAiBuild: (products: Product[]) => void 
     getTotalPrice: () => number
 }
 
@@ -40,6 +33,15 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
             delete newParts[category]
             return { selectedParts: newParts }
         }),
+
+    // 🔥 Implementation: รับ Array สินค้ามา แล้ว Loop ใส่ State ตามหมวดหมู่
+    setAiBuild: (products) => {
+        const newParts: Record<string, Product> = {}
+        products.forEach(p => {
+            if (p) newParts[p.category] = p
+        })
+        set({ selectedParts: newParts })
+    },
 
     getTotalPrice: () => {
         const parts = get().selectedParts

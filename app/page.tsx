@@ -15,7 +15,8 @@ import FAQ from '@/components/FAQ'
 import HomeClient from '@/components/HomeClient'
 import ProductSectionHeader from '@/components/ProductSectionHeader'
 import NewsSectionHome from '@/components/NewsSectionHome'
-
+// 🔥 เพิ่ม Import AiSpecBuilder
+import AiSpecBuilder from '@/components/AiSpecBuilder'
 
 export const dynamic = 'force-dynamic'
 
@@ -114,6 +115,11 @@ export default async function Home({
         <CategoryFilter />
       </div>
 
+      {/* 🔥 เรียกใช้งาน AI Spec Builder ตรงนี้ */}
+      <div className="mb-12">
+        <AiSpecBuilder />
+      </div>
+
       <div className="flex items-baseline justify-between mb-8 border-b border-border-main pb-4">
         <h2 className="text-3xl font-bold text-foreground tracking-tight">
           <ProductSectionHeader type="title" q={q} currentCategory={currentCategory} />
@@ -132,7 +138,6 @@ export default async function Home({
       <section className="mt-24 border-t border-border-main pt-16">
         <NewsSectionHome />
       </section>
-
 
       <FAQ />
       <Testimonials />
