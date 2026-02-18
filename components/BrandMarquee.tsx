@@ -1,8 +1,9 @@
 // components/BrandMarquee.tsx
 'use client'
 import Marquee from 'react-fast-marquee'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
-// แถวที่ 1: Hardware & Components (การ์ดจอ, ซีพียู, เมนบอร์ด, เคส)
 const BRANDS_ROW_1 = [
   { name: "NVIDIA", logo: "https://cdn.simpleicons.org/nvidia" },
   { name: "Intel", logo: "https://cdn.simpleicons.org/intel" },
@@ -16,23 +17,18 @@ const BRANDS_ROW_1 = [
   { name: "Xbox", logo: "https://cdn.worldvectorlogo.com/logos/xbox-9.svg" },
   { name: "Western Digital", logo: "https://cdn.worldvectorlogo.com/logos/western-digital-2.svg" },
   { name: "Kingston", logo: "https://cdn.simpleicons.org/kingstontechnology" },
-    { name: "Crucial", logo: "https://static.cdnlogo.com/logos/c/1/crucial_thumb.png" },
-  // เก้าอี้เกมมิ่ง (Gaming Chair) ที่ดังที่สุด
-{ name: "Secretlab", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Transparent_SecretLab_Logo%28black_font%29%281%29.png/1280px-Transparent_SecretLab_Logo%28black_font%29%281%29.png?20180307095928" },
-
-// คีย์บอร์ด Custom และเมาส์เบา (Lightweight)
-{ name: "Glorious", logo: "https://cdn.brandfetch.io/idGOvrPLsC/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-{ name: "Aorus", logo: "https://logodownload.org/wp-content/uploads/2020/10/aorus-logo-1.png" },
-
+  { name: "Crucial", logo: "https://static.cdnlogo.com/logos/c/1/crucial_thumb.png" },
+  { name: "Secretlab", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Transparent_SecretLab_Logo%28black_font%29%281%29.png/1280px-Transparent_SecretLab_Logo%28black_font%29%281%29.png?20180307095928" },
+  { name: "Glorious", logo: "https://cdn.brandfetch.io/idGOvrPLsC/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+  { name: "Aorus", logo: "https://logodownload.org/wp-content/uploads/2020/10/aorus-logo-1.png" },
 ]
 
-// แถวที่ 2: Peripherals, Laptops & Consoles (เกมมิ่งเกียร์, โน้ตบุ๊ก, เครื่องเกม)
 const BRANDS_ROW_2 = [
   { name: "Logitech", logo: "https://static.cdnlogo.com/logos/l/54/logitech-gaming.svg" },
   { name: "Razer", logo: "https://cdn.simpleicons.org/razer" },
   { name: "Corsair", logo: "https://cdn.simpleicons.org/corsair" },
   { name: "SteelSeries", logo: "https://cdn.simpleicons.org/steelseries" },
-  { name: "HyperX", logo: "https://static.cdnlogo.com/logos/h/21/hyperx-thumb.png" }, // HyperX ใช้รูปแยกเพราะสวยกว่า
+  { name: "HyperX", logo: "https://static.cdnlogo.com/logos/h/21/hyperx-thumb.png" },
   { name: "Dell", logo: "https://cdn.simpleicons.org/dell" },
   { name: "HP", logo: "https://cdn.simpleicons.org/hp" },
   { name: "Lenovo", logo: "https://cdn.worldvectorlogo.com/logos/lenovo-2.svg" },
@@ -42,39 +38,38 @@ const BRANDS_ROW_2 = [
 ]
 
 export default function BrandMarquee() {
-  return (
-    <div className="w-full py-16 bg-white overflow-hidden border-t border-neutral-100">
-      <div className="max-w-[1400px] mx-auto mb-12 text-center px-6">
-        <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">Trusted Partners</span>
-        <h2 className="text-3xl font-bold text-neutral-900 mt-2">Official Retailer for Leading Brands</h2>
-      </div>
-      
-      <div className="relative flex flex-col gap-12">
-        {/* เงาบังข้างๆ (Fade Effect) */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+  const { locale } = useLanguageStore()
 
-        {/* --- แถวที่ 1 : เลื่อนไปทางซ้าย --- */}
+  return (
+    <div className="w-full py-16 bg-surface-card overflow-hidden border-t border-border-light">
+      <div className="max-w-[1400px] mx-auto mb-12 text-center px-6">
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-txt-muted">{t('brand.subtitle', locale)}</span>
+        <h2 className="text-3xl font-bold text-foreground mt-2">{t('brand.title', locale)}</h2>
+      </div>
+
+      <div className="relative flex flex-col gap-12">
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-surface-card to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-surface-card to-transparent z-10 pointer-events-none"></div>
+
         <Marquee gradient={false} speed={35} pauseOnHover={true} direction="left">
           {BRANDS_ROW_1.map((brand, index) => (
             <div key={index} className="mx-14 flex items-center justify-center h-24 w-32">
-              <img 
-                src={brand.logo} 
-                alt={brand.name} 
-                className="h-16 w-full object-contain hover:scale-110 transition-transform duration-300 drop-shadow-sm"
+              <img
+                src={brand.logo}
+                alt={brand.name}
+                className="h-16 w-full object-contain hover:scale-110 transition-transform duration-300 drop-shadow-sm dark:invert"
               />
             </div>
           ))}
         </Marquee>
 
-        {/* --- แถวที่ 2 : เลื่อนไปทางขวา --- */}
         <Marquee gradient={false} speed={35} pauseOnHover={true} direction="right">
           {BRANDS_ROW_2.map((brand, index) => (
             <div key={index} className="mx-14 flex items-center justify-center h-24 w-32">
-              <img 
-                src={brand.logo} 
-                alt={brand.name} 
-                className="h-16 w-full object-contain hover:scale-110 transition-transform duration-300 drop-shadow-sm"
+              <img
+                src={brand.logo}
+                alt={brand.name}
+                className="h-16 w-full object-contain hover:scale-110 transition-transform duration-300 drop-shadow-sm dark:invert"
               />
             </div>
           ))}

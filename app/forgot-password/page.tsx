@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
+
     try {
       await fetch('/api/auth/forgot-password', {
         method: 'POST',
@@ -28,11 +28,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Forgot Password?</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-3xl font-bold text-foreground">Forgot Password?</h2>
+          <p className="mt-2 text-sm text-txt-secondary">
             Enter your email address and we'll send you a link to reset your password.
           </p>
         </div>
@@ -48,11 +48,11 @@ export default function ForgotPasswordPage() {
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
+              <Mail className="absolute left-3 top-3 text-txt-muted" size={20} />
               <input
                 type="email"
                 required
-                className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                className="w-full pl-10 p-3 border border-border-main rounded-lg focus:ring-2 focus:ring-foreground focus:border-foreground outline-none transition bg-surface-card text-foreground"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-surface-card bg-foreground hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <div className="text-center mt-4">
-          <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-black flex items-center justify-center gap-2">
+          <Link href="/login" className="text-sm font-medium text-txt-secondary hover:text-foreground flex items-center justify-center gap-2">
             <ArrowLeft size={16} /> Back to Login
           </Link>
         </div>

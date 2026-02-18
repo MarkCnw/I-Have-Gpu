@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql" // หรือ mysql ตามที่คุณใช้
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
@@ -30,6 +30,9 @@ model User {
   orders        Order[]
   favorites     UserFavorite[]
   reviews       Review[]
+
+  // ✅ เพิ่ม: ความสัมพันธ์กับห้องแชท
+  chatRoom      ChatRoom?
 }
 
 enum Role {
@@ -65,13 +68,12 @@ model Product {
   price       Decimal   @db.Decimal(10, 2)
   stock       Int       @default(0)
   
-  image       String?   // เก็บรูปปก (รูปแรก)
-  images      String[]  // ✅ เพิ่มบรรทัดนี้: เพื่อเก็บรูปภาพทั้งหมดเป็น Array
+  image       String?   // เก็บรูปปก
+  images      String[]  // เก็บรูปทั้งหมด
   
   category    Category
   specs       Json?
   
-  // 🔥 เพิ่ม Field นี้เพื่อใช้ทำ Soft Delete
   isArchived  Boolean   @default(false)
 
   createdAt   DateTime @default(now())
@@ -151,6 +153,7 @@ model Order {
 
   // Payment
   slipImage       String?
+  rejectionReason String?
 }
 
 enum OrderStatus {
@@ -160,6 +163,7 @@ enum OrderStatus {
   SHIPPED
   COMPLETED
   CANCELLED
+  PAYMENT_FAILED // ✅ ควรเพิ่มสถานะนี้เพื่อให้ชัดเจน
 }
 
 model OrderItem {
@@ -206,4 +210,23 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@unique([email, token])
+}
+
+// ✅ 8. Chat System (เพิ่มใหม่)
+model ChatRoom {
+  id        String        @id @default(uuid())
+  userId    String        @unique
+  user      User          @relation(fields: [userId], references: [id])
+  messages  ChatMessage[]
+  updatedAt DateTime      @updatedAt
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  senderRole Role     // USER หรือ ADMIN
+  message    String   @db.Text
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }

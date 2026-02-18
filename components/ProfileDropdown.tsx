@@ -2,90 +2,93 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { signOut } from 'next-auth/react'
-// Import ไอคอน
-import { User, Heart, Package, LogOut, Settings } from 'lucide-react'
+import { User, Package, Heart, Shield, LogOut, ChevronDown, Sun, Moon } from 'lucide-react'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { useThemeStore } from '@/app/store/useThemeStore'
+import { t } from '@/lib/i18n'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function ProfileDropdown({ user }: { user: any }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+export default function ProfileDropdown() {
+  const { data: session } = useSession()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const { locale } = useLanguageStore()
+  const { theme, toggleTheme } = useThemeStore()
+  const isDark = theme === 'dark'
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user = session?.user as any
+
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 focus:outline-none"
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 text-sm font-bold text-foreground hover:text-red-600 transition"
       >
-        <div className="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 font-bold text-xs border border-neutral-200 hover:border-black transition shadow-sm overflow-hidden">
-          {user.image ? (
-            <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
-          ) : (
-            user.name?.substring(0, 2).toUpperCase()
-          )}
+        <div className="w-8 h-8 bg-foreground text-surface-card rounded-full flex items-center justify-center text-xs font-bold overflow-hidden">
+          {user?.image ? <img src={user.image} className="w-full h-full object-cover" /> : user?.name?.substring(0, 2).toUpperCase()}
         </div>
+        <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-neutral-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="px-4 py-3 border-b border-neutral-50 mb-1">
-            <p className="text-sm font-bold text-neutral-900 truncate">{user.name}</p>
-            <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+      {open && (
+        <div className="absolute right-0 mt-2 w-56 bg-surface-card border border-border-main rounded-xl shadow-xl z-50 py-2 animate-in fade-in slide-in-from-top-2">
+          {/* User Info */}
+          <div className="px-4 py-3 border-b border-border-light">
+            <p className="text-sm font-bold text-foreground truncate">{user?.name}</p>
+            <p className="text-xs text-txt-muted truncate">{user?.email}</p>
           </div>
 
-          <Link 
-            href="/profile" 
-            className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
-            onClick={() => setIsOpen(false)}
-          >
-            <User size={16} /> บัญชีของฉัน
+          {/* Menu Links */}
+          <Link href="/profile" onClick={() => setOpen(false)} className="px-4 py-2.5 text-sm text-txt-secondary hover:bg-surface-bg hover:text-foreground transition flex items-center gap-3">
+            <User size={16} /> {t('profileDropdown.myAccount', locale)}
           </Link>
-          
-          <Link 
-            href="/orders" 
-            className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
-            onClick={() => setIsOpen(false)}
-          >
-            <Package size={16} /> คำสั่งซื้อของฉัน
+          <Link href="/orders" onClick={() => setOpen(false)} className="px-4 py-2.5 text-sm text-txt-secondary hover:bg-surface-bg hover:text-foreground transition flex items-center gap-3">
+            <Package size={16} /> {t('profileDropdown.myOrders', locale)}
           </Link>
-          
-          <Link 
-            href="/favorites" 
-            className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
-            onClick={() => setIsOpen(false)}
-          >
-            <Heart size={16} /> รายการสินค้าโปรด
+          <Link href="/favorites" onClick={() => setOpen(false)} className="px-4 py-2.5 text-sm text-txt-secondary hover:bg-surface-bg hover:text-foreground transition flex items-center gap-3">
+            <Heart size={16} /> {t('profileDropdown.favorites', locale)}
           </Link>
 
-          {user.role === 'ADMIN' && (
-            <Link 
-              href="/admin" 
-              className="px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition flex items-center gap-3"
-              onClick={() => setIsOpen(false)}
-            >
-              <Settings size={16} /> ระบบหลังบ้าน
+          {/* Admin Link (if applicable) */}
+          {user?.role === 'ADMIN' && (
+            <Link href="/admin" onClick={() => setOpen(false)} className="px-4 py-2.5 text-sm text-txt-secondary hover:bg-surface-bg hover:text-foreground transition flex items-center gap-3 border-t border-border-light">
+              <Shield size={16} /> {t('profileDropdown.admin', locale)}
             </Link>
           )}
 
-          <div className="border-t border-neutral-50 mt-1 pt-1">
+          {/* Dark Mode Toggle */}
+          <div className="px-4 py-2.5 border-t border-border-light flex items-center justify-between">
+            <div className="flex items-center gap-3 text-sm text-txt-secondary">
+              {isDark ? <Moon size={16} /> : <Sun size={16} />}
+              <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
+            </div>
             <button
-              onClick={() => signOut()}
-              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-3"
+              onClick={toggleTheme}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${isDark ? 'bg-neutral-600' : 'bg-neutral-200'}`}
+              aria-label="Toggle dark mode"
             >
-              <LogOut size={16} /> ออกจากระบบ
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-300 ${isDark ? 'translate-x-5' : 'translate-x-0'}`}>
+                {isDark ? <Moon size={12} className="text-indigo-500" /> : <Sun size={12} className="text-amber-500" />}
+              </div>
             </button>
           </div>
+
+          {/* Sign Out */}
+          <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition flex items-center gap-3 border-t border-border-light">
+            <LogOut size={16} /> {t('profileDropdown.logout', locale)}
+          </button>
         </div>
       )}
     </div>

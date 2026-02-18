@@ -4,7 +4,9 @@ import { Kanit } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
-import { Toaster } from "react-hot-toast"; // 👈 1. Import Toaster เข้ามา
+import { Toaster } from "react-hot-toast";
+import CustomerChat from "@/components/CustomerChat"; // ✅ 1. Chat
+import CompareFloatingBar from "@/components/CompareFloatingBar"; // ✅ 2. Compare Bar
 
 const kanit = Kanit({
   subsets: ["latin", "thai"],
@@ -24,17 +26,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
-      <body className={`${kanit.variable} font-sans antialiased bg-white text-neutral-900 min-h-screen flex flex-col`}>
-        {/* ครอบ Providers ไว้ที่นี่ เพื่อให้ทุกหน้าใช้ Session และ State ได้ */}
+      <body className={`${kanit.variable} font-sans antialiased bg-surface-bg text-foreground min-h-screen flex flex-col transition-colors duration-300`}>
         <Providers>
           <div className="flex-1">
             {children}
           </div>
           <Footer />
-          
-          {/* 🔥 2. วาง Toaster ไว้ตรงนี้ เพื่อให้แจ้งเตือนเด้งได้ทุกหน้า */}
-          <Toaster 
-            position="top-center" 
+
+          {/* ✅ ส่วนเสริม: แชทและแถบเปรียบเทียบ */}
+          <CustomerChat />
+          <CompareFloatingBar />
+
+          {/* Toaster แจ้งเตือน */}
+          <Toaster
+            position="top-center"
             reverseOrder={false}
             toastOptions={{
               duration: 3000,
@@ -43,7 +48,7 @@ export default function RootLayout({
                 color: '#fff',
                 borderRadius: '10px',
               },
-            }} 
+            }}
           />
         </Providers>
       </body>

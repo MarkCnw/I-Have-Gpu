@@ -3,6 +3,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { X, Filter } from 'lucide-react'
+import { useLanguageStore } from '@/app/store/useLanguageStore'
+import { t } from '@/lib/i18n'
 
 // 1. ตั้งค่า Config ของสเปคแต่ละหมวดหมู่
 interface SpecOption {
@@ -57,7 +59,8 @@ export default function CategoryFilter() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentCategory = searchParams.get('category') || 'ALL'
-  
+  const { locale } = useLanguageStore()
+
   // หา Config สเปคของหมวดปัจจุบัน
   const currentSpecConfig = SPEC_CONFIG[currentCategory] || []
 
@@ -90,7 +93,7 @@ export default function CategoryFilter() {
 
   return (
     <div className="w-full space-y-4 mb-6">
-      
+
       {/* 1. Category Tabs (สำหรับ Mobile หรือจอเล็ก ที่ Sidebar ซ่อน) */}
       <div className="md:hidden overflow-x-auto pb-2 scrollbar-hide">
         <div className="flex gap-2 min-w-max px-1">
@@ -101,8 +104,8 @@ export default function CategoryFilter() {
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition border whitespace-nowrap
                 ${currentCategory === cat.id
-                  ? 'bg-black text-white border-black shadow-lg'
-                  : 'bg-white text-neutral-500 border-neutral-200 hover:border-black hover:text-black'
+                  ? 'bg-foreground text-surface-card border-foreground shadow-lg'
+                  : 'bg-surface-card text-txt-muted border-border-main hover:border-foreground hover:text-foreground'
                 }
               `}
             >
@@ -115,22 +118,22 @@ export default function CategoryFilter() {
 
       {/* 2. Advanced Spec Filters (แสดงเมื่อหมวดนั้นมี Config) */}
       {currentSpecConfig.length > 0 && (
-        <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 animate-in fade-in slide-in-from-top-2">
+        <div className="bg-surface-bg p-4 rounded-xl border border-border-light animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-              <Filter size={12} /> Filter Options
+            <span className="text-xs font-bold text-txt-muted uppercase tracking-wider flex items-center gap-1">
+              <Filter size={12} /> {t('filter.options', locale)}
             </span>
             {hasActiveFilters && (
               <button onClick={clearFilters} className="text-xs text-red-500 font-bold hover:underline flex items-center gap-1">
-                <X size={12} /> Clear All
+                <X size={12} /> {t('filter.clearAll', locale)}
               </button>
             )}
           </div>
-          
+
           <div className="flex flex-wrap gap-3">
             {currentSpecConfig.map((spec) => {
               const currentValue = searchParams.get(`spec_${spec.key}`) || ''
-              
+
               return (
                 <div key={spec.key} className="relative group">
                   <select
@@ -138,21 +141,21 @@ export default function CategoryFilter() {
                     onChange={(e) => handleSpecSelect(spec.key, e.target.value)}
                     className={`
                       appearance-none pl-3 pr-8 py-2 text-sm rounded-lg border cursor-pointer outline-none focus:ring-2 focus:ring-black/5 transition shadow-sm
-                      ${currentValue 
-                        ? 'bg-black text-white border-black font-medium' 
-                        : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-400'
+                      ${currentValue
+                        ? 'bg-foreground text-surface-card border-foreground font-medium'
+                        : 'bg-surface-card text-txt-secondary border-border-main hover:border-txt-muted'
                       }
                     `}
                   >
                     <option value="">{spec.label}: All</option>
                     {spec.options.map(opt => (
-                      <option key={opt} value={opt} className="text-black bg-white">{opt}</option>
+                      <option key={opt} value={opt} className="text-foreground bg-surface-card">{opt}</option>
                     ))}
                   </select>
                   {/* Custom Arrow Icon */}
-                  <div className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${currentValue ? 'text-white' : 'text-neutral-400'}`}>
+                  <div className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${currentValue ? 'text-surface-card' : 'text-txt-muted'}`}>
                     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                 </div>

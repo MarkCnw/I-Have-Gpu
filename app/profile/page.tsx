@@ -6,12 +6,12 @@ import ProfileView from '@/components/ProfileView'
 
 export default async function ProfilePage() {
   const session = await auth()
-  
+
   // เช็คว่าล็อกอินหรือยัง
   if (!session?.user?.email) return (
     <div className="min-h-screen flex flex-col items-center justify-center space-y-4 animate-in fade-in">
-      <p className="text-neutral-500">กรุณาเข้าสู่ระบบเพื่อดูโปรไฟล์</p>
-      <Link href="/login" className="bg-black text-white px-6 py-2 rounded-lg font-bold hover:bg-neutral-800 transition">
+      <p className="text-txt-muted">กรุณาเข้าสู่ระบบเพื่อดูโปรไฟล์</p>
+      <Link href="/login" className="bg-foreground text-surface-card px-6 py-2 rounded-lg font-bold hover:opacity-90 transition">
         เข้าสู่ระบบ
       </Link>
     </div>
@@ -44,6 +44,7 @@ export default async function ProfilePage() {
       price: Number(item.price),
       product: {
         ...item.product,
+        ...item.product,
         price: Number(item.product.price)
       }
     }))
@@ -64,24 +65,25 @@ export default async function ProfilePage() {
 
   // 3. ส่งข้อมูลที่ Clean แล้วไปแสดงผลที่ Client Component
   return (
-    <div className="min-h-screen bg-white font-sans text-neutral-900 pb-20">
-      
-      {/* Navbar เล็กๆ สำหรับหน้า Profile */}
-      <div className="border-b border-neutral-100 bg-white sticky top-0 z-30 shadow-sm">
-        <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-sm font-bold flex items-center gap-2 hover:text-neutral-600 transition">
-            ← กลับไปหน้าหลัก
-          </Link>
-          <span className="font-bold text-lg">บัญชีของฉัน</span>
-          <div className="w-20"></div> {/* Spacer จัดกึ่งกลาง */}
+    <div className="min-h-screen bg-background font-sans text-foreground pb-20">
+
+      {/* Navbar เล็กๆ สำหรับหน้า Profile -> ปรับเป็น Breadcrumb Bar */}
+      <div className="border-b border-border-light bg-surface-card sticky top-0 z-30 shadow-sm">
+        <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center">
+          {/* ✅ Breadcrumb Navigation */}
+          <div className="flex items-center gap-2 text-sm text-txt-muted">
+            <Link href="/" className="hover:text-foreground transition-colors">หน้าแรก</Link>
+            <span className="text-txt-muted text-xs font-bold">{'>'}</span>
+            <span className="text-foreground font-medium">บัญชีของฉัน</span>
+          </div>
         </div>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 py-10">
-        <ProfileView 
-          user={safeUser} 
-          orders={safeOrders} 
-          favorites={safeFavorites} 
+        <ProfileView
+          user={safeUser}
+          orders={safeOrders}
+          favorites={safeFavorites}
         />
       </div>
     </div>
