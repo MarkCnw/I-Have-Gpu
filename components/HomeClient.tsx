@@ -95,7 +95,7 @@ export default function HomeClient({
                             <Link href="/admin" className="text-[10px] font-bold bg-primary text-surface-card px-2 py-1 rounded hover:bg-primary-hover transition-colors">{t('nav.admin', locale)}</Link>
                         )}
                         {user ? (
-                            <ProfileDropdown user={user} />
+                            <ProfileDropdown />
                         ) : (
                             <>
                                 <ThemeToggle />
