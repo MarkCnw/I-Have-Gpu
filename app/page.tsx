@@ -15,6 +15,7 @@ import FAQ from '@/components/FAQ'
 import HomeClient from '@/components/HomeClient'
 import ProductSectionHeader from '@/components/ProductSectionHeader'
 import NewsSectionHome from '@/components/NewsSectionHome'
+import CommunityShowcase from '@/components/CommunityShowcase'
 
 
 export const dynamic = 'force-dynamic'
@@ -147,6 +148,7 @@ export default async function Home({
       heroSection={heroSection}
       productSection={productSection}
       newsSection={newsSection}
+      showcaseSection={<CommunityShowcase />} // ✅ ส่ง Component เข้าไปที่ HomeClient
     />
   )
 }

@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Heart, User, MapPin, Save, Plus, Trash2, Home } from 'lucide-react'
+import { Package, Heart, User, MapPin, Save, Plus, Trash2, Home, Edit, Star } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import ConfirmModal from './ConfirmModal'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
@@ -16,6 +16,8 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
   const [activeTab, setActiveTab] = useState('INFO')
   const { locale } = useLanguageStore()
   const [loading, setLoading] = useState(false)
+  // ✅ เพิ่ม State เพื่อติดตามว่ากำลังตั้งค่า Default ให้ที่อยู่ไหน
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null)
 
   // --- Profile State ---
   const [formData, setFormData] = useState({
@@ -28,6 +30,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [addresses, setAddresses] = useState<any[]>([])
   const [showAddressForm, setShowAddressForm] = useState(false)
+  const [editAddressId, setEditAddressId] = useState<string | null>(null) // ✅ เพิ่ม State เพื่อจำว่ากำลังแก้อันไหน
   const [newAddress, setNewAddress] = useState({
     name: user.name || '',
     phone: user.phone || '',
@@ -39,7 +42,6 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
     isDefault: false
   })
 
-  // --- Delete Address Modal State ---
   const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
@@ -73,25 +75,76 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
     }
   }
 
-  // Add Address
-  const handleAddAddress = async (e: React.FormEvent) => {
+  // ✅ เปลี่ยนจากเพิ่มที่อยู่อย่างเดียว เป็น สร้าง/แก้ไข ในฟังก์ชันเดียว
+  const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
+      const method = editAddressId ? 'PATCH' : 'POST'
+      const body = editAddressId ? { id: editAddressId, ...newAddress } : newAddress
+
       const res = await fetch('/api/user/addresses', {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAddress)
+        body: JSON.stringify(body)
       })
+      
       if (res.ok) {
-        toast.success('✅ ' + t('profile.saveAddress', locale))
+        toast.success('✅ ' + (editAddressId ? 'อัปเดตที่อยู่เรียบร้อย' : t('profile.saveAddress', locale)))
         setShowAddressForm(false)
+        setEditAddressId(null)
         setNewAddress({ name: user.name || '', phone: user.phone || '', houseNumber: '', subdistrict: '', district: '', province: '', zipcode: '', isDefault: false })
+        
+        // โหลดข้อมูลที่อยู่มาใหม่
         const updated = await fetch('/api/user/addresses').then(r => r.json())
         setAddresses(updated)
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ✅ เปิดฟอร์มสำหรับเพิ่มใหม่
+  const handleAddNewClick = () => {
+    setNewAddress({ name: user.name || '', phone: user.phone || '', houseNumber: '', subdistrict: '', district: '', province: '', zipcode: '', isDefault: false })
+    setEditAddressId(null)
+    setShowAddressForm(true)
+  }
+
+  // ✅ เปิดฟอร์มสำหรับแก้ไข
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleEditClick = (addr: any) => {
+    setNewAddress({
+      name: addr.name, phone: addr.phone, houseNumber: addr.houseNumber,
+      subdistrict: addr.subdistrict, district: addr.district,
+      province: addr.province, zipcode: addr.zipcode, isDefault: addr.isDefault
+    })
+    setEditAddressId(addr.id)
+    setShowAddressForm(true)
+  }
+
+  // ✅ ตั้งเป็นที่อยู่หลักทันที
+  const handleSetDefault = async (id: string) => {
+    // ✅ เซ็ต ID ที่กำลังโหลด
+    setSettingDefaultId(id)
+    try {
+      const res = await fetch('/api/user/addresses', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, isDefault: true })
+      })
+      if (res.ok) {
+        toast.success('✅ ตั้งเป็นที่อยู่หลักเรียบร้อย')
+        const updated = await fetch('/api/user/addresses').then(r => r.json())
+        setAddresses(updated)
+      } else {
+        toast.error('❌ เกิดข้อผิดพลาด')
+      }
+    } catch(err) {
+      toast.error('❌ เกิดข้อผิดพลาด')
+    } finally {
+      // ✅ เคลียร์ State เมื่อทำเสร็จ (ทั้งสำเร็จและไม่สำเร็จ)
+      setSettingDefaultId(null)
     }
   }
 
@@ -179,7 +232,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
           </form>
         )}
 
-        {/* --- TAB: ADDRESS (NEW) --- */}
+        {/* --- TAB: ADDRESS --- */}
         {activeTab === 'ADDRESS' && (
           <div className="animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-6 border-b border-border-light pb-4">
@@ -187,16 +240,18 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 <MapPin className="text-txt-muted" /> {t('profile.addressBook', locale)}
               </h2>
               {!showAddressForm && (
-                <button onClick={() => setShowAddressForm(true)} className="bg-foreground text-surface-card px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:opacity-90 shadow-md">
+                <button onClick={handleAddNewClick} className="bg-foreground text-surface-card px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:opacity-90 shadow-md">
                   <Plus size={16} /> {t('profile.addAddress', locale)}
                 </button>
               )}
             </div>
 
-            {/* ฟอร์มเพิ่มที่อยู่ */}
+            {/* ฟอร์ม เพิ่ม / แก้ไข ที่อยู่ */}
             {showAddressForm ? (
-              <form onSubmit={handleAddAddress} className="bg-surface-bg p-6 rounded-xl border border-border-main mb-6 animate-in slide-in-from-top-2">
-                <h3 className="font-bold mb-4 text-foreground">{t('profile.addNewAddress', locale)}</h3>
+              <form onSubmit={handleSaveAddress} className="bg-surface-bg p-6 rounded-xl border border-border-main mb-6 animate-in slide-in-from-top-2">
+                <h3 className="font-bold mb-4 text-foreground">
+                  {editAddressId ? 'แก้ไขที่อยู่จัดส่ง' : t('profile.addNewAddress', locale)}
+                </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
@@ -242,9 +297,9 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                 </div>
 
                 <div className="flex gap-2 justify-end">
-                  <button type="button" onClick={() => setShowAddressForm(false)} className="text-txt-muted px-6 py-2 text-sm hover:text-foreground">{t('profile.cancel', locale)}</button>
+                  <button type="button" onClick={() => { setShowAddressForm(false); setEditAddressId(null); }} className="text-txt-muted px-6 py-2 text-sm hover:text-foreground">{t('profile.cancel', locale)}</button>
                   <button disabled={loading} className="bg-foreground text-surface-card px-8 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 shadow-lg">
-                    {loading ? t('profile.savingAddress', locale) : t('profile.saveAddress', locale)}
+                    {loading ? t('profile.savingAddress', locale) : (editAddressId ? 'อัปเดตที่อยู่' : t('profile.saveAddress', locale))}
                   </button>
                 </div>
               </form>
@@ -263,8 +318,8 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                       ${addr.isDefault ? 'border-foreground bg-surface-bg' : 'border-border-main hover:border-foreground bg-surface-card'}
                     `}>
                       {addr.isDefault && (
-                        <div className="absolute top-0 right-0 bg-foreground text-surface-card text-[10px] px-2 py-1 rounded-bl-lg font-bold">
-                          DEFAULT
+                        <div className="absolute top-0 right-0 bg-foreground text-surface-card text-[10px] px-3 py-1 rounded-bl-lg font-bold flex items-center gap-1">
+                          <Star size={12} className="fill-current" /> ที่อยู่เริ่มต้น
                         </div>
                       )}
 
@@ -280,10 +335,30 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 self-end md:self-start opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* ✅ Action Buttons (Set Default, Edit, Delete) */}
+                      <div className="flex items-center gap-2 self-end md:self-start md:opacity-0 group-hover:opacity-100 transition-opacity">
+                        {!addr.isDefault && (
+                          <button
+                            onClick={() => handleSetDefault(addr.id)}
+                            disabled={settingDefaultId === addr.id} // ✅ ป้องกันกดซ้ำตอนโหลด
+                            className={`text-xs font-bold px-3 py-1.5 bg-surface-bg border border-border-main rounded-lg text-foreground hover:bg-foreground hover:text-surface-card transition ${
+                              settingDefaultId === addr.id ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            {/* ✅ เปลี่ยนข้อความตอนกำลังโหลด */}
+                            {settingDefaultId === addr.id ? 'กำลังเปลี่ยน...' : 'ตั้งเป็นค่าเริ่มต้น'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleEditClick(addr)}
+                          className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
+                          title="แก้ไขที่อยู่"
+                        >
+                          <Edit size={16} />
+                        </button>
                         <button
                           onClick={() => openDeleteModal(addr.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
                           title={t('profile.deleteAddress', locale)}
                         >
                           <Trash2 size={16} />
@@ -299,6 +374,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
 
         {/* --- TAB: ORDERS --- */}
         {activeTab === 'ORDERS' && (
+          // ... (ส่วน Orders ยังคงเหมือนเดิม)
           <div className="animate-in fade-in duration-300">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Package className="text-txt-muted" /> {t('profile.orderHistory', locale)} ({orders.length})
@@ -346,6 +422,7 @@ export default function ProfileView({ user, orders, favorites }: { user: any, or
 
         {/* --- TAB: FAVORITES --- */}
         {activeTab === 'FAVORITES' && (
+          // ... (ส่วน Favorites ยังคงเหมือนเดิม)
           <div className="animate-in fade-in duration-300">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Heart className="text-txt-muted" /> {t('profile.favItems', locale)} ({favorites.length})

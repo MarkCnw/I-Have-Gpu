@@ -7,7 +7,7 @@ import { useCompatibility } from "@/hooks/useCompatibility"
 import {
   Cpu, CircuitBoard, MemoryStick, Gamepad2, HardDrive,
   Zap, Box, Fan, Save, Trash2, AlertTriangle, ChevronRight,
-  Plus, ShoppingCart, ArrowRight
+  Plus, ShoppingCart, ArrowRight, Crosshair, Car, Activity // ✅ Import ไอคอนเพิ่ม
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import Image from 'next/image'
@@ -27,6 +27,34 @@ const BUILD_CATEGORIES = [
   { id: 'COOLER', name: 'ชุดระบายความร้อน (Cooling)', icon: Fan },
 ]
 
+// ✅ ฟังก์ชันจำลองคำนวณ FPS โดยดูจากชื่อ CPU และ GPU
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const estimateFPS = (cpu: any, gpu: any) => {
+  if (!cpu || !gpu) return null;
+  const name = (cpu.name + " " + gpu.name).toLowerCase();
+  let score = 50; 
+  
+  // ประเมินคะแนน GPU
+  if (name.includes('4090') || name.includes('7900 xtx')) score += 180;
+  else if (name.includes('4080') || name.includes('7900 xt') || name.includes('4070 ti')) score += 140;
+  else if (name.includes('4070') || name.includes('3080') || name.includes('7800 xt')) score += 110;
+  else if (name.includes('4060') || name.includes('3070') || name.includes('7700 xt') || name.includes('6700 xt')) score += 80;
+  else if (name.includes('3060') || name.includes('4050') || name.includes('7600') || name.includes('6600')) score += 60;
+  else if (name.includes('1650') || name.includes('1050') || name.includes('rx 580')) score += 30;
+
+  // ประเมินคะแนน CPU
+  if (name.includes('i9') || name.includes('ryzen 9')) score += 40;
+  else if (name.includes('i7') || name.includes('ryzen 7')) score += 30;
+  else if (name.includes('i5') || name.includes('ryzen 5')) score += 20;
+  else if (name.includes('i3') || name.includes('ryzen 3')) score += 10;
+
+  return [
+    { game: 'Valorant', fps: Math.floor(score * 2.8) + "+", icon: Crosshair, color: 'text-red-500', bg: 'bg-red-500/10' },
+    { game: 'GTA V', fps: Math.floor(score * 1.5) + "+", icon: Car, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { game: 'Cyberpunk', fps: Math.floor(score * 0.7) + "+", icon: Zap, color: 'text-yellow-500', bg: 'bg-yellow-500/10' }
+  ];
+}
+
 export default function BuilderPage() {
   const router = useRouter()
   const { locale } = useLanguageStore()
@@ -35,6 +63,9 @@ export default function BuilderPage() {
   const [products, setProducts] = useState<any[]>([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // ✅ เรียกฟังก์ชันคำนวณเมื่อมีทั้ง CPU และ GPU
+  const fpsEstimates = estimateFPS(selectedParts['CPU'], selectedParts['GPU']);
 
   useEffect(() => {
     if (activeCategory) {
@@ -45,29 +76,6 @@ export default function BuilderPage() {
         .finally(() => setLoading(false))
     }
   }, [activeCategory])
-
-  const handleSaveBuild = async () => {
-    const selected = Object.values(selectedParts).filter(p => p !== null)
-    if (selected.length === 0) return toast.error(t('builder.emptyState', locale))
-
-    const buildData = {
-      name: "My Custom PC Build",
-      totalPrice: getTotalPrice(),
-      items: selected.map(p => p!.id)
-    }
-
-    try {
-      const res = await fetch('/api/builder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildData)
-      })
-      if (res.ok) toast.success(t('builder.saveSuccess', locale))
-      else toast.error(t('builder.saveLoginRequired', locale))
-    } catch (err) {
-      toast.error(t('builder.saveLoginRequired', locale))
-    }
-  }
 
   const handleOrderNow = () => {
     const selected = Object.values(selectedParts).filter(p => p !== null)
@@ -112,11 +120,6 @@ export default function BuilderPage() {
             <ChevronRight size={14} className="text-txt-muted" />
             <span className="text-foreground font-medium">{t('builder.breadcrumbTitle', locale)}</span>
           </div>
-
-          <div className="flex items-center gap-3">
-
-
-          </div>
         </div>
       </div>
 
@@ -126,7 +129,6 @@ export default function BuilderPage() {
             <h1 className="text-4xl font-black tracking-tight text-foreground mb-2">{t('builder.title', locale)}</h1>
             <p className="text-txt-muted text-sm">{t('builder.subtitle', locale)}</p>
           </div>
-
         </header>
 
         <div className="grid lg:grid-cols-12 gap-8 items-start">
@@ -197,11 +199,11 @@ export default function BuilderPage() {
           {/* Summary (Right) */}
           <div className="lg:col-span-4">
             <div className="bg-surface-card rounded-[2.5rem] p-8 border border-border-light shadow-2xl sticky top-28">
-              <h3 className="text-xl font-bold mb-8 flex items-center gap-2">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                 {t('builder.summary', locale)}
               </h3>
 
-              <div className="space-y-4 mb-10 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 mb-8 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {Object.entries(selectedParts).map(([key, part]) => part && (
                   <div key={key} className="flex gap-4 items-center animate-in fade-in slide-in-from-right-2">
                     <div className="w-10 h-10 bg-surface-bg rounded-lg flex-shrink-0 relative overflow-hidden border border-border-light p-0.5">
@@ -220,6 +222,27 @@ export default function BuilderPage() {
                   </div>
                 )}
               </div>
+
+              {/* ✅ ส่วนจำลอง FPS (Game Benchmark Estimator) */}
+              {fpsEstimates && (
+                <div className="mb-8 pt-6 border-t border-border-light animate-in fade-in slide-in-from-bottom-2">
+                  <h4 className="text-sm font-bold flex items-center gap-2 mb-4 text-foreground">
+                    <Activity size={18} className="text-blue-500" />
+                    คาดการณ์ประสิทธิภาพ (1080p High)
+                  </h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    {fpsEstimates.map((est, i) => (
+                      <div key={i} className="bg-surface-bg border border-border-main p-3 rounded-xl text-center shadow-sm relative overflow-hidden group">
+                        <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${est.bg}`}></div>
+                        <est.icon size={22} className={`mx-auto mb-2 relative z-10 ${est.color}`} />
+                        <p className="text-[9px] font-bold text-txt-muted uppercase tracking-wider mb-1 truncate relative z-10">{est.game}</p>
+                        <p className="text-lg font-black text-foreground relative z-10">{est.fps}</p>
+                        <p className="text-[9px] text-txt-muted relative z-10 font-bold">FPS</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="pt-6 border-t border-border-light">
                 <p className="text-xs font-bold text-txt-muted uppercase tracking-widest mb-1">{t('builder.total', locale)}</p>

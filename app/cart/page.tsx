@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, CreditCard, MapPin, AlertCircle, FileText } from 'lucide-react'
+import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, CreditCard, MapPin, AlertCircle, FileText, Building2, User } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -34,7 +34,8 @@ export default function CartPage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
 
   const [needTaxInvoice, setNeedTaxInvoice] = useState(false)
-  const [taxInfo, setTaxInfo] = useState({ taxId: '', taxName: '', taxAddress: '' })
+  const [taxType, setTaxType] = useState<'personal' | 'corporate'>('personal')
+  const [taxInfo, setTaxInfo] = useState({ taxId: '', taxName: '', taxAddress: '', branch: 'สำนักงานใหญ่' })
 
   useEffect(() => {
     const loadCart = () => {
@@ -102,6 +103,7 @@ export default function CartPage() {
       if (!taxInfo.taxName) return toast.error(t('cart.taxName', locale))
       if (!/^\d{13}$/.test(taxInfo.taxId)) return toast.error(t('cart.taxId', locale))
       if (!taxInfo.taxAddress) return toast.error(t('cart.taxAddress', locale))
+      if (taxType === 'corporate' && !taxInfo.branch) return toast.error(locale === 'th' ? 'กรุณาระบุสาขา' : 'Branch is required')
     }
 
     setIsCheckoutLoading(true)
@@ -113,7 +115,7 @@ export default function CartPage() {
           items: cart,
           totalPrice: total,
           addressId: selectedAddressId,
-          taxInfo: needTaxInvoice ? taxInfo : null
+          taxInfo: needTaxInvoice ? { ...taxInfo, type: taxType } : null
         })
       })
 
@@ -292,26 +294,63 @@ export default function CartPage() {
                 </div>
 
                 {needTaxInvoice && (
-                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                    <input
-                      placeholder={t('cart.taxId', locale)}
-                      className="w-full p-3 text-sm border border-border-main rounded-lg outline-none focus:border-foreground bg-surface-bg text-foreground"
-                      maxLength={13}
-                      value={taxInfo.taxId}
-                      onChange={(e) => setTaxInfo({ ...taxInfo, taxId: e.target.value.replace(/\D/g, '') })}
-                    />
-                    <input
-                      placeholder={t('cart.taxName', locale)}
-                      className="w-full p-3 text-sm border border-border-main rounded-lg outline-none focus:border-foreground bg-surface-bg text-foreground"
-                      value={taxInfo.taxName}
-                      onChange={(e) => setTaxInfo({ ...taxInfo, taxName: e.target.value })}
-                    />
-                    <textarea
-                      placeholder={t('cart.taxAddress', locale)}
-                      className="w-full p-3 text-sm border border-border-main rounded-lg outline-none focus:border-foreground resize-none h-20 bg-surface-bg text-foreground"
-                      value={taxInfo.taxAddress}
-                      onChange={(e) => setTaxInfo({ ...taxInfo, taxAddress: e.target.value })}
-                    />
+                  <div className="space-y-4 mt-4 animate-in fade-in slide-in-from-top-2">
+                    
+                    {/* Tabs เลือกประเภท */}
+                    <div className="flex gap-2 p-1 bg-surface-bg border border-border-main rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setTaxType('personal')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-bold transition-all ${
+                          taxType === 'personal'
+                            ? 'bg-surface-card text-foreground shadow-sm'
+                            : 'text-txt-muted hover:text-foreground'
+                        }`}
+                      >
+                        <User size={14} /> {locale === 'th' ? 'บุคคลธรรมดา' : 'Personal'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTaxType('corporate')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-bold transition-all ${
+                          taxType === 'corporate'
+                            ? 'bg-surface-card text-foreground shadow-sm'
+                            : 'text-txt-muted hover:text-foreground'
+                        }`}
+                      >
+                        <Building2 size={14} /> {locale === 'th' ? 'นิติบุคคล' : 'Corporate'}
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <input
+                        placeholder={t('cart.taxName', locale)}
+                        className="w-full p-3 text-sm border border-border-main rounded-lg outline-none focus:border-foreground bg-surface-bg text-foreground"
+                        value={taxInfo.taxName}
+                        onChange={(e) => setTaxInfo({ ...taxInfo, taxName: e.target.value })}
+                      />
+                      <input
+                        placeholder={t('cart.taxId', locale)}
+                        className="w-full p-3 text-sm border border-border-main rounded-lg outline-none focus:border-foreground bg-surface-bg text-foreground"
+                        maxLength={13}
+                        value={taxInfo.taxId}
+                        onChange={(e) => setTaxInfo({ ...taxInfo, taxId: e.target.value.replace(/\D/g, '') })}
+                      />
+                      {taxType === 'corporate' && (
+                        <input
+                          placeholder={locale === 'th' ? 'สำนักงานใหญ่ / สาขา (เช่น 00000)' : 'Branch / HQ (e.g. 00000)'}
+                          className="w-full p-3 text-sm border border-border-main rounded-lg outline-none focus:border-foreground bg-surface-bg text-foreground"
+                          value={taxInfo.branch}
+                          onChange={(e) => setTaxInfo({ ...taxInfo, branch: e.target.value })}
+                        />
+                      )}
+                      <textarea
+                        placeholder={t('cart.taxAddress', locale)}
+                        className="w-full p-3 text-sm border border-border-main rounded-lg outline-none focus:border-foreground resize-none h-20 bg-surface-bg text-foreground"
+                        value={taxInfo.taxAddress}
+                        onChange={(e) => setTaxInfo({ ...taxInfo, taxAddress: e.target.value })}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -338,4 +377,4 @@ export default function CartPage() {
       </div>
     </div>
   )
-}
+} 

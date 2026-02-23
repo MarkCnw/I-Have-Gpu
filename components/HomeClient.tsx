@@ -59,6 +59,7 @@ interface HomeClientProps {
     heroSection: ReactNode
     productSection: ReactNode
     newsSection: ReactNode
+    showcaseSection?: ReactNode // ✅ เพิ่ม Props รับ Showcase ตรงนี้
 }
 
 export default function HomeClient({
@@ -68,6 +69,7 @@ export default function HomeClient({
     heroSection,
     productSection,
     newsSection,
+    showcaseSection, // ✅ รับตัวแปร Showcase เข้ามาใช้งาน
 }: HomeClientProps) {
     const { locale } = useLanguageStore()
     const categoryIds = Object.keys(CATEGORY_ICONS)
@@ -78,7 +80,7 @@ export default function HomeClient({
             <header className="bg-surface-card/90 backdrop-blur-md sticky top-0 z-50 border-b border-border-main transition-colors duration-300">
                 <div className="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between gap-8">
                     <Link href="/" className="flex-shrink-0 group flex items-center gap-2 hover:opacity-80 transition-opacity">
-                        <Image src="/logo.svg" alt="iHAVEGPU Logo" width={200} height={60} className="object-contain h-16 w-auto dark:brightness-0 dark:invert" priority />
+                        <Image src="/logo.svg" alt="iHAVEGPU Logo" width={200} height={60} className="object-contain h-16 w-auto " priority />
                     </Link>
                     <div className="hidden lg:block flex-1 max-w-2xl px-8">
                         <SearchBar />
@@ -148,6 +150,9 @@ export default function HomeClient({
                 </main>
 
                 {!q && currentCategory === 'ALL' && newsSection}
+
+                {/* ✅ เพิ่ม Community Showcase เข้ามาตรงนี้ */}
+                {!q && currentCategory === 'ALL' && showcaseSection}
             </div>
         </div>
     )

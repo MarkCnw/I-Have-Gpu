@@ -23,7 +23,7 @@ export default function Footer() {
                 alt="iHAVEGPU Logo"
                 width={160}
                 height={40}
-                className="h-10 w-auto object-contain brightness-0 invert"
+                className="h-10 w-auto object-contain "
               />
             </Link>
             <p className="text-sm leading-relaxed mb-6">
