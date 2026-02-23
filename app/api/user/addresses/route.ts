@@ -93,3 +93,46 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
   }
 }
+
+// ✅ เพิ่มใหม่ PATCH: อัปเดต/แก้ไขที่อยู่ หรือตั้งเป็นที่อยู่หลัก
+export async function PATCH(req: Request) {
+  try {
+    const session = await auth()
+    if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+    const body = await req.json()
+    const { id, isDefault, ...updateData } = body
+
+    if (!id) return NextResponse.json({ error: 'Address ID required' }, { status: 400 })
+
+    // ตรวจสอบความเป็นเจ้าของ
+    const address = await prisma.address.findUnique({ where: { id } })
+    if (!address || address.userId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // ถ้ากดให้เป็นที่อยู่หลัก ให้เคลียร์ค่าของอันอื่นๆ ออกก่อน
+    if (isDefault) {
+      await prisma.address.updateMany({
+        where: { userId: user.id },
+        data: { isDefault: false }
+      })
+    }
+
+    const updatedAddress = await prisma.address.update({
+      where: { id },
+      data: {
+        ...updateData,
+        ...(isDefault !== undefined && { isDefault })
+      }
+    })
+
+    return NextResponse.json(updatedAddress)
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ error: 'Failed to update address' }, { status: 500 })
+  }
+}

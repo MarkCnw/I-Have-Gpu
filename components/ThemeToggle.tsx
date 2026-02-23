@@ -15,39 +15,58 @@ export default function ThemeToggle() {
         setMounted(true)
     }, [])
 
-    // ✅ ขณะที่ยังไม่ Mounted (Server-side) ให้ Render ปุ่มเปล่าที่มีขนาดเท่ากัน
-    // เพื่อให้ Tag (button) ตรงกัน และป้องกัน Layout Shift
+    // ✅ ขณะที่ยังไม่ Mounted ให้แสดง Skeleton วงกลมเนียนๆ
     if (!mounted) {
         return (
-            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700" disabled>
-                <div className="w-5 h-5" />
-            </button>
+            <div className="w-10 h-10 rounded-full bg-slate-200/50 dark:bg-slate-800/50 animate-pulse border border-transparent" />
         )
     }
+
+    const isDark = theme === 'dark'
 
     return (
         <motion.button
             onClick={toggleTheme}
-            className="relative w-10 h-10 rounded-full flex items-center justify-center
-            bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700
-            transition-colors duration-300 border border-neutral-200 dark:border-neutral-700"
-            whileTap={{ scale: 0.9 }}
+            className={`relative w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 border shadow-sm backdrop-blur-md
+                ${isDark 
+                    ? 'bg-slate-900/60 border-slate-700/50 shadow-indigo-900/20 hover:bg-slate-800 hover:border-indigo-500/50' 
+                    : 'bg-white/80 border-slate-200/80 shadow-amber-500/10 hover:bg-white hover:border-amber-400/50'
+                }
+            `}
+            whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
-            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Light Mode' : 'Dark Mode'}
         >
+            {/* 🌟 แสง Glow เรืองแสงอยู่ด้านหลังเบาๆ */}
+            <div 
+                className={`absolute inset-0 opacity-20 blur-md transition-colors duration-500 ${
+                    isDark ? 'bg-indigo-500' : 'bg-amber-400'
+                }`} 
+            />
+
             <AnimatePresence mode="wait">
                 <motion.div
                     key={theme}
-                    initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
-                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                    exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    // Animation สไลด์ขึ้น/ลง พร้อมความเด้ง (Spring)
+                    initial={{ y: 20, opacity: 0, rotate: -45 }}
+                    animate={{ y: 0, opacity: 1, rotate: 0 }}
+                    exit={{ y: -20, opacity: 0, rotate: 45 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="relative z-10"
                 >
-                    {theme === 'light' ? (
-                        <Moon size={18} className="text-neutral-700" />
+                    {isDark ? (
+                        <Moon 
+                            size={18} 
+                            // สีม่วงคราม มี Fill โปร่งแสง และมีแสงเรืองๆ รอบไอคอน
+                            className="text-indigo-400 fill-indigo-400/20 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]" 
+                        />
                     ) : (
-                        <Sun size={18} className="text-yellow-400" />
+                        <Sun 
+                            size={18} 
+                            // สีเหลืองทอง มี Fill โปร่งแสง และมีแสงเรืองๆ รอบไอคอน
+                            className="text-amber-500 fill-amber-500/20 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" 
+                        />
                     )}
                 </motion.div>
             </AnimatePresence>

@@ -65,7 +65,6 @@ export default function AdminOrdersPage() {
 
   useEffect(() => { fetchOrders() }, [])
 
-  // ... (Functions confirmStatusChange, handleRejectSubmit etc. remain same)
   const openStatusConfirm = (id: string, status: string) => {
     setConfirmData({ id, status }); setIsConfirmOpen(true)
   }
@@ -149,7 +148,7 @@ export default function AdminOrdersPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-foreground">{t('admin.manageOrders', locale)}</h1>
 
-        {/* Filter Tabs: Light=Slate , Dark=surface-card */}
+        {/* Filter Tabs */}
         <div className="flex bg-white dark:bg-surface-card p-1 rounded-lg border border-slate-200 dark:border-border-main">
           {['ALL', 'VERIFYING', 'PAID', 'SHIPPED'].map(f => (
             <button
@@ -200,13 +199,14 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">฿{Number(order.total).toLocaleString()}</td>
                     <td className="p-4">
-                      {/* ✅ ปรับสีสถานะให้อ่านง่าย (ตัวหนังสือเข้มมาก) ใน Light Mode และคงเดิมใน Dark Mode */}
-                      <span className={`px-2 py-1 rounded text-[10px] font-bold 
-                        ${order.status === 'VERIFYING' ? 'bg-amber-100 text-amber-900 dark:bg-yellow-950/50 dark:text-yellow-400' :
-                          order.status === 'PAID' ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-400' :
-                            order.status === 'SHIPPED' ? 'bg-emerald-100 text-emerald-900 dark:bg-green-950/50 dark:text-green-400' :
-                              'bg-slate-100 text-slate-700 dark:bg-surface-bg dark:text-txt-muted'}`}
+                      {/* ✅ ปรับแก้สถานะ: เอาสีพื้นหลังออก เพิ่มสัญลักษณ์จุดสีแทนเพื่อความมินิมอลและอ่านง่าย */}
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-bold
+                        ${order.status === 'VERIFYING' ? 'text-amber-600 dark:text-amber-400' :
+                          order.status === 'PAID' ? 'text-indigo-600 dark:text-indigo-400' :
+                            order.status === 'SHIPPED' ? 'text-emerald-600 dark:text-emerald-400' :
+                              'text-slate-500 dark:text-txt-muted'}`}
                       >
+                        <span className="text-[10px]">●</span>
                         {STATUS_LABEL[order.status] || order.status}
                       </span>
                     </td>
@@ -255,7 +255,7 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* Modals - ใช้คำจาก i18n Dictionary */}
+      {/* Modals */}
       <InputModal isOpen={isRejectModalOpen} onClose={() => setIsRejectModalOpen(false)} onConfirm={handleRejectSubmit} title={t('admin.rejectTitle', locale)} placeholder={t('admin.rejectPlaceholder', locale)} loading={confirmLoading} />
       <ConfirmModal isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} onConfirm={confirmStatusChange} title={t('admin.confirmStatusTitle', locale)} message={t('admin.confirmStatusMsg', locale)} loading={confirmLoading} />
       <InputModal isOpen={isTrackingModalOpen} onClose={() => setIsTrackingModalOpen(false)} onConfirm={handleTrackingSubmit} title={t('admin.trackingTitle', locale)} placeholder={t('admin.placeholderTracking', locale)} />

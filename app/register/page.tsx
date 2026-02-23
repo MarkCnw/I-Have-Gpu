@@ -58,7 +58,7 @@ export default function RegisterPage() {
               alt="iHAVEGPU Logo"
               width={180}
               height={60}
-              className="h-12 w-auto object-contain dark:invert"
+              className="h-12 w-auto object-contain "
               priority
             />
           </Link>
