@@ -11,14 +11,15 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json()
-    const { name, phone, address, dateOfBirth } = body
+    // เอา address ออกจากการ destructuring (ถ้าไม่ได้ใช้ทำอะไรต่อ)
+    const { name, phone, dateOfBirth } = body
 
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
       data: {
         name,
         phone,
-        address,
+        // เอา address ออกจากตรงนี้ ❌
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       },
     })
